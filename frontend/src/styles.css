@@ -1,0 +1,355 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-medical-red: var(--medical-red);
+  --color-medical-rose: var(--medical-rose);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* Hospital theme — crisp white, medical blue, healing green, life-saving red */
+  --background: oklch(0.99 0.005 220);
+  --foreground: oklch(0.2 0.04 245);
+
+  --card: oklch(1 0 0 / 72%);
+  --card-foreground: oklch(0.2 0.04 245);
+
+  --popover: oklch(1 0 0 / 88%);
+  --popover-foreground: oklch(0.2 0.04 245);
+
+  /* Medical blue */
+  --primary: oklch(0.52 0.2 250);
+  --primary-foreground: oklch(0.99 0.005 220);
+
+  --secondary: oklch(0.96 0.015 230);
+  --secondary-foreground: oklch(0.28 0.05 245);
+
+  --muted: oklch(0.96 0.01 230);
+  --muted-foreground: oklch(0.5 0.025 240);
+
+  /* Healing green */
+  --accent: oklch(0.62 0.16 165);
+  --accent-foreground: oklch(0.99 0.005 220);
+
+  /* Medical red — life-saving accent */
+  --medical-red: oklch(0.6 0.23 25);
+  --medical-rose: oklch(0.68 0.2 10);
+
+  --destructive: oklch(0.6 0.23 25);
+  --destructive-foreground: oklch(0.99 0.005 220);
+
+  --success: oklch(0.65 0.15 155);
+  --success-foreground: oklch(0.99 0.005 220);
+
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.2 0.04 240);
+
+  --border: oklch(0.88 0.025 230 / 70%);
+  --input: oklch(1 0 0 / 55%);
+  --ring: oklch(0.52 0.2 250);
+
+  /* Sidebar — deep clinical navy with soft glow */
+  --sidebar: oklch(0.22 0.06 250);
+  --sidebar-foreground: oklch(0.92 0.02 220);
+  --sidebar-primary: oklch(0.65 0.2 220);
+  --sidebar-primary-foreground: oklch(0.99 0.005 220);
+  --sidebar-accent: oklch(0.28 0.07 250);
+  --sidebar-accent-foreground: oklch(0.97 0.01 220);
+  --sidebar-border: oklch(0.3 0.06 250);
+  --sidebar-ring: oklch(0.65 0.2 220);
+
+  /* Gradients & effects */
+  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.2 250), oklch(0.62 0.18 200));
+  --gradient-red: linear-gradient(135deg, oklch(0.62 0.23 22), oklch(0.7 0.2 8));
+  --gradient-green: linear-gradient(135deg, oklch(0.6 0.17 165), oklch(0.7 0.15 195));
+  --gradient-sunset: linear-gradient(135deg, oklch(0.7 0.2 30), oklch(0.75 0.16 60));
+  --gradient-violet: linear-gradient(135deg, oklch(0.55 0.22 290), oklch(0.65 0.18 320));
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.22 0.06 250), oklch(0.18 0.07 260));
+  --gradient-hero: radial-gradient(ellipse at top left, oklch(0.85 0.08 230 / 50%), transparent 55%),
+    radial-gradient(ellipse at bottom right, oklch(0.85 0.12 20 / 35%), transparent 55%),
+    radial-gradient(ellipse at center, oklch(0.85 0.1 165 / 30%), transparent 60%),
+    oklch(0.99 0.005 220);
+  --gradient-card: linear-gradient(145deg, oklch(1 0 0 / 72%), oklch(0.96 0.025 225 / 46%));
+  --gradient-rainbow: linear-gradient(120deg, oklch(0.6 0.22 25), oklch(0.65 0.2 60), oklch(0.6 0.18 165), oklch(0.55 0.2 250), oklch(0.55 0.22 290));
+
+  --glass-surface: linear-gradient(145deg, oklch(1 0 0 / 78%), oklch(1 0 0 / 42%));
+  --glass-panel: oklch(1 0 0 / 58%);
+  --glass-border: oklch(1 0 0 / 62%);
+  --role-glow-a: oklch(0.72 0.16 225 / 36%);
+  --role-glow-b: oklch(0.76 0.15 165 / 28%);
+  --role-glow-c: oklch(0.78 0.16 25 / 18%);
+
+  --shadow-glow: 0 8px 32px -8px oklch(0.52 0.2 250 / 40%);
+  --shadow-glow-red: 0 8px 32px -8px oklch(0.6 0.23 25 / 40%);
+  --shadow-card: 0 18px 55px -28px oklch(0.38 0.08 240 / 34%);
+  --shadow-elevated: 0 28px 70px -28px oklch(0.55 0.18 245 / 42%);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image: var(--gradient-hero);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-primary { background-image: var(--gradient-primary); }
+  .bg-gradient-red { background-image: var(--gradient-red); }
+  .bg-gradient-green { background-image: var(--gradient-green); }
+  .bg-gradient-sunset { background-image: var(--gradient-sunset); }
+  .bg-gradient-violet { background-image: var(--gradient-violet); }
+  .bg-gradient-sidebar { background-image: var(--gradient-sidebar); }
+  .bg-gradient-card {
+    background-image: var(--gradient-card);
+    backdrop-filter: blur(22px) saturate(145%);
+    box-shadow: var(--shadow-card), inset 0 1px 0 oklch(1 0 0 / 62%);
+  }
+  .bg-gradient-hero { background-image: var(--gradient-hero); }
+  .bg-gradient-rainbow { background-image: var(--gradient-rainbow); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .shadow-glow-red { box-shadow: var(--shadow-glow-red); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .text-gradient-red {
+    background: var(--gradient-red);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .text-gradient-rainbow {
+    background: var(--gradient-rainbow);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .glass {
+    background: var(--glass-panel);
+    backdrop-filter: blur(22px) saturate(145%);
+    border: 1px solid var(--glass-border);
+  }
+  .glass-dark {
+    background: oklch(0.22 0.06 250 / 60%);
+    backdrop-filter: blur(20px);
+    border: 1px solid oklch(0.4 0.08 250 / 40%);
+  }
+  .glass-card {
+    background: var(--glass-surface);
+    backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card), inset 0 1px 0 oklch(1 0 0 / 70%);
+  }
+  .glass-panel {
+    background: var(--glass-panel);
+    backdrop-filter: blur(26px) saturate(150%);
+    box-shadow: 0 12px 36px -28px oklch(0.28 0.08 240 / 45%), inset 0 1px 0 oklch(1 0 0 / 65%);
+  }
+  .glass-sidebar {
+    background-image: linear-gradient(180deg, oklch(0.24 0.065 250 / 84%), oklch(0.17 0.07 255 / 88%)), var(--gradient-sidebar);
+    backdrop-filter: blur(24px) saturate(145%);
+    box-shadow: inset -1px 0 0 oklch(1 0 0 / 8%);
+  }
+  .glass-scene {
+    background:
+      radial-gradient(ellipse at 18% 8%, var(--role-glow-a), transparent 42%),
+      radial-gradient(ellipse at 88% 18%, var(--role-glow-b), transparent 36%),
+      radial-gradient(ellipse at 48% 100%, var(--role-glow-c), transparent 45%);
+  }
+  .perspective-1000 { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: oklch(0.85 0.02 230); border-radius: 999px; }
+
+  .hover-glow {
+    transition: box-shadow .28s ease, transform .28s ease, border-color .28s ease, background-color .28s ease;
+  }
+  .hover-glow:hover {
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 55%, transparent),
+                0 10px 34px -8px color-mix(in oklch, var(--primary) 55%, transparent);
+    transform: translateY(-1px);
+  }
+}
+
+/* Global role-themed hover glow — applies to all interactive controls */
+button:not(:disabled),
+a[role="button"],
+[role="menuitem"],
+[role="option"],
+[role="tab"],
+.glass-card,
+[data-slot="card"] {
+  transition: box-shadow .28s ease, transform .2s ease, border-color .28s ease, background-color .28s ease, color .2s ease;
+}
+button:not(:disabled):hover,
+a[role="button"]:hover,
+[role="menuitem"]:hover,
+[role="option"]:hover,
+[role="tab"]:hover {
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 45%, transparent),
+              0 10px 28px -10px color-mix(in oklch, var(--primary) 65%, transparent);
+}
+.glass-card:hover,
+[data-slot="card"]:hover {
+  box-shadow: var(--shadow-card),
+              0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent),
+              0 18px 44px -20px color-mix(in oklch, var(--primary) 45%, transparent);
+}
+a:not([role="button"]):hover {
+  color: var(--primary);
+}
+
+[data-role="doctor"] {
+  --primary: oklch(0.52 0.2 250);
+  --ring: oklch(0.52 0.2 250);
+  --gradient-primary: linear-gradient(135deg, oklch(0.55 0.2 250), oklch(0.62 0.18 200));
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.22 0.06 250), oklch(0.18 0.07 260));
+  --role-glow-a: oklch(0.72 0.16 235 / 38%);
+  --role-glow-b: oklch(0.76 0.15 190 / 30%);
+  --role-glow-c: oklch(0.8 0.12 165 / 22%);
+}
+[data-role="super-admin"] {
+  --primary: oklch(0.55 0.22 290);
+  --ring: oklch(0.55 0.22 290);
+  --gradient-primary: var(--gradient-violet);
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.26 0.09 295), oklch(0.18 0.08 305));
+  --role-glow-a: oklch(0.72 0.16 295 / 36%);
+  --role-glow-b: oklch(0.78 0.14 320 / 28%);
+  --role-glow-c: oklch(0.75 0.12 245 / 22%);
+}
+[data-role="nurse"] {
+  --primary: oklch(0.62 0.23 22);
+  --ring: oklch(0.62 0.23 22);
+  --gradient-primary: var(--gradient-red);
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.27 0.09 20), oklch(0.18 0.08 10));
+  --role-glow-a: oklch(0.78 0.15 20 / 35%);
+  --role-glow-b: oklch(0.8 0.13 355 / 25%);
+  --role-glow-c: oklch(0.8 0.12 165 / 18%);
+}
+[data-role="receptionist"] {
+  --primary: oklch(0.6 0.17 165);
+  --ring: oklch(0.6 0.17 165);
+  --gradient-primary: var(--gradient-green);
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.24 0.08 165), oklch(0.17 0.07 185));
+  --role-glow-a: oklch(0.76 0.15 165 / 35%);
+  --role-glow-b: oklch(0.78 0.13 195 / 26%);
+  --role-glow-c: oklch(0.78 0.12 70 / 18%);
+}
+[data-role="patient"] {
+  --primary: oklch(0.7 0.2 30);
+  --ring: oklch(0.7 0.2 30);
+  --gradient-primary: var(--gradient-sunset);
+  --gradient-sidebar: linear-gradient(180deg, oklch(0.27 0.08 42), oklch(0.2 0.07 30));
+  --role-glow-a: oklch(0.82 0.15 35 / 34%);
+  --role-glow-b: oklch(0.82 0.13 70 / 28%);
+  --role-glow-c: oklch(0.78 0.12 165 / 18%);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px oklch(0.55 0.18 245 / 35%); }
+  50% { box-shadow: 0 0 60px oklch(0.55 0.18 245 / 60%); }
+}
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0) rotateY(0deg); }
+  50% { transform: translateY(-12px) rotateY(180deg); }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  10%, 30% { transform: scale(1.18); }
+  20%, 40% { transform: scale(0.95); }
+}
+@keyframes ekg {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(80px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-float-3d { animation: float-3d 6s ease-in-out infinite; }
+.animate-heartbeat { animation: heartbeat 1.4s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 20s linear infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 30%), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* Hide native browser password reveal button (Edge/IE, WebKit) to avoid double-eye */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear { display: none; }
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-contacts-auto-fill-button {
+  visibility: hidden; display: none !important; pointer-events: none; height: 0; width: 0; margin: 0;
+}
+
+/* Stronger role-tinted ambient background across the whole app */
+.glass-scene {
+  background:
+    radial-gradient(60% 45% at 12% 10%, color-mix(in oklch, var(--primary) 28%, transparent), transparent 70%),
+    radial-gradient(55% 40% at 92% 18%, color-mix(in oklch, var(--primary) 22%, transparent), transparent 70%),
+    radial-gradient(70% 55% at 50% 105%, color-mix(in oklch, var(--primary) 18%, transparent), transparent 70%),
+    radial-gradient(45% 35% at 85% 90%, color-mix(in oklch, var(--primary) 14%, transparent), transparent 70%);
+}
+
+@keyframes aurora {
+  0%   { transform: translate3d(-4%, -2%, 0) scale(1); }
+  50%  { transform: translate3d(4%, 3%, 0) scale(1.08); }
+  100% { transform: translate3d(-4%, -2%, 0) scale(1); }
+}
+.animate-aurora { animation: aurora 18s ease-in-out infinite; }
+
