@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MediLogo } from "@/components/MediLogo";
-import type { Role } from "@/lib/mockAuth";
+import type { Role } from "@/lib/auth";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({ meta: [{ title: "Reset password — MediCore HMS" }] }),

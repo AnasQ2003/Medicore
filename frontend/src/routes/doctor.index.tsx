@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { doctorNav } from "@/lib/doctorNav";
+import { doctorNav } from "@/lib/roleNav";
 import { doctorSlides } from "@/lib/mockData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
 import { appointmentAPI, patientAPI, notificationAPI } from "@/lib/api/client";

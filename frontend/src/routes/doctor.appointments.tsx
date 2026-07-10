@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { doctorNav } from "@/lib/doctorNav";
+import { doctorNav } from "@/lib/roleNav";
 import { appointments as seed, patients } from "@/lib/mockData";
 import { appointmentAPI, patientAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";

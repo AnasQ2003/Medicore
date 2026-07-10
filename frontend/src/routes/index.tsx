@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import hospitalSplashBg from "@/assets/hospital-splash-bg.jpg";
-import { getUser, roleMeta } from "@/lib/mockAuth";
+import { getUser, roleMeta } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({

@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Sparkles } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { clearUser, ensureUserForRole, type Role, type MockUser } from "@/lib/mockAuth";
+import { clearUser, ensureUserForRole, type Role, type MockUser } from "@/lib/auth";
 import { MediLogo } from "./MediLogo";
 import { Footer } from "./Footer";
 import { Button } from "./ui/button";

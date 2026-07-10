@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { doctorNav } from "@/lib/doctorNav";
+import { doctorNav } from "@/lib/roleNav";
 import { prescriptions as seed } from "@/lib/mockData";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";

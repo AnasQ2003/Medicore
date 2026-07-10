@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
-import { doctorNav } from "@/lib/doctorNav";
+import { doctorNav } from "@/lib/roleNav";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Stethoscope, Award, Users, Calendar, Mail, Phone, MapPin, Edit3, Save, GraduationCap, Briefcase, Clock } from "lucide-react";
 import { useState } from "react";
-import { getUser } from "@/lib/mockAuth";
+import { getUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/doctor/profile")({
   head: () => ({ meta: [{ title: "My Profile — Doctor" }] }),

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import type { Role } from "@/lib/mockAuth";
+import type { Role } from "@/lib/auth";
 import type { RoleNavItem } from "@/lib/roleNav";
 import { AnimatePresence, motion } from "framer-motion";
 import { Activity, CheckCircle2, Clock, FileText, Plus, Search, Trash2, Users, Pencil, RotateCcw } from "lucide-react";

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MediLogo } from "@/components/MediLogo";
-import { saveUser, roleMeta, type Role } from "@/lib/mockAuth";
+import { saveUser, roleMeta, type Role } from "@/lib/auth";
 import { authAPI } from "@/lib/api/client";
 import hospitalBg from "@/assets/hospital-bg.jpg";
 
