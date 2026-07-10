@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { doctorNav } from "@/lib/doctorNav";
-import { appointments, doctorSlides, patients, notifications } from "@/lib/mockData";
+import { doctorSlides } from "@/lib/mockData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
+import { appointmentAPI, patientAPI, notificationAPI } from "@/lib/api/client";
+import useApi from "@/hooks/useApi";
 
 export const Route = createFileRoute("/doctor/")({
   head: () => ({ meta: [{ title: "Doctor — MediCore" }] }),
@@ -26,8 +28,22 @@ const recoveryData = [
   { week: "W4", score: 74 }, { week: "W5", score: 80 }, { week: "W6", score: 85 },
 ];
 
+interface ApiAppt { id: number; appointmentCode: string; patient: string; patientId: string; date: string; time: string; reason: string; type: string; status: string; }
+interface ApiPatient { id: number; name: string; patientCode: string; age: number; bloodGroup: string; condition: string; vitals: { bp: string; pulse: number }[]; }
+interface ApiNotif { id: number; type: string; title: string; body: string; time: string; }
+
 // DoctorScreen — main dashboard with slideshow, charts, today's queue, quick actions.
 function DoctorScreen() {
+  const { data: rawAppts } = useApi(() => appointmentAPI.getAll());
+  const { data: rawPatients } = useApi(() => patientAPI.getAll());
+  const { data: rawNotifs } = useApi(() => notificationAPI.getAll());
+
+  const appointments = (rawAppts as unknown as ApiAppt[]) ?? [];
+  const patients = (rawPatients as unknown as ApiPatient[]) ?? [];
+  const notifications = (rawNotifs as unknown as ApiNotif[]) ?? [];
+
+  const spotlightPatient = patients[0] ?? null;
+
   return (
     <AppShell role="doctor" title="Doctor" nav={doctorNav}>
       {/* Greeting */}
@@ -39,7 +55,7 @@ function DoctorScreen() {
           >
             Good morning, <span className="text-gradient">Doctor</span> 👋
           </motion.h1>
-          <p className="text-muted-foreground mt-1">You have {appointments.length} appointments today.</p>
+          <p className="text-muted-foreground mt-1">You have {appointments.length} appointment{appointments.length !== 1 ? "s" : ""} scheduled.</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline"><Link to="/doctor/prescriptions"><Pill className="h-4 w-4 mr-2"/>New Rx</Link></Button>
@@ -49,10 +65,10 @@ function DoctorScreen() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Today's Appointments" value={String(appointments.length)} change="3 pending" icon={Calendar} delay={0} />
-        <StatCard label="Active Patients" value="248" change="+6 this week" icon={Users} delay={0.05} />
-        <StatCard label="Prescriptions" value="34" change="This week" icon={Pill} delay={0.1} />
-        <StatCard label="Reports Pending" value="7" change="2 urgent" icon={FileText} delay={0.15} />
+        <StatCard label="Total Appointments" value={String(appointments.length)} change={`${appointments.filter(a => a.status === "Pending").length} pending`} icon={Calendar} delay={0} />
+        <StatCard label="Active Patients" value={String(patients.length)} change="Registered" icon={Users} delay={0.05} />
+        <StatCard label="Completed" value={String(appointments.filter(a => a.status === "Completed").length)} change="Appointments" icon={Pill} delay={0.1} />
+        <StatCard label="Notifications" value={String(notifications.length)} change="Recent" icon={FileText} delay={0.15} />
       </div>
 
       {/* Slideshow + Quick actions */}
@@ -130,7 +146,7 @@ function DoctorScreen() {
         <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.4}} className="lg:col-span-2 bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-semibold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary"/>Today's Schedule</h3>
+              <h3 className="font-semibold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary"/>Appointment Queue</h3>
               <p className="text-xs text-muted-foreground">{appointments.length} appointments • {appointments.filter(a => a.status === "Completed").length} completed</p>
             </div>
             <Button asChild variant="ghost" size="sm"><Link to="/doctor/appointments">View calendar →</Link></Button>
@@ -145,10 +161,10 @@ function DoctorScreen() {
               >
                 <div className="text-sm font-mono font-semibold text-primary w-14">{a.time}</div>
                 <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold text-sm shadow-glow">
-                  {a.patient[0]}
+                  {a.patient?.[0] ?? "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <Link to="/doctor/patients/$id" params={{ id: a.patientId }} className="font-medium truncate hover:text-primary transition-colors block">{a.patient}</Link>
+                  <Link to="/doctor/patients/$id" params={{ id: String(a.patientId) }} className="font-medium truncate hover:text-primary transition-colors block">{a.patient}</Link>
                   <div className="text-xs text-muted-foreground truncate">{a.reason} • {a.type}</div>
                 </div>
                 <Badge
@@ -160,46 +176,53 @@ function DoctorScreen() {
                 </Badge>
               </motion.div>
             ))}
+            {appointments.length === 0 && <div className="text-center py-8 text-muted-foreground text-sm">No appointments loaded yet.</div>}
           </div>
         </motion.div>
 
         <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.45}} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
           <h3 className="font-semibold mb-4 flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary"/>Spotlight Patient</h3>
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-red text-white flex items-center justify-center font-bold text-lg shadow-glow-red">
-              {patients[0].name[0]}
-            </div>
-            <div>
-              <div className="font-semibold">{patients[0].name}</div>
-              <div className="text-xs text-muted-foreground">{patients[0].id} • {patients[0].age}y • {patients[0].bloodGroup}</div>
-            </div>
-          </div>
-          <div className="space-y-3 text-sm">
-            <div>
-              <div className="text-xs uppercase text-muted-foreground tracking-wider mb-1">Condition</div>
-              <div>{patients[0].condition}</div>
-            </div>
-            <div>
-              <div className="text-xs uppercase text-muted-foreground tracking-wider mb-1.5">Recovery Progress</div>
-              <Progress value={68} className="h-2"/>
-              <div className="text-xs mt-1 text-muted-foreground">68% — on track</div>
-            </div>
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <div className="rounded-lg bg-blue-50 p-2 text-center">
-                <div className="text-xs text-blue-700">BP</div>
-                <div className="font-bold text-blue-900">{patients[0].vitals[0].bp}</div>
+          {spotlightPatient ? (
+            <>
+              <div className="flex items-center gap-3 mb-4 pb-4 border-b">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-red text-white flex items-center justify-center font-bold text-lg shadow-glow-red">
+                  {spotlightPatient.name[0]}
+                </div>
+                <div>
+                  <div className="font-semibold">{spotlightPatient.name}</div>
+                  <div className="text-xs text-muted-foreground">{spotlightPatient.patientCode} • {spotlightPatient.age}y • {spotlightPatient.bloodGroup}</div>
+                </div>
               </div>
-              <div className="rounded-lg bg-rose-50 p-2 text-center">
-                <div className="text-xs text-rose-700">Pulse</div>
-                <div className="font-bold text-rose-900">{patients[0].vitals[0].pulse}</div>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground tracking-wider mb-1">Condition</div>
+                  <div>{spotlightPatient.condition || "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground tracking-wider mb-1.5">Recovery Progress</div>
+                  <Progress value={68} className="h-2"/>
+                  <div className="text-xs mt-1 text-muted-foreground">68% — on track</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="rounded-lg bg-blue-50 p-2 text-center">
+                    <div className="text-xs text-blue-700">BP</div>
+                    <div className="font-bold text-blue-900">{spotlightPatient.vitals?.[0]?.bp ?? "—"}</div>
+                  </div>
+                  <div className="rounded-lg bg-rose-50 p-2 text-center">
+                    <div className="text-xs text-rose-700">Pulse</div>
+                    <div className="font-bold text-rose-900">{spotlightPatient.vitals?.[0]?.pulse ?? "—"}</div>
+                  </div>
+                </div>
+                <Button asChild variant="outline" className="w-full mt-2">
+                  <Link to="/doctor/patients/$id" params={{ id: String(spotlightPatient.id) }}>
+                    <Stethoscope className="h-4 w-4 mr-2"/>Open Full EMR
+                  </Link>
+                </Button>
               </div>
-            </div>
-            <Button asChild variant="outline" className="w-full mt-2">
-              <Link to="/doctor/patients/$id" params={{ id: patients[0].id }}>
-                <Stethoscope className="h-4 w-4 mr-2"/>Open Full EMR
-              </Link>
-            </Button>
-          </div>
+            </>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground text-sm">No patients on record.</div>
+          )}
         </motion.div>
       </div>
 
@@ -225,6 +248,7 @@ function DoctorScreen() {
               <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.body}</div>
             </motion.div>
           ))}
+          {notifications.length === 0 && <div className="col-span-full text-center text-sm text-muted-foreground py-6">No recent notifications.</div>}
         </div>
       </motion.div>
     </AppShell>

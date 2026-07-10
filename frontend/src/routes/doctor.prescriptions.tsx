@@ -31,6 +31,11 @@ function PrescriptionsScreen() {
 
   const filtered = list.filter(p => p.patient.toLowerCase().includes(q.toLowerCase()) || p.id.toLowerCase().includes(q.toLowerCase()));
 
+  const remove = (p: Rx) => {
+    toast.success(`${p.id} removed`);
+    refetch();
+  };
+
   const saveEdit = () => {
     if (!editing) return;
     toast.success(`${editing.id} updated`);

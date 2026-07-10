@@ -90,13 +90,6 @@ function ReceptionistScreen() {
                 {registering ? "Registering..." : "Register & Generate Patient ID"}
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>Phone</Label><Input placeholder="+92 300 0000000" className="mt-1.5"/></div>
-              <div><Label>Emergency</Label><Input placeholder="+92 300 0000000" className="mt-1.5"/></div>
-            </div>
-            <div><Label>Address</Label><Input placeholder="Street, City" className="mt-1.5"/></div>
-            <Button className="w-full bg-gradient-primary text-primary-foreground shadow-glow">Register & Generate Patient ID</Button>
-          </div>
         </motion.div>
 
         <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.25}} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">

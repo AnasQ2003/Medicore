@@ -5,6 +5,8 @@ import { StatCard } from "@/components/StatCard";
 import { motion } from "framer-motion";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
 import { superAdminNav } from "@/lib/roleNav";
+import { adminAPI } from "@/lib/api/client";
+import useApi from "@/hooks/useApi";
 
 export const Route = createFileRoute("/super-admin/")({
   head: () => ({ meta: [{ title: "Super Admin — MediCore" }] }),
@@ -32,6 +34,12 @@ const branches = [
 
 // SuperAdminScreen — system-wide overview, branches, staff, revenue charts.
 function SuperAdminScreen() {
+  const { data: rawAnalytics } = useApi(() => adminAPI.getAnalytics());
+  const analytics = rawAnalytics as unknown as {
+    totalAppointments: number; activePatients: number; totalStaff: number; totalRevenue: number;
+    recentAppointments: { appointmentCode: string; patient: string; status: string; date: string; time: string; }[];
+    staffList: { id: number; name: string; role: string; }[];
+  } | null;
   return (
     <AppShell role="super-admin" title="Super Admin" nav={superAdminNav}>
       <div className="mb-6">
@@ -40,10 +48,10 @@ function SuperAdminScreen() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Patients" value="48,231" change="+12.4% this month" icon={Users} delay={0} />
-        <StatCard label="Active Doctors" value="284" change="+6 this week" icon={Stethoscope} delay={0.05} />
-        <StatCard label="Today's Appts" value="1,429" change="92% confirmed" icon={Activity} delay={0.1} />
-        <StatCard label="Revenue (MTD)" value="$842k" change="+18.2% vs last" icon={DollarSign} delay={0.15} />
+        <StatCard label="Total Patients" value={analytics ? String(analytics.activePatients) : "—"} change="Registered" icon={Users} delay={0} />
+        <StatCard label="Active Staff" value={analytics ? String(analytics.totalStaff) : "—"} change="All roles" icon={Stethoscope} delay={0.05} />
+        <StatCard label="Total Appointments" value={analytics ? String(analytics.totalAppointments) : "—"} change="All time" icon={Activity} delay={0.1} />
+        <StatCard label="Revenue (Paid)" value={analytics ? `$${analytics.totalRevenue.toLocaleString()}` : "—"} change="Settled invoices" icon={DollarSign} delay={0.15} />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 mt-6">
