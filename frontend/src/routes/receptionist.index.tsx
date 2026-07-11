@@ -47,7 +47,7 @@ function ReceptionistScreen() {
   const handleRegister = async () => {
     if (!regForm.name || !regForm.phone) return toast.error("Name and phone are required");
     setRegistering(true);
-    const email = `${regForm.name.toLowerCase().replace(/\s/g,".")}.${Date.now()}@patient.medicore`;
+    const email = `${regForm.name.toLowerCase().replace(/\s/g, ".")}.${Date.now()}@patient.medicore`;
     try {
       const res = await authAPI.register({ name: regForm.name, email, password: "Patient@1234", role: "patient", phone: regForm.phone, address: regForm.address, gender: regForm.gender, bloodGroup: regForm.blood });
       if (res.success) {
@@ -63,7 +63,7 @@ function ReceptionistScreen() {
     <AppShell role="receptionist" title="Reception" nav={receptionistNav}>
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Front Desk</h1>
-        <p className="text-muted-foreground">Register patients & manage appointments.</p>
+        <p className="text-muted-foreground">Register doing  patients & manage appointments.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -74,26 +74,26 @@ function ReceptionistScreen() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mt-6">
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.2}} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2"><UserPlus className="h-4 w-4 text-primary"/> Quick Register Patient</h3>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Full Name</Label><Input value={regForm.name} onChange={e => setRegForm(f => ({...f, name: e.target.value}))} placeholder="John Doe" className="mt-1.5"/></div>
-                <div><Label>Gender</Label><Input value={regForm.gender} onChange={e => setRegForm(f => ({...f, gender: e.target.value}))} placeholder="Male" className="mt-1.5"/></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Phone</Label><Input value={regForm.phone} onChange={e => setRegForm(f => ({...f, phone: e.target.value}))} placeholder="+92 300 0000000" className="mt-1.5"/></div>
-                <div><Label>Blood Group</Label><Input value={regForm.blood} onChange={e => setRegForm(f => ({...f, blood: e.target.value}))} placeholder="O+" className="mt-1.5"/></div>
-              </div>
-              <div><Label>Address</Label><Input value={regForm.address} onChange={e => setRegForm(f => ({...f, address: e.target.value}))} placeholder="Street, City" className="mt-1.5"/></div>
-              <Button onClick={handleRegister} disabled={registering} className="w-full bg-gradient-primary text-primary-foreground shadow-glow">
-                {registering ? "Registering..." : "Register & Generate Patient ID"}
-              </Button>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
+          <h3 className="font-semibold mb-4 flex items-center gap-2"><UserPlus className="h-4 w-4 text-primary" /> Quick Register Patient</h3>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Full Name</Label><Input value={regForm.name} onChange={e => setRegForm(f => ({ ...f, name: e.target.value }))} placeholder="John Doe" className="mt-1.5" /></div>
+              <div><Label>Gender</Label><Input value={regForm.gender} onChange={e => setRegForm(f => ({ ...f, gender: e.target.value }))} placeholder="Male" className="mt-1.5" /></div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Phone</Label><Input value={regForm.phone} onChange={e => setRegForm(f => ({ ...f, phone: e.target.value }))} placeholder="+92 300 0000000" className="mt-1.5" /></div>
+              <div><Label>Blood Group</Label><Input value={regForm.blood} onChange={e => setRegForm(f => ({ ...f, blood: e.target.value }))} placeholder="O+" className="mt-1.5" /></div>
+            </div>
+            <div><Label>Address</Label><Input value={regForm.address} onChange={e => setRegForm(f => ({ ...f, address: e.target.value }))} placeholder="Street, City" className="mt-1.5" /></div>
+            <Button onClick={handleRegister} disabled={registering} className="w-full bg-gradient-primary text-primary-foreground shadow-glow">
+              {registering ? "Registering..." : "Register & Generate Patient ID"}
+            </Button>
+          </div>
         </motion.div>
 
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.25}} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary"/> Doctor Availability</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
+          <h3 className="font-semibold mb-4 flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor Availability</h3>
           <div className="space-y-3">
             {doctors.map((d, i) => (
               <motion.div
