@@ -63,7 +63,7 @@ function ReceptionistScreen() {
     <AppShell role="receptionist" title="Reception" nav={receptionistNav}>
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Front Desk</h1>
-        <p className="text-muted-foreground">Register patients & manage appointments.</p>
+        <p className="text-muted-foreground">Register the  patients & manage appointments.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
