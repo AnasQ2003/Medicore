@@ -117,11 +117,11 @@ function LoginScreen() {
       </h2>
 
       <div className="flex items-center justify-center gap-2 mt-3">
-        <button type="button" aria-label="Continue with Google"
+        <button type="button" aria-label="Continue with Google" onClick={() => toast.info("Google sign-in coming soon! For now, use email/password.")}
           className="h-10 w-10 rounded-full border border-border bg-white text-[15px] font-bold hover:scale-110 hover:shadow-glow transition-all flex items-center justify-center">
           <svg viewBox="0 0 24 24" className="h-5 w-5"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h5.9c-.3 1.4-1 2.6-2.2 3.4v2.8h3.6c2.1-2 3.2-4.8 3.2-8.4z"/><path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.6-2.8c-1 .7-2.3 1.1-3.6 1.1-2.8 0-5.1-1.9-6-4.4H2.3v2.8C4.1 20.6 7.8 23 12 23z"/><path fill="#FBBC05" d="M6 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3V6.9H2.3C1.5 8.5 1 10.2 1 12s.5 3.5 1.3 5.1L6 14.3z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.4 2.1 14.9 1 12 1 7.8 1 4.1 3.4 2.3 6.9L6 9.7c.9-2.5 3.2-4.3 6-4.3z"/></svg>
         </button>
-        <button type="button" aria-label="Continue with Apple"
+        <button type="button" aria-label="Continue with Apple" onClick={() => toast.info("Apple sign-in coming soon! For now, use email/password.")}
           className="h-10 w-10 rounded-full border border-border bg-black text-white hover:scale-110 hover:shadow-glow transition-all flex items-center justify-center">
           <Apple className="h-5 w-5 fill-white" />
         </button>
