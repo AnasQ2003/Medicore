@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Sparkles } from "lucide-react";
+import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Sparkles, ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { clearUser, ensureUserForRole, type Role, type MockUser } from "@/lib/auth";
 import { MediLogo } from "./MediLogo";
@@ -49,7 +49,14 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [user, setUser] = useState<MockUser | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    // Persist collapsed state in localStorage
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`sidebar_collapsed_${role}`);
+      return saved === "true";
+    }
+    return false;
+  });
 
   useEffect(() => {
     setUser(ensureUserForRole(role));
@@ -86,14 +93,21 @@ export function AppShell({
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
+  // Persist collapsed state to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`sidebar_collapsed_${role}`, String(collapsed));
+    }
+  }, [collapsed, role]);
+
   const onLogout = () => { clearUser(); navigate({ to: "/login" }); };
   const unread = defaultNotifs.filter((n) => n.unread).length;
   const accent = roleAccent[role];
   const profileBase = `/${role}/profile`;
-  const sidebarWidth = collapsed ? "w-20" : "w-64";
+  const sidebarWidth = collapsed ? "w-16" : "w-64";
 
   const Sidebar = (
-    <aside className={`flex ${sidebarWidth} flex-col glass-sidebar text-sidebar-foreground border-r border-sidebar-border p-3 gap-1 h-full transition-[width] duration-300`}>
+    <aside className={`flex ${sidebarWidth} flex-col glass-sidebar text-sidebar-foreground border-r border-sidebar-border p-3 gap-1 h-full transition-[width] duration-200 ease-out`}>
       <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3 px-2"} py-3`}>
         <MediLogo size={collapsed ? 36 : 42} animated={false} />
         {!collapsed && (
@@ -104,58 +118,70 @@ export function AppShell({
         )}
       </div>
 
-      {/* Collapse toggle — pill button that adapts to sidebar state */}
+      {/* Collapse toggle — enhanced design with better highlight */}
       <div className="px-1 mb-2">
         <button
-          onClick={() => setCollapsed((v) => !v)}
-          className={`hidden md:flex w-full items-center ${collapsed ? "justify-center" : "justify-between"} gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white/90 bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/30 backdrop-blur-md transition-all group`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setCollapsed((v) => !v);
+          }}
+          className={`hidden md:flex items-center ${collapsed ? "justify-center" : "justify-between"} w-full h-11 rounded-xl text-white/90 hover:text-white bg-gradient-to-r from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 border border-white/20 hover:border-white/40 backdrop-blur-md transition-all duration-200 px-3 shadow-lg hover:shadow-xl`}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {!collapsed && <span className="tracking-wide">Collapse</span>}
-          <span className={`flex h-6 w-6 items-center justify-center rounded-lg bg-white/10 group-hover:bg-white/25 transition-colors`}>
-            {collapsed ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
-          </span>
+          {!collapsed && <span className="text-xs font-semibold tracking-wide">Collapse</span>}
+          <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 transition-all duration-200 ${collapsed ? "scale-110" : ""}`}>
+            <ChevronRight className={`h-5 w-5 transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`} />
+          </div>
         </button>
       </div>
 
-
-      {!collapsed && (
-        <div className={`mx-1 mt-1 mb-3 rounded-xl ${accent} p-3 shadow-glow relative overflow-hidden border border-white/20`}>
-          <div className="absolute -top-6 -right-6 h-20 w-20 rounded-full bg-white/20 blur-2xl" />
-          <div className="relative z-10 flex items-center gap-3">
-            <Avatar className="h-10 w-10 ring-2 ring-white/50">
-              <AvatarFallback className="bg-white/20 text-white font-bold">{user?.name?.[0] ?? "U"}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <div className="text-sm font-semibold text-white truncate">{user?.name ?? "User"}</div>
-              <div className="text-[10px] uppercase tracking-wider text-white/80">{title}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <nav className="flex flex-col gap-1 overflow-y-auto scrollbar-thin pr-1 flex-1 min-h-0">
-        {nav.map((item) => {
+      <nav className="sidebar-nav flex flex-col gap-1 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
+        {nav.map((item, index) => {
           const active = pathname === item.to || (item.to !== `/${role}` && pathname.startsWith(item.to));
           return (
-            <Link
+            <motion.div
               key={item.label}
-              to={item.to}
-              title={collapsed ? item.label : undefined}
-              className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                active
-                  ? "bg-white/15 text-white shadow-inner backdrop-blur-sm border border-white/10"
-                  : "text-sidebar-foreground/80 hover:bg-white/10 hover:text-white hover:translate-x-1"
-              }`}
+              initial={collapsed ? false : { opacity: 0, x: -20 }}
+              animate={collapsed ? false : { opacity: 1, x: 0 }}
+              transition={{ duration: 0.15, delay: collapsed ? 0 : index * 0.03 }}
             >
-              <span className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                active ? "bg-white/20" : "bg-white/5 group-hover:bg-white/10"
-              }`}>
-                {item.icon}
-              </span>
-              {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
-              {!collapsed && active && <motion.div layoutId={`dot-${role}`} className="h-1.5 w-1.5 rounded-full bg-white" />}
-            </Link>
+              <Link
+                to={item.to}
+                title={collapsed ? item.label : undefined}
+                onClick={(e) => {
+                  // Prevent any state changes when clicking nav items
+                  if (collapsed) {
+                    // Just navigate, don't change sidebar state
+                  }
+                }}
+                className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  active
+                    ? "bg-white/15 text-white shadow-inner backdrop-blur-sm border border-white/10"
+                    : "text-sidebar-foreground/80 hover:bg-white/10 hover:text-white hover:translate-x-1"
+                }`}
+              >
+                <span className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-200 ${
+                  active ? "bg-white/20" : "bg-white/5 group-hover:bg-white/10"
+                }`}>
+                  {item.icon}
+                </span>
+                <AnimatePresence mode="wait">
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="flex-1 truncate"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                {!collapsed && active && <motion.div layoutId={`dot-${role}`} className="h-1.5 w-1.5 rounded-full bg-white" />}
+              </Link>
+            </motion.div>
           );
         })}
       </nav>

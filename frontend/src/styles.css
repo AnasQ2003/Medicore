@@ -206,6 +206,10 @@
   .preserve-3d { transform-style: preserve-3d; }
   .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scrollbar-thin::-webkit-scrollbar-thumb { background: oklch(0.85 0.02 230); border-radius: 999px; }
+  
+  /* Hide scrollbar completely for sidebar navigation */
+  .sidebar-nav::-webkit-scrollbar { display: none; }
+  .sidebar-nav { -ms-overflow-style: none; scrollbar-width: none; }
 
   .hover-glow {
     transition: box-shadow .28s ease, transform .28s ease, border-color .28s ease, background-color .28s ease;
