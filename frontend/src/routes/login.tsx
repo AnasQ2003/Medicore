@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock, User, Shield, Stethoscope, HeartPulse, UserRound, UserCog, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,23 @@ function LoginScreen() {
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load saved credentials on mount if remember me was checked
+  useEffect(() => {
+    const savedCredentials = localStorage.getItem('medicore_remember_me');
+    if (savedCredentials) {
+      try {
+        const { email: savedEmail, password: savedPassword, role: savedRole } = JSON.parse(savedCredentials);
+        setEmail(savedEmail);
+        setPassword(savedPassword);
+        setRole(savedRole as Role);
+        setRememberMe(true);
+      } catch (e) {
+        console.error('Error loading saved credentials:', e);
+      }
+    }
+  }, []);
 
   const authenticate = async () => {
     if (!email || !password) return toast.error("Please fill in all fields");
@@ -55,6 +72,14 @@ function LoginScreen() {
           // Validate the returned role matches the selected role tab
           const userRole = res.data.role as Role;
           saveUser({ id: res.data.id, email: res.data.email, name: res.data.name, role: userRole, patientCode: res.data.patientCode, token: res.data.token });
+          
+          // Handle remember me functionality
+          if (rememberMe) {
+            localStorage.setItem('medicore_remember_me', JSON.stringify({ email, password, role }));
+          } else {
+            localStorage.removeItem('medicore_remember_me');
+          }
+          
           toast.success(`Welcome back, ${res.data.name}!`);
           navigate({ to: roleMeta[userRole].path });
         } else {
@@ -159,7 +184,7 @@ function LoginScreen() {
         {isLogin && (
           <div className="flex items-center justify-between text-xs">
             <label className="flex items-center gap-1.5 cursor-pointer text-muted-foreground">
-              <Checkbox id="remember" /> Remember me
+              <Checkbox id="remember" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked === true)} /> Remember me
             </label>
             <Link to="/forgot-password"
               className={`bg-gradient-to-r ${active.gradient} bg-clip-text text-transparent font-semibold hover:underline`}>
