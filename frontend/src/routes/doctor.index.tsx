@@ -65,10 +65,10 @@ function DoctorScreen() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Appointments" value={String(appointments.length)} change={`${appointments.filter(a => a.status === "Pending").length} pending`} icon={Calendar} delay={0} />
-        <StatCard label="Active Patients" value={String(patients.length)} change="Registered" icon={Users} delay={0.05} />
-        <StatCard label="Completed" value={String(appointments.filter(a => a.status === "Completed").length)} change="Appointments" icon={Pill} delay={0.1} />
-        <StatCard label="Notifications" value={String(notifications.length)} change="Recent" icon={FileText} delay={0.15} />
+        <StatCard label="Total Appointments" value={String(appointments.length)} change={`${appointments.filter(a => a.status === "Pending").length} pending`} icon={Calendar} delay={0} to="/doctor/appointments" />
+        <StatCard label="Active Patients" value={String(patients.length)} change="Registered" icon={Users} delay={0.05} to="/doctor/patients" />
+        <StatCard label="Completed" value={String(appointments.filter(a => a.status === "Completed").length)} change="Appointments" icon={Pill} delay={0.1} to="/doctor/appointments" />
+        <StatCard label="Notifications" value={String(notifications.length)} change="Recent" icon={FileText} delay={0.15} to="/doctor/notifications" />
       </div>
 
       {/* Slideshow + Quick actions */}

@@ -70,7 +70,7 @@
 
   /* Healing green */
   --accent: oklch(0.62 0.16 165);
-  --accent-foreground: oklch(0.99 0.005 220);
+  --accent-foreground: oklch(0.25 0.05 165);
 
   /* Medical red — life-saving accent */
   --medical-red: oklch(0.6 0.23 25);
