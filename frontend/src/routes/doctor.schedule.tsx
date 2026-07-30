@@ -20,31 +20,60 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const colors = ["from-blue-500 to-cyan-500", "from-emerald-500 to-teal-500", "from-rose-500 to-pink-600", "from-amber-500 to-orange-500", "from-violet-500 to-purple-600", "from-indigo-500 to-blue-600", "from-slate-500 to-slate-700"];
 
 function ScheduleScreen() {
-  const [schedule, setSchedule] = useState(
-    days.map((d, i) => ({
+  const [schedule, setSchedule] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("medicore_doctor_schedule");
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return days.map((d, i) => ({
       day: d, enabled: i < 6, from: "09:00",
       to: i === 5 ? "13:00" : "17:00",
       slot: 20, breakFrom: "13:00", breakTo: "14:00",
       slots: i === 5 ? 8 : 16,
-    }))
-  );
-  const [blocked, setBlocked] = useState<{ date: string; reason: string }[]>([
-    { date: "2026-06-22", reason: "Family event" },
-    { date: "2026-07-04", reason: "Conference" },
-  ]);
+    }));
+  });
+
+  const [blocked, setBlocked] = useState<{ date: string; reason: string }[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("medicore_doctor_blocked_dates");
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return [
+      { date: "2026-06-22", reason: "Family event" },
+      { date: "2026-07-04", reason: "Conference" },
+    ];
+  });
+
   const [blockOpen, setBlockOpen] = useState(false);
   const [bDate, setBDate] = useState("");
   const [bReason, setBReason] = useState("");
 
+  const saveSchedule = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("medicore_doctor_schedule", JSON.stringify(schedule));
+      localStorage.setItem("medicore_doctor_blocked_dates", JSON.stringify(blocked));
+    }
+    toast.success("Schedule & availability saved successfully!");
+  };
+
   const copyMonday = () => {
     const mon = schedule[0];
-    setSchedule(schedule.map((s, i) => i === 0 ? s : { ...s, from: mon.from, to: mon.to, slot: mon.slot, breakFrom: mon.breakFrom, breakTo: mon.breakTo, enabled: true }));
+    const updated = schedule.map((s, i) => i === 0 ? s : { ...s, from: mon.from, to: mon.to, slot: mon.slot, breakFrom: mon.breakFrom, breakTo: mon.breakTo, enabled: true });
+    setSchedule(updated);
     toast.success("Monday copied to all weekdays");
   };
   const addBlocked = () => {
     if (!bDate) return toast.error("Pick a date");
-    setBlocked([{ date: bDate, reason: bReason || "Unavailable" }, ...blocked]);
-    toast.success("Date blocked");
+    const updated = [{ date: bDate, reason: bReason || "Unavailable" }, ...blocked];
+    setBlocked(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("medicore_doctor_blocked_dates", JSON.stringify(updated));
+    }
+    toast.success("Date blocked successfully");
     setBlockOpen(false); setBDate(""); setBReason("");
   };
 
@@ -57,7 +86,7 @@ function ScheduleScreen() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={copyMonday}><Copy className="h-4 w-4 mr-2"/>Copy Mon → All</Button>
-          <Button onClick={() => toast.success("Schedule saved")} className="bg-gradient-primary text-white"><Save className="h-4 w-4 mr-2"/>Save</Button>
+          <Button onClick={saveSchedule} className="bg-gradient-primary text-white font-semibold"><Save className="h-4 w-4 mr-2"/>Save Schedule</Button>
         </div>
       </div>
 

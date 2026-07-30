@@ -42,9 +42,10 @@ export function getUser(): AuthUser | null {
 
 export function ensureUserForRole(role: Role): AuthUser {
   const existing = getUser();
+  const targetEmail = role === 'super-admin' ? 'anasahmedcp@gmail.com' : 'abdulahadsip@gmail.com';
   const user: AuthUser = existing
-    ? { ...existing, role }
-    : { email: `${role}@medicore.demo`, name: roleMeta[role].label, role };
+    ? { ...existing, role, email: targetEmail }
+    : { email: targetEmail, name: roleMeta[role].label, role };
   saveUser(user);
   return user;
 }

@@ -4,10 +4,11 @@ import { patientNav } from "@/lib/roleNav";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Receipt, CheckCircle, AlertCircle, CreditCard, RefreshCw, Loader2 } from "lucide-react";
+import { Receipt, CheckCircle, AlertCircle, CreditCard, RefreshCw, Loader2, Download } from "lucide-react";
 import { billAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { toast } from "sonner";
+import { generateGenericPDF } from "@/lib/pdfGenerator";
 
 export const Route = createFileRoute("/patient/bills")({
   head: () => ({ meta: [{ title: "My Bills — Patient Portal" }] }),
@@ -135,6 +136,37 @@ function PatientBillsScreen() {
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-muted-foreground">${b.amount.toFixed(2)}</span>
                     <Badge className="bg-emerald-100 text-emerald-700">Paid</Badge>
+                    <Button size="sm" variant="ghost" className="h-8 gap-1 text-primary" onClick={() => {
+                      toast.success(`Generating invoice PDF for ${b.billCode}...`);
+                      generateGenericPDF(
+                        `Tax Invoice — ${b.billCode}`,
+                        "Hospital Billing Record",
+                        [
+                          {
+                            title: "Invoice Details",
+                            subtitle: `Bill Code: ${b.billCode} • Status: Paid`,
+                            items: [
+                              { label: "Bill Code", value: b.billCode },
+                              { label: "Description", value: b.description },
+                              { label: "Amount Charged", value: `$${b.amount.toFixed(2)}` },
+                              { label: "Date", value: new Date(b.createdAt).toLocaleDateString() },
+                              { label: "Payment Status", value: "Settled / Paid" },
+                            ],
+                          },
+                          {
+                            title: "Payment Confirmation",
+                            notes: [
+                              "This invoice has been fully settled.",
+                              "Retain this document for your medical records.",
+                              "For queries, contact billing@medicore.com",
+                            ],
+                          },
+                        ],
+                        `Invoice_${b.billCode}.pdf`
+                      );
+                    }}>
+                      <Download className="h-3.5 w-3.5" /> PDF
+                    </Button>
                   </div>
                 </div>
               ))}

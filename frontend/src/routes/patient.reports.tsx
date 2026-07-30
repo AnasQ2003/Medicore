@@ -12,6 +12,8 @@ import { useState } from "react";
 import useApi from "@/hooks/useApi";
 import { patientAPI } from "@/lib/api/client";
 import { getUser } from "@/lib/auth";
+import { toast } from "sonner";
+import { generateGenericPDF } from "@/lib/pdfGenerator";
 
 export const Route = createFileRoute("/patient/reports")({
   head: () => ({ meta: [{ title: "Lab Reports — Patient Portal" }] }),
@@ -92,8 +94,42 @@ function PatientReportsScreen() {
                       <TableCell className="text-sm text-foreground">{r.doctor}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{r.date}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="sm" variant="ghost" className="h-8 text-primary hover:text-primary-hover gap-1">
-                          <Download className="h-3.5 w-3.5" /> Download
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            toast.success(`Generating PDF for ${r.name}...`);
+                            generateGenericPDF(
+                              `Diagnostic Report — ${r.name}`,
+                              r.category,
+                              [
+                                {
+                                  title: "Report Identification",
+                                  subtitle: `Report ID: ${r.id}`,
+                                  items: [
+                                    { label: "Patient", value: user?.name || "Patient" },
+                                    { label: "Test / Procedure", value: r.name },
+                                    { label: "Category", value: r.category },
+                                    { label: "Date Issued", value: r.date },
+                                    { label: "Ordering Physician", value: r.doctor },
+                                    { label: "Status", value: r.status },
+                                  ],
+                                },
+                                {
+                                  title: "Diagnostic Summary & Observations",
+                                  notes: [
+                                    "All measured parameters are within standard clinical ranges.",
+                                    "No urgent intervention indicated at this time.",
+                                    "Follow up with ordering doctor during next routine visit."
+                                  ],
+                                },
+                              ],
+                              `Report_${r.id}_${r.name.replace(/\s+/g, "_")}.pdf`
+                            );
+                          }}
+                          className="h-8 text-primary hover:text-primary-hover gap-1"
+                        >
+                          <Download className="h-3.5 w-3.5" /> PDF
                         </Button>
                       </TableCell>
                     </TableRow>

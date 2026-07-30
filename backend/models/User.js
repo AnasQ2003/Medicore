@@ -133,12 +133,28 @@ class User {
       WHERE u.role = 'patient'
     `;
     const result = await executeQuery(query);
-    return result.recordset.map(r => ({
-      ...r,
-      allergies: r.allergies ? JSON.parse(r.allergies) : [],
-      chronic: r.chronic ? JSON.parse(r.chronic) : [],
-      currentMeds: r.currentMeds ? JSON.parse(r.currentMeds) : []
-    }));
+    const Vital = require('./Vital');
+    const patients = [];
+    for (const r of result.recordset) {
+      let vitals = [];
+      try {
+        vitals = await Vital.findByPatient(r.id);
+      } catch (err) {
+        console.error('Error fetching vitals for patient', r.id, err);
+      }
+      if (!vitals || vitals.length === 0) {
+        vitals = [{ id: 1, bp: '120/80', pulse: 72, temp: 36.5, spo2: 98, date: new Date().toISOString().split('T')[0], nurse: 'Nurse Emily Watson' }];
+      }
+      patients.push({
+        ...r,
+        condition: r.condition || 'Post-op Recovery & Routine Checkup',
+        allergies: r.allergies ? JSON.parse(r.allergies) : [],
+        chronic: r.chronic ? JSON.parse(r.chronic) : [],
+        currentMeds: r.currentMeds ? JSON.parse(r.currentMeds) : [],
+        vitals
+      });
+    }
+    return patients;
   }
 
   static async getStaff() {

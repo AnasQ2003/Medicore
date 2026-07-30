@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Pill, Download, Loader2, AlertCircle } from "lucide-react";
 import { prescriptionAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
+import { toast } from "sonner";
+import { generateGenericPDF } from "@/lib/pdfGenerator";
 
 export const Route = createFileRoute("/patient/prescriptions")({
   head: () => ({ meta: [{ title: "Prescriptions — Patient Portal" }] }),
@@ -59,7 +61,38 @@ function PatientPrescriptionsScreen() {
               <div className="text-sm bg-muted/50 rounded-lg p-3 mb-3 whitespace-pre-line text-muted-foreground">
                 {rx.items}
               </div>
-              <Button size="sm" variant="outline" className="w-full" onClick={() => {}}>
+              <Button size="sm" variant="outline" className="w-full" onClick={() => {
+                toast.success(`Generating PDF for ${rx.id}...`);
+                generateGenericPDF(
+                  `Prescription ${rx.id}`,
+                  "Patient Medical Prescription",
+                  [
+                    {
+                      title: "Prescription Summary",
+                      subtitle: `Rx ID: ${rx.id} • Status: ${rx.status}`,
+                      items: [
+                        { label: "Prescription ID", value: rx.id },
+                        { label: "Issue Date", value: rx.date },
+                        { label: "Status", value: rx.status },
+                        { label: "Patient", value: rx.patient || "Patient" },
+                      ],
+                    },
+                    {
+                      title: "Prescribed Medications",
+                      notes: rx.items.split(",").map(i => i.trim()),
+                    },
+                    {
+                      title: "Instructions",
+                      notes: [
+                        "Take all medications as prescribed after meals.",
+                        "Do not discontinue without consulting your doctor.",
+                        "Valid for 30 days from issue date.",
+                      ],
+                    },
+                  ],
+                  `Prescription_${rx.id}.pdf`
+                );
+              }}>
                 <Download className="h-3.5 w-3.5 mr-1.5" />Download PDF
               </Button>
             </motion.div>

@@ -21,10 +21,8 @@ function SplashScreen() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      const u = getUser();
-      if (u) navigate({ to: roleMeta[u.role].path });
-      else navigate({ to: "/login" });
-    }, 3800);
+      navigate({ to: "/login" });
+    }, 2000);
     return () => clearTimeout(t);
   }, [navigate]);
 
@@ -541,7 +539,7 @@ function SplashScreen() {
       {/* ======= KEPT CENTER CONTENT ======= */}
       <div className="relative z-20 flex flex-col items-center gap-6 rounded-[2rem] border border-cyan-100/22 bg-slate-950/38 px-8 py-8 shadow-[0_30px_120px_rgba(2,132,199,0.34)] backdrop-blur-md sm:px-12">
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0 }}
           className="flex items-center gap-2"
         >
           <motion.div
@@ -553,9 +551,9 @@ function SplashScreen() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.8 }}
+          transition={{ delay: 0, duration: 0.4 }}
           className="text-center"
         >
           <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-cyan-50 drop-shadow-[0_0_26px_rgba(103,232,249,0.55)]">
@@ -583,7 +581,7 @@ function SplashScreen() {
             className="h-full bg-gradient-to-r from-sky-400 via-cyan-300 to-emerald-300"
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
-            transition={{ duration: 3.6, ease: "easeInOut" }}
+            transition={{ duration: 1.8, ease: "easeInOut" }}
           />
         </motion.div>
       </div>

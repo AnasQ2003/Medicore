@@ -14,6 +14,11 @@ import hospitalBg from "@/assets/hospital-bg.jpg";
 
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>): { role?: Role } => {
+    return {
+      role: (search.role as Role) || undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Sign in — MediCore HMS" },
@@ -34,15 +39,24 @@ const roles: { id: Role; label: string; icon: typeof Shield; desc: string; gradi
 
 function LoginScreen() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [showPw, setShowPw] = useState(false);
   const [role, setRole] = useState<Role>("doctor");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("abdulahadsip@gmail.com");
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("password123");
   const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    if (search?.role && roles.some(r => r.id === search.role)) {
+      setRole(search.role);
+      const defaultEmail = search.role === "super-admin" ? "anasahmedcp@gmail.com" : "abdulahadsip@gmail.com";
+      setEmail(defaultEmail);
+    }
+  }, [search?.role]);
 
   // Load saved credentials on mount if remember me was checked
   useEffect(() => {
@@ -186,7 +200,7 @@ function LoginScreen() {
             <label className="flex items-center gap-1.5 cursor-pointer text-muted-foreground">
               <Checkbox id="remember" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked === true)} /> Remember me
             </label>
-            <Link to="/forgot-password"
+            <Link to="/forgot-password" search={{ role }}
               className={`bg-gradient-to-r ${active.gradient} bg-clip-text text-transparent font-semibold hover:underline`}>
               Forgot your password?
             </Link>
@@ -272,7 +286,12 @@ function LoginScreen() {
               const a = role === r.id;
               return (
                 <motion.button
-                  key={r.id} type="button" onClick={() => setRole(r.id)}
+                  key={r.id} type="button" onClick={() => {
+                    setRole(r.id);
+                    const defaultEmail = r.id === 'super-admin' ? 'anasahmedcp@gmail.com' : 'abdulahadsip@gmail.com';
+                    setEmail(defaultEmail);
+                    if (!password) setPassword("password123");
+                  }}
                   whileTap={{ scale: 0.93 }} whileHover={{ y: -2 }}
                   className={`relative flex flex-col items-center gap-1 p-2 rounded-xl border overflow-hidden transition-all ${
                     a ? "border-transparent shadow-glow" : "border-white/60 bg-white/45 backdrop-blur-xl hover:border-primary/50"

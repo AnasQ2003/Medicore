@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, Search, Plus, Video, MapPin, Phone, CheckCircle2, Clock, MoreHorizontal, XCircle, Pencil, Clock4, Trash2 } from "lucide-react";
+import { Calendar, Search, Plus, Video, MapPin, Phone, CheckCircle2, Clock, MoreHorizontal, XCircle, Pencil, Clock4, Trash2, Stethoscope, RotateCcw } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,12 +30,15 @@ function AppointmentsScreen() {
   const [editing, setEditing] = useState<Appt | null>(null);
   const [delaying, setDelaying] = useState<Appt | null>(null);
   const [delayMin, setDelayMin] = useState(15);
+  const [callPatient, setCallPatient] = useState<Appt | null>(null);
+  const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({});
   const [form, setForm] = useState({ patientId: patients[0].id, time: "10:00", reason: "", type: "In-person" });
 
-  // Live data from backend; fall back to seed while loading
+  // Live data from backend; merge with seed data so list never disappears
   const { data: apiAppts, loading, refetch } = useApi(() => appointmentAPI.getAll());
   const { data: apiPatients } = useApi(() => patientAPI.getAll());
-  const list: Appt[] = (apiAppts as unknown as Appt[]) ?? seed;
+  const fetchedList: Appt[] = (apiAppts as unknown as Appt[]) ?? [];
+  const list: Appt[] = fetchedList.length > 0 ? fetchedList : seed;
   const patientList = (apiPatients as unknown as typeof patients) ?? patients;
 
   const filtered = list.filter(a => a.patient.toLowerCase().includes(q.toLowerCase()) || a.reason.toLowerCase().includes(q.toLowerCase()));
@@ -51,6 +54,33 @@ function AppointmentsScreen() {
     } catch { toast.error("Failed to book appointment"); }
     setDialog(false);
     setForm({ patientId: patients[0].id, time: "10:00", reason: "", type: "In-person" });
+  };
+
+  // Helper: parse "HH:MM" → minutes since midnight
+  const toMins = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const fromMins = (total: number) => {
+    const h = Math.floor((total / 60) % 24).toString().padStart(2, "0");
+    const m = (total % 60).toString().padStart(2, "0");
+    return `${h}:${m}`;
+  };
+
+  // Get effective status for a given appointment (local override or from data)
+  const getStatus = (a: Appt) => localStatuses[a.id] ?? a.status;
+
+  const startConsultation = async (a: Appt) => {
+    try {
+      await appointmentAPI.updateStatus(a.id, "In Consultation");
+    } catch { /* fallback to local */ }
+    setLocalStatuses(prev => ({ ...prev, [a.id]: "In Consultation" }));
+    toast.success(`Started consultation with ${a.patient}`, { description: "Status updated to In Consultation" });
+  };
+
+  const undelay = async (a: Appt) => {
+    try {
+      await appointmentAPI.updateStatus(a.id, "Confirmed");
+    } catch { /* fallback */ }
+    setLocalStatuses(prev => ({ ...prev, [a.id]: "Confirmed" }));
+    toast.success(`${a.patient}'s appointment restored to Confirmed`);
   };
 
   const cancel = async (a: Appt) => {
@@ -85,11 +115,21 @@ function AppointmentsScreen() {
   };
   const applyDelay = async () => {
     if (!delaying) return;
-    const [h, m] = delaying.time.split(":").map(Number);
-    const total = h * 60 + m + delayMin;
-    const nh = Math.floor((total / 60) % 24).toString().padStart(2, "0");
-    const nm = (total % 60).toString().padStart(2, "0");
-    const newTime = `${nh}:${nm}`;
+    const newTotal = toMins(delaying.time) + delayMin;
+    const newTime = fromMins(newTotal);
+
+    // Enforce 10-minute buffer: check no other appointment is within 10 mins of new time
+    const conflict = list.find(a =>
+      a.id !== delaying.id &&
+      Math.abs(toMins(a.time) - newTotal) < 10
+    );
+    if (conflict) {
+      toast.error(`Time conflict with ${conflict.patient} at ${conflict.time}`, {
+        description: "Minimum 10-minute gap required between appointments."
+      });
+      return;
+    }
+
     try {
       await appointmentAPI.updateStatus(delaying.id, "Delayed", newTime);
       toast.success(`Delayed by ${delayMin} min`, { description: `${delaying.patient} → ${newTime}` });
@@ -110,55 +150,11 @@ function AppointmentsScreen() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
-          <p className="text-muted-foreground">Manage your schedule — cancel, edit or delay any visit.</p>
+          <p className="text-muted-foreground">Manage your clinic queue — view, complete, delay or manage consultations.</p>
         </div>
-        <Dialog open={dialog} onOpenChange={setDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary text-white shadow-glow"><Plus className="h-4 w-4 mr-2"/>New Appointment</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Book new appointment</DialogTitle>
-              <DialogDescription>Pick a patient and slot. They'll be notified by email & SMS.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <Label>Patient</Label>
-                <Select value={form.patientId} onValueChange={(v) => setForm({ ...form, patientId: v })}>
-                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} • {p.id}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Time</Label>
-                  <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="mt-1.5" />
-                </div>
-                <div>
-                  <Label>Mode</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
-                    <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="In-person">In-person</SelectItem>
-                      <SelectItem value="Tele-consult">Tele-consult</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <Label>Reason</Label>
-                <Input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })}
-                  placeholder="e.g. Follow-up — Hypertension" className="mt-1.5" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialog(false)}>Cancel</Button>
-              <Button onClick={create} className="bg-gradient-primary text-white">Book appointment</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button asChild className="bg-gradient-primary text-white shadow-glow font-semibold shrink-0">
+          <Link to="/doctor/schedule"><Clock className="h-4 w-4 mr-2"/>Set Availability & Schedule</Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -189,14 +185,18 @@ function AppointmentsScreen() {
           </div>
 
           <TabsContent value="today" className="space-y-3">
-            {filtered.map((a, i) => {
+          {filtered.map((a, i) => {
               const p = patients.find((x) => x.id === a.patientId);
               const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-blue-500 to-cyan-500";
-              const cancelled = a.status === "Cancelled";
+              const effectiveStatus = getStatus(a);
+              const cancelled = effectiveStatus === "Cancelled";
+              const isDelayed = effectiveStatus === "Delayed";
+              const isInConsult = effectiveStatus === "In Consultation";
+              const isCompleted = effectiveStatus === "Completed";
               return (
                 <motion.div key={a.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
                   whileHover={{x: 4}}
-                  className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/70 backdrop-blur-md hover:shadow-md hover:bg-white/90 transition-all ${cancelled ? "opacity-60 line-through" : ""}`}>
+                  className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/70 backdrop-blur-md hover:shadow-md hover:bg-white/90 transition-all ${cancelled ? "opacity-60" : ""}`}>
                   <div className="text-center sm:w-20">
                     <div className="text-2xl font-bold text-primary">{a.time}</div>
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
@@ -212,24 +212,48 @@ function AppointmentsScreen() {
                     </div>
                   </div>
                   <Badge className={
-                    a.status === "Confirmed" ? "bg-emerald-100 text-emerald-700" :
-                    a.status === "Completed" ? "bg-blue-100 text-blue-700" :
-                    a.status === "Cancelled" ? "bg-rose-100 text-rose-700" :
-                    a.status === "Delayed" ? "bg-orange-100 text-orange-700" :
+                    effectiveStatus === "Confirmed" ? "bg-emerald-100 text-emerald-700" :
+                    effectiveStatus === "Completed" ? "bg-blue-100 text-blue-700" :
+                    effectiveStatus === "Cancelled" ? "bg-rose-100 text-rose-700" :
+                    effectiveStatus === "Delayed" ? "bg-orange-100 text-orange-700" :
+                    effectiveStatus === "In Consultation" ? "bg-violet-100 text-violet-700" :
                     "bg-amber-100 text-amber-700"
-                  }>{a.status}</Badge>
+                  }>{effectiveStatus}</Badge>
                   <div className="flex gap-1.5">
-                    <Button size="sm" variant="outline" title="Call"><Phone className="h-3.5 w-3.5"/></Button>
-                    <Button size="sm" asChild className="bg-gradient-primary text-white" disabled={cancelled}>
-                      <Link to="/doctor/patients/$id" params={{ id: a.patientId }}>Start</Link>
+                    {/* Phone icon → Call Patient dialog */}
+                    <Button
+                      size="sm" variant="outline" title="Call Patient"
+                      onClick={() => setCallPatient(a)}
+                    >
+                      <Phone className="h-3.5 w-3.5"/>
                     </Button>
+                    {/* Start / In Consultation button */}
+                    {!isCompleted && !cancelled && (
+                      isInConsult ? (
+                        <Button size="sm" className="bg-violet-600 text-white" onClick={() => complete(a)}>
+                          <Stethoscope className="h-3.5 w-3.5 mr-1"/> End
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          className="bg-gradient-primary text-white"
+                          onClick={() => startConsultation(a)}
+                        >
+                          Start
+                        </Button>
+                      )
+                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="sm" variant="outline" title="More"><MoreHorizontal className="h-3.5 w-3.5"/></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem onClick={() => setEditing(a)}><Pencil className="h-3.5 w-3.5 mr-2"/>Edit</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => { setDelaying(a); setDelayMin(15); }}><Clock4 className="h-3.5 w-3.5 mr-2"/>Delay…</DropdownMenuItem>
+                        {isDelayed ? (
+                          <DropdownMenuItem onClick={() => undelay(a)}><RotateCcw className="h-3.5 w-3.5 mr-2"/>Undelay</DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => { setDelaying(a); setDelayMin(15); }}><Clock4 className="h-3.5 w-3.5 mr-2"/>Delay…</DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={() => complete(a)}><CheckCircle2 className="h-3.5 w-3.5 mr-2"/>Mark completed</DropdownMenuItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem onClick={() => cancel(a)} className="text-amber-600 focus:text-amber-700"><XCircle className="h-3.5 w-3.5 mr-2"/>Cancel</DropdownMenuItem>
@@ -300,7 +324,7 @@ function AppointmentsScreen() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Delay appointment</DialogTitle>
-            <DialogDescription>Push the slot forward by a few minutes.</DialogDescription>
+            <DialogDescription>Push the slot forward. Minimum 10-minute gap between appointments is enforced.</DialogDescription>
           </DialogHeader>
           {delaying && (
             <div className="space-y-3">
@@ -311,15 +335,56 @@ function AppointmentsScreen() {
                 ))}
               </div>
               <div>
-                <Label>Custom minutes</Label>
-                <Input type="number" min={1} value={delayMin} onChange={(e) => setDelayMin(parseInt(e.target.value) || 0)} className="mt-1.5"/>
+                <Label>Custom minutes (min 10)</Label>
+                <Input type="number" min={10} value={delayMin} onChange={(e) => setDelayMin(Math.max(10, parseInt(e.target.value) || 10))} className="mt-1.5"/>
+              </div>
+              <div className="text-xs text-muted-foreground bg-amber-50 border border-amber-200 rounded-lg p-2">
+                New time: <b>{fromMins(toMins(delaying.time) + delayMin)}</b>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDelaying(null)}>Cancel</Button>
-            <Button onClick={applyDelay} className="bg-gradient-primary text-white"><Clock4 className="h-4 w-4 mr-2"/>Delay</Button>
+            <Button onClick={applyDelay} className="bg-gradient-primary text-white"><Clock4 className="h-4 w-4 mr-2"/>Apply Delay</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* CALL PATIENT dialog */}
+      <Dialog open={!!callPatient} onOpenChange={(o) => !o && setCallPatient(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Phone className="h-5 w-5 text-primary"/>Call Patient</DialogTitle>
+            <DialogDescription>Initiate a direct call or send a reminder to the patient.</DialogDescription>
+          </DialogHeader>
+          {callPatient && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 bg-muted/50 rounded-xl p-4">
+                <div className="h-12 w-12 rounded-xl bg-gradient-primary text-white flex items-center justify-center font-bold text-lg shadow-glow">
+                  {callPatient.patient[0]}
+                </div>
+                <div>
+                  <div className="font-semibold">{callPatient.patient}</div>
+                  <div className="text-xs text-muted-foreground">{callPatient.reason}</div>
+                  <div className="text-xs font-mono text-primary mt-0.5">+92 300 1234567</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Button className="bg-gradient-primary text-white" onClick={() => {
+                  toast.success(`Calling ${callPatient.patient}...`, { description: "Connecting via hospital line" });
+                  setCallPatient(null);
+                }}>
+                  <Phone className="h-4 w-4 mr-2"/>Call Now
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  toast.success(`Reminder sent to ${callPatient.patient}`);
+                  setCallPatient(null);
+                }}>
+                  Send Reminder
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </AppShell>

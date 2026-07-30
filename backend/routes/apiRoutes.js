@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const { 
-  login, 
-  register, 
-  getMe, 
-  updateProfile 
+const {
+  login,
+  register,
+  getMe,
+  updateProfile,
+  checkEmail
 } = require('../controllers/authController');
 
 const {
@@ -37,6 +38,7 @@ const { protect, restrictTo } = require('../middleware/authMiddleware');
 // Authentication / Profile
 router.post('/auth/login', login);
 router.post('/auth/register', register);
+router.post('/auth/check-email', checkEmail);
 router.get('/auth/me', protect, getMe);
 router.put('/auth/profile', protect, updateProfile);
 

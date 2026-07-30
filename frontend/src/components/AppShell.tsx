@@ -49,6 +49,8 @@ export function AppShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [user, setUser] = useState<MockUser | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     // Persist collapsed state in localStorage
     if (typeof window !== "undefined") {
@@ -57,6 +59,17 @@ export function AppShell({
     }
     return false;
   });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     setUser(ensureUserForRole(role));
@@ -227,16 +240,184 @@ export function AppShell({
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen((v) => !v)}>
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <div className="hidden sm:flex items-center gap-2 flex-1 group">
+            <div className="hidden sm:flex items-center gap-2 flex-1 group relative">
               <div className="relative flex-1">
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[color:var(--primary)]/40 via-[color:var(--primary)]/10 to-[color:var(--primary)]/40 opacity-60 group-focus-within:opacity-100 blur-md transition-opacity pointer-events-none animate-aurora" />
                 <div className="relative flex items-center gap-2 rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl px-3 h-11 shadow-sm group-focus-within:shadow-glow group-focus-within:border-primary/60 transition-all">
                   <span className="grid place-items-center h-7 w-7 rounded-lg bg-gradient-to-br from-[color:var(--primary)]/20 to-[color:var(--primary)]/5 border border-[color:var(--primary)]/25">
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
                   </span>
-                  <Input placeholder="Search patients, records, prescriptions…" className="border-0 bg-transparent focus-visible:ring-0 px-0 h-8 text-sm placeholder:text-muted-foreground/70" />
-                  <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border bg-white/80 text-[10px] font-mono text-muted-foreground shadow-sm"><Command className="h-2.5 w-2.5"/>K</kbd>
+                  <Input 
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchOpen(true);
+                    }}
+                    onFocus={() => setSearchOpen(true)}
+                    placeholder="Search patients, records, prescriptions… (Ctrl+K)" 
+                    className="border-0 bg-transparent focus-visible:ring-0 px-0 h-8 text-sm placeholder:text-muted-foreground/70" 
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="text-xs text-muted-foreground hover:text-foreground">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  <kbd onClick={() => setSearchOpen(true)} className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border bg-white/80 text-[10px] font-mono text-muted-foreground shadow-sm cursor-pointer hover:bg-white"><Command className="h-2.5 w-2.5"/>K</kbd>
                 </div>
+
+                {/* Live Search Results Dropdown Overlay */}
+                <AnimatePresence>
+                  {searchOpen && searchQuery.trim().length > 0 && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setSearchOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute left-0 right-0 top-14 z-50 rounded-2xl border border-border bg-white/95 backdrop-blur-xl shadow-2xl p-4 max-h-[420px] overflow-y-auto space-y-3"
+                      >
+                        <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                          Search Results for "{searchQuery}"
+                        </div>
+
+                        {/* Search Matches */}
+                        {(() => {
+                          const q = searchQuery.toLowerCase();
+                          const matchesNav = nav.filter(n => n.label.toLowerCase().includes(q));
+                          const samplePatients = [
+                            { id: "1", name: "Patient John Doe", code: "P-1001", rolePath: `/${role}/patients` },
+                            { id: "1042", name: "Ahmed Ali", code: "P-1042", rolePath: `/${role}/patients` },
+                            { id: "1043", name: "Fatima Noor", code: "P-1043", rolePath: `/${role}/patients` },
+                            { id: "1044", name: "Hassan Raza", code: "P-1044", rolePath: `/${role}/patients` },
+                          ].filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
+
+                          const samplePrescriptions = [
+                            { id: "RX-001", name: "Multivitamin & Amlodipine", patient: "John Doe", rolePath: `/${role}/prescriptions` },
+                            { id: "RX-102", name: "Atorvastatin 10mg", patient: "Ahmed Ali", rolePath: `/${role}/prescriptions` },
+                            { id: "RX-103", name: "Metformin 500mg", patient: "Fatima Noor", rolePath: `/${role}/prescriptions` },
+                          ].filter(r => r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) || r.patient.toLowerCase().includes(q));
+
+                          const sampleReports = [
+                            { id: "R-501", name: "Lipid Profile Report", patient: "Ahmed Ali", rolePath: `/${role}/reports` },
+                            { id: "R-502", name: "24h Holter ECG", patient: "Fatima Noor", rolePath: `/${role}/reports` },
+                            { id: "R-503", name: "Echocardiogram Report", patient: "Hassan Raza", rolePath: `/${role}/reports` },
+                          ].filter(rep => rep.id.toLowerCase().includes(q) || rep.name.toLowerCase().includes(q) || rep.patient.toLowerCase().includes(q));
+
+                          const totalMatches = matchesNav.length + samplePatients.length + samplePrescriptions.length + sampleReports.length;
+
+                          if (totalMatches === 0) {
+                            return (
+                              <div className="py-8 text-center text-sm text-muted-foreground">
+                                No records or pages found matching "{searchQuery}"
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="space-y-3 divide-y divide-border/40">
+                              {/* Navigation pages */}
+                              {matchesNav.length > 0 && (
+                                <div className="space-y-1 pt-1">
+                                  <div className="text-[10px] font-bold text-primary uppercase tracking-wider px-2">Navigation Pages</div>
+                                  {matchesNav.map(n => (
+                                    <div
+                                      key={n.to}
+                                      onClick={() => {
+                                        setSearchOpen(false);
+                                        setSearchQuery("");
+                                        navigate({ to: n.to as any });
+                                      }}
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-primary/10 cursor-pointer transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2 text-sm font-medium">
+                                        <span className="h-6 w-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center">{n.icon}</span>
+                                        {n.label}
+                                      </div>
+                                      <span className="text-xs text-muted-foreground font-mono">{n.to}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Patients */}
+                              {samplePatients.length > 0 && (
+                                <div className="space-y-1 pt-2">
+                                  <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider px-2">Patients EMR</div>
+                                  {samplePatients.map(p => (
+                                    <div
+                                      key={p.id}
+                                      onClick={() => {
+                                        setSearchOpen(false);
+                                        setSearchQuery("");
+                                        navigate({ to: `/${role}/patients/$id` as any, params: { id: p.id } });
+                                      }}
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2 text-sm font-medium">
+                                        <div className="h-6 w-6 rounded-full bg-blue-500 text-white font-bold text-xs flex items-center justify-center">{p.name[0]}</div>
+                                        {p.name}
+                                      </div>
+                                      <span className="text-xs text-muted-foreground font-mono">{p.code}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Prescriptions */}
+                              {samplePrescriptions.length > 0 && (
+                                <div className="space-y-1 pt-2">
+                                  <div className="text-[10px] font-bold text-rose-600 uppercase tracking-wider px-2">Prescriptions</div>
+                                  {samplePrescriptions.map(rx => (
+                                    <div
+                                      key={rx.id}
+                                      onClick={() => {
+                                        setSearchOpen(false);
+                                        setSearchQuery("");
+                                        navigate({ to: rx.rolePath as any });
+                                      }}
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-rose-50 cursor-pointer transition-colors"
+                                    >
+                                      <div className="text-sm font-medium">
+                                        <div>{rx.name}</div>
+                                        <div className="text-xs text-muted-foreground">Patient: {rx.patient}</div>
+                                      </div>
+                                      <span className="text-xs text-muted-foreground font-mono">{rx.id}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Reports */}
+                              {sampleReports.length > 0 && (
+                                <div className="space-y-1 pt-2">
+                                  <div className="text-[10px] font-bold text-violet-600 uppercase tracking-wider px-2">Lab & Clinical Reports</div>
+                                  {sampleReports.map(rep => (
+                                    <div
+                                      key={rep.id}
+                                      onClick={() => {
+                                        setSearchOpen(false);
+                                        setSearchQuery("");
+                                        navigate({ to: rep.rolePath as any });
+                                      }}
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-violet-50 cursor-pointer transition-colors"
+                                    >
+                                      <div className="text-sm font-medium">
+                                        <div>{rep.name}</div>
+                                        <div className="text-xs text-muted-foreground">Patient: {rep.patient}</div>
+                                      </div>
+                                      <span className="text-xs text-muted-foreground font-mono">{rep.id}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 

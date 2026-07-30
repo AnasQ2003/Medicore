@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { CalendarOff, Plus, CheckCircle2, Clock, XCircle, Plane, Trash2, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/doctor/leave")({
@@ -25,7 +25,22 @@ const seedLeaves: Leave[] = [
 ];
 
 function LeaveScreen() {
-  const [list, setList] = useState<Leave[]>(seedLeaves);
+  const [list, setList] = useState<Leave[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("medicore_doctor_leaves");
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return seedLeaves;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("medicore_doctor_leaves", JSON.stringify(list));
+    }
+  }, [list]);
+
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [type, setType] = useState("Casual");
@@ -40,15 +55,21 @@ function LeaveScreen() {
     e.preventDefault();
     if (!from || !to || !reason) return toast.error("Please fill all fields");
     const id = `L-${13 + list.length}`;
-    setList([{ id, from, to, days: days(from, to), type, status: "Pending", reason }, ...list]);
-    toast.success("Leave application submitted for approval");
+    const updated = [{ id, from, to, days: days(from, to), type, status: "Pending" as const, reason }, ...list];
+    setList(updated);
+    toast.success(`Leave request ${id} submitted for approval`);
     setFrom(""); setTo(""); setReason("");
   };
   const cancelPending = (l: Leave) => {
-    setList(list.map(x => x.id === l.id ? { ...x, status: "Cancelled" } : x));
-    toast.success(`${l.id} cancelled`);
+    const updated = list.map(x => x.id === l.id ? { ...x, status: "Cancelled" as const } : x);
+    setList(updated);
+    toast.success(`Leave request ${l.id} cancelled`);
   };
-  const remove = (l: Leave) => { setList(list.filter(x => x.id !== l.id)); toast.success("Removed"); };
+  const remove = (l: Leave) => {
+    const updated = list.filter(x => x.id !== l.id);
+    setList(updated);
+    toast.success("Leave record removed");
+  };
 
   return (
     <AppShell role="doctor" title="Doctor" nav={doctorNav}>

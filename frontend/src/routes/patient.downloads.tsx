@@ -12,6 +12,8 @@ import { useState } from "react";
 import useApi from "@/hooks/useApi";
 import { prescriptionAPI } from "@/lib/api/client";
 import { getUser } from "@/lib/auth";
+import { toast } from "sonner";
+import { generateGenericPDF } from "@/lib/pdfGenerator";
 
 export const Route = createFileRoute("/patient/downloads")({
   head: () => ({ meta: [{ title: "My Downloads — Patient Portal" }] }),
@@ -113,7 +115,35 @@ function PatientDownloadsScreen() {
                           {new Date(p.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="ghost" className="h-8 text-primary hover:text-primary-hover gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              toast.success(`Generating PDF for ${p.prescriptionCode}...`);
+                              generateGenericPDF(
+                                `Prescription ${p.prescriptionCode}`,
+                                "Patient Rx Document",
+                                [
+                                  {
+                                    title: "Prescription Details",
+                                    subtitle: `Rx Code: ${p.prescriptionCode}`,
+                                    items: [
+                                      { label: "Patient", value: user?.name || "Patient" },
+                                      { label: "Doctor ID", value: String(p.doctorId) },
+                                      { label: "Date Issued", value: new Date(p.createdAt).toLocaleDateString() },
+                                      { label: "Status", value: p.status || "Active" },
+                                    ],
+                                  },
+                                  {
+                                    title: "Prescribed Items & Dosage",
+                                    notes: p.items.split(",").map(i => i.trim()),
+                                  },
+                                ],
+                                `Prescription_${p.prescriptionCode}.pdf`
+                              );
+                            }}
+                            className="h-8 text-primary hover:text-primary-hover gap-1"
+                          >
                             <Download className="h-3.5 w-3.5" /> PDF
                           </Button>
                         </TableCell>

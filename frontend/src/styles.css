@@ -45,6 +45,27 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Global High-Priority Dropdown, Menu, and Option Hover Visibility Fixes */
+[role="menuitem"]:hover,
+[role="menuitem"]:focus,
+[role="menuitem"][data-highlighted],
+[role="option"]:hover,
+[role="option"]:focus,
+[role="option"][data-highlighted],
+.dropdown-item-hover:hover {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+[role="menuitem"]:hover *,
+[role="menuitem"]:focus *,
+[role="menuitem"][data-highlighted] *,
+[role="option"]:hover *,
+[role="option"]:focus *,
+[role="option"][data-highlighted] * {
+  color: #ffffff !important;
+}
+
 :root {
   --radius: 0.875rem;
 

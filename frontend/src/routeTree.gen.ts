@@ -58,6 +58,7 @@ import { Route as DoctorPatientsRouteImport } from './routes/doctor.patients'
 import { Route as DoctorNotificationsRouteImport } from './routes/doctor.notifications'
 import { Route as DoctorLeaveRouteImport } from './routes/doctor.leave'
 import { Route as DoctorAppointmentsRouteImport } from './routes/doctor.appointments'
+import { Route as DoctorPatientsIndexRouteImport } from './routes/doctor.patients.index'
 import { Route as DoctorPatientsIdRouteImport } from './routes/doctor.patients.$id'
 
 const SuperAdminRoute = SuperAdminRouteImport.update({
@@ -307,6 +308,11 @@ const DoctorAppointmentsRoute = DoctorAppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => DoctorRoute,
 } as any)
+const DoctorPatientsIndexRoute = DoctorPatientsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DoctorPatientsRoute,
+} as any)
 const DoctorPatientsIdRoute = DoctorPatientsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/receptionist/': typeof ReceptionistIndexRoute
   '/super-admin/': typeof SuperAdminIndexRoute
   '/doctor/patients/$id': typeof DoctorPatientsIdRoute
+  '/doctor/patients/': typeof DoctorPatientsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -372,7 +379,6 @@ export interface FileRoutesByTo {
   '/doctor/appointments': typeof DoctorAppointmentsRoute
   '/doctor/leave': typeof DoctorLeaveRoute
   '/doctor/notifications': typeof DoctorNotificationsRoute
-  '/doctor/patients': typeof DoctorPatientsRouteWithChildren
   '/doctor/prescriptions': typeof DoctorPrescriptionsRoute
   '/doctor/profile': typeof DoctorProfileRoute
   '/doctor/reports': typeof DoctorReportsRoute
@@ -411,6 +417,7 @@ export interface FileRoutesByTo {
   '/receptionist': typeof ReceptionistIndexRoute
   '/super-admin': typeof SuperAdminIndexRoute
   '/doctor/patients/$id': typeof DoctorPatientsIdRoute
+  '/doctor/patients': typeof DoctorPatientsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -464,6 +471,7 @@ export interface FileRoutesById {
   '/receptionist/': typeof ReceptionistIndexRoute
   '/super-admin/': typeof SuperAdminIndexRoute
   '/doctor/patients/$id': typeof DoctorPatientsIdRoute
+  '/doctor/patients/': typeof DoctorPatientsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -518,6 +526,7 @@ export interface FileRouteTypes {
     | '/receptionist/'
     | '/super-admin/'
     | '/doctor/patients/$id'
+    | '/doctor/patients/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -526,7 +535,6 @@ export interface FileRouteTypes {
     | '/doctor/appointments'
     | '/doctor/leave'
     | '/doctor/notifications'
-    | '/doctor/patients'
     | '/doctor/prescriptions'
     | '/doctor/profile'
     | '/doctor/reports'
@@ -565,6 +573,7 @@ export interface FileRouteTypes {
     | '/receptionist'
     | '/super-admin'
     | '/doctor/patients/$id'
+    | '/doctor/patients'
   id:
     | '__root__'
     | '/'
@@ -617,6 +626,7 @@ export interface FileRouteTypes {
     | '/receptionist/'
     | '/super-admin/'
     | '/doctor/patients/$id'
+    | '/doctor/patients/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -975,6 +985,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorAppointmentsRouteImport
       parentRoute: typeof DoctorRoute
     }
+    '/doctor/patients/': {
+      id: '/doctor/patients/'
+      path: '/'
+      fullPath: '/doctor/patients/'
+      preLoaderRoute: typeof DoctorPatientsIndexRouteImport
+      parentRoute: typeof DoctorPatientsRoute
+    }
     '/doctor/patients/$id': {
       id: '/doctor/patients/$id'
       path: '/$id'
@@ -987,10 +1004,12 @@ declare module '@tanstack/react-router' {
 
 interface DoctorPatientsRouteChildren {
   DoctorPatientsIdRoute: typeof DoctorPatientsIdRoute
+  DoctorPatientsIndexRoute: typeof DoctorPatientsIndexRoute
 }
 
 const DoctorPatientsRouteChildren: DoctorPatientsRouteChildren = {
   DoctorPatientsIdRoute: DoctorPatientsIdRoute,
+  DoctorPatientsIndexRoute: DoctorPatientsIndexRoute,
 }
 
 const DoctorPatientsRouteWithChildren = DoctorPatientsRoute._addFileChildren(

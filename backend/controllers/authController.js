@@ -137,9 +137,29 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+const checkEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email required' });
+    }
+    const user = await User.findByEmail(email);
+    return res.status(200).json({
+      success: true,
+      exists: !!user,
+      email: email,
+      name: user ? user.name : null,
+      role: user ? user.role : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
   register,
   getMe,
-  updateProfile
+  updateProfile,
+  checkEmail
 };
