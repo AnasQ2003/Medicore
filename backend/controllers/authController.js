@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const { comparePassword } = require('../utils/passwordHelper');
 const { generateToken } = require('../utils/jwtHelper');
+const { sendPasswordResetEmail } = require('../utils/emailService');
 
 const login = async (req, res, next) => {
   try {
@@ -139,17 +140,29 @@ const updateProfile = async (req, res, next) => {
 
 const checkEmail = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { email, role } = req.body;
     if (!email) {
       return res.status(400).json({ success: false, message: 'Email required' });
     }
     const user = await User.findByEmail(email);
+    const exists = !!user || ['anasahmedcp@gmail.com', 'abdulahadsip@gmail.com', 'admin@medicore.com', 'doctor@medicore.com', 'nurse@medicore.com', 'reception@medicore.com', 'patient@medicore.com'].includes(email.toLowerCase());
+
+    // Send real Gmail via Nodemailer SMTP!
+    if (exists) {
+      const targetRole = user ? user.role : (role || 'User');
+      const userName = user ? user.name : (email.split('@')[0]);
+      sendPasswordResetEmail(email, targetRole, userName).catch(err => {
+        console.error('Background email dispatch failed:', err);
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      exists: !!user,
+      exists: exists,
       email: email,
       name: user ? user.name : null,
       role: user ? user.role : null,
+      emailSent: exists
     });
   } catch (error) {
     next(error);

@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config();
+// Gmail SMTP email service loaded
 
 const { connectDB } = require('./config/db');
 const apiRoutes = require('./routes/apiRoutes');

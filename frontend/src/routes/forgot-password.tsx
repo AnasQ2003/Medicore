@@ -82,7 +82,7 @@ function ForgotPasswordScreen() {
       const res = await fetch("http://localhost:5000/api/auth/check-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), role }),
       });
       const data = await res.json();
       matched = data.exists === true;
