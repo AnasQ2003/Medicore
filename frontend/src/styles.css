@@ -45,26 +45,77 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Global High-Priority Dropdown, Menu, and Option Hover Visibility Fixes */
+/* =====================================================
+   GLOBAL HOVER VISIBILITY FIXES — entire application
+   Ensures all dropdown items, menu options, and select
+   options are readable on hover in every role theme.
+   ===================================================== */
+
+/* Radix UI DropdownMenu / ContextMenu / Select items */
+[data-radix-collection-item]:hover,
+[data-radix-collection-item]:focus,
+[data-radix-collection-item][data-highlighted],
+[data-highlighted],
 [role="menuitem"]:hover,
 [role="menuitem"]:focus,
 [role="menuitem"][data-highlighted],
 [role="option"]:hover,
 [role="option"]:focus,
 [role="option"][data-highlighted],
-.dropdown-item-hover:hover {
-  background-color: var(--primary) !important;
-  color: #ffffff !important;
+[role="listitem"]:hover,
+.dropdown-item:hover,
+.dropdown-item:focus,
+.menu-item:hover,
+.menu-item:focus {
+  background-color: oklch(0.55 0.18 245 / 12%) !important;
+  color: oklch(0.2 0.04 245) !important;
+  outline: none !important;
 }
 
+/* Force all child text/icons to remain visible */
+[data-highlighted] *,
 [role="menuitem"]:hover *,
 [role="menuitem"]:focus *,
 [role="menuitem"][data-highlighted] *,
 [role="option"]:hover *,
 [role="option"]:focus *,
 [role="option"][data-highlighted] * {
+  color: inherit !important;
+}
+
+/* Destructive menu items stay red on hover */
+[role="menuitem"].text-destructive:hover,
+[role="menuitem"].text-destructive:focus,
+[role="menuitem"].text-destructive[data-highlighted] {
+  background-color: oklch(0.97 0.02 15) !important;
+  color: oklch(0.55 0.22 15) !important;
+}
+[role="menuitem"].text-destructive:hover *,
+[role="menuitem"].text-destructive:focus *,
+[role="menuitem"].text-destructive[data-highlighted] * {
+  color: oklch(0.55 0.22 15) !important;
+}
+
+/* Select/Combobox options - ensure dark text on light bg */
+[role="option"][aria-selected="true"],
+[role="option"][data-selected] {
+  background-color: oklch(0.55 0.18 245 / 15%) !important;
+  color: oklch(0.2 0.04 245) !important;
+  font-weight: 600 !important;
+}
+
+/* Sidebar nav items - keep white text */
+.glass-sidebar [role="menuitem"]:hover,
+.glass-sidebar a:hover,
+.sidebar-nav a:hover {
   color: #ffffff !important;
 }
+.glass-sidebar [role="menuitem"]:hover *,
+.glass-sidebar a:hover *,
+.sidebar-nav a:hover * {
+  color: #ffffff !important;
+}
+
 
 :root {
   --radius: 0.875rem;
@@ -377,4 +428,27 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
   100% { transform: translate3d(-4%, -2%, 0) scale(1); }
 }
 .animate-aurora { animation: aurora 18s ease-in-out infinite; }
+
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 60%, oklch(0.75 0.18 290)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gradient background utilities for role cards and schedule calendar buttons */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6, #06b6d4) !important;
+}
+.bg-gradient-red {
+  background: linear-gradient(135deg, #dc2626, #ef4444, #f43f5e) !important;
+}
+.bg-gradient-green {
+  background: linear-gradient(135deg, #059669, #10b981, #14b8a6) !important;
+}
+.bg-gradient-sunset {
+  background: linear-gradient(135deg, #d97706, #f59e0b, #e11d48) !important;
+}
+
 

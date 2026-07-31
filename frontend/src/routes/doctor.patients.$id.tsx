@@ -67,7 +67,7 @@ function PatientDetailScreen() {
     ]
   };
 
-  const patient = (apiData?.data as any) || defaultPatient;
+  const patient = ((apiData as any)?.data as any) || (apiData as any) || defaultPatient;
   const vitalsList: Vital[] = patient.vitals || defaultPatient.vitals;
   const [localVitals, setLocalVitals] = useState<Vital[]>(vitalsList);
 

@@ -13,6 +13,8 @@ import { authAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { adminAPI } from "@/lib/api/client";
 
+import { getUser } from "@/lib/auth";
+
 export const Route = createFileRoute("/receptionist/")({
   head: () => ({ meta: [{ title: "Receptionist — MediCore" }] }),
   component: ReceptionistScreen,
@@ -36,6 +38,8 @@ const doctors = [
 
 // ReceptionistScreen — patient registration, appointment booking, doctor availability.
 function ReceptionistScreen() {
+  const currentUser = getUser();
+  const receptionName = currentUser?.name || "Front Desk";
   const [regForm, setRegForm] = useState({ name: "", gender: "Male", blood: "", phone: "", address: "" });
   const [registering, setRegistering] = useState(false);
   const { data: analytics } = useApi(() => adminAPI.getAnalytics());
@@ -62,7 +66,7 @@ function ReceptionistScreen() {
   return (
     <AppShell role="receptionist" title="Reception" nav={receptionistNav}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Front Desk</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{receptionName}</span> 👋</h1>
         <p className="text-muted-foreground">Register patients & manage appointments.</p>
       </div>
 

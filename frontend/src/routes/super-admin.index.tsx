@@ -16,6 +16,7 @@ import { superAdminNav } from "@/lib/roleNav";
 import { adminAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { useState, useMemo } from "react";
+import { getUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -94,6 +95,8 @@ const initialLogs = [
 
 function SuperAdminScreen() {
   const navigate = useNavigate();
+  const currentUser = getUser();
+  const adminName = currentUser?.name || "Administrator";
   const [timeframe, setTimeframe] = useState<"7d" | "30d" | "90d" | "1y">("7d");
   const [branchFilter, setBranchFilter] = useState("all");
   const [selectedLog, setSelectedLog] = useState<(typeof initialLogs)[0] | null>(null);
@@ -156,7 +159,7 @@ function SuperAdminScreen() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <LayoutDashboard className="h-7 w-7 text-primary" />
-            System Control & Dashboard
+            Welcome, <span className="text-gradient ml-1">{adminName}</span>
           </h1>
           <p className="text-muted-foreground">Real-time enterprise metrics, multi-branch control & system health.</p>
         </div>

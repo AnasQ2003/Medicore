@@ -10,6 +10,7 @@ import { CalendarClock, Clock, Save, Plus, Copy, Trash2, X, Coffee } from "lucid
 import { useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ScheduleCalendar } from "@/components/ScheduleCalendar";
 
 export const Route = createFileRoute("/doctor/schedule")({
   head: () => ({ meta: [{ title: "Schedule — Doctor" }] }),
@@ -62,7 +63,7 @@ function ScheduleScreen() {
 
   const copyMonday = () => {
     const mon = schedule[0];
-    const updated = schedule.map((s, i) => i === 0 ? s : { ...s, from: mon.from, to: mon.to, slot: mon.slot, breakFrom: mon.breakFrom, breakTo: mon.breakTo, enabled: true });
+    const updated = schedule.map((s: any, i: number) => i === 0 ? s : { ...s, from: mon.from, to: mon.to, slot: mon.slot, breakFrom: mon.breakFrom, breakTo: mon.breakTo, enabled: true });
     setSchedule(updated);
     toast.success("Monday copied to all weekdays");
   };
@@ -91,7 +92,7 @@ function ScheduleScreen() {
       </div>
 
       <div className="grid gap-4">
-        {schedule.map((s, i) => (
+        {schedule.map((s: any, i: number) => (
           <motion.div key={s.day} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.05}}
             className={`relative overflow-hidden rounded-2xl border bg-white p-5 shadow-card transition-all ${!s.enabled ? "opacity-60" : ""}`}>
             <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${colors[i]}`}/>
@@ -106,27 +107,27 @@ function ScheduleScreen() {
               <div className="flex flex-wrap items-center gap-2 flex-1">
                 <span className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3"/>Hours</span>
                 <input type="time" value={s.from} disabled={!s.enabled}
-                  onChange={e => setSchedule(p => p.map((x, idx) => idx===i ? {...x, from: e.target.value} : x))}
+                  onChange={e => setSchedule((p: any[]) => p.map((x: any, idx: number) => idx===i ? {...x, from: e.target.value} : x))}
                   className="h-9 w-28 rounded-lg border bg-background px-2 text-sm"/>
                 <span className="text-muted-foreground">→</span>
                 <input type="time" value={s.to} disabled={!s.enabled}
-                  onChange={e => setSchedule(p => p.map((x, idx) => idx===i ? {...x, to: e.target.value} : x))}
+                  onChange={e => setSchedule((p: any[]) => p.map((x: any, idx: number) => idx===i ? {...x, to: e.target.value} : x))}
                   className="h-9 w-28 rounded-lg border bg-background px-2 text-sm"/>
 
                 <span className="text-xs uppercase tracking-wide text-muted-foreground ml-2">Slot</span>
                 <select value={s.slot} disabled={!s.enabled}
-                  onChange={e => setSchedule(p => p.map((x, idx) => idx===i ? {...x, slot: parseInt(e.target.value)} : x))}
+                  onChange={e => setSchedule((p: any[]) => p.map((x: any, idx: number) => idx===i ? {...x, slot: parseInt(e.target.value)} : x))}
                   className="h-9 rounded-lg border bg-background px-2 text-sm">
                   {[10,15,20,30,45,60].map(v => <option key={v} value={v}>{v} min</option>)}
                 </select>
 
                 <span className="text-xs uppercase tracking-wide text-muted-foreground ml-2 flex items-center gap-1"><Coffee className="h-3 w-3"/>Break</span>
                 <input type="time" value={s.breakFrom} disabled={!s.enabled}
-                  onChange={e => setSchedule(p => p.map((x, idx) => idx===i ? {...x, breakFrom: e.target.value} : x))}
+                  onChange={e => setSchedule((p: any[]) => p.map((x: any, idx: number) => idx===i ? {...x, breakFrom: e.target.value} : x))}
                   className="h-9 w-24 rounded-lg border bg-background px-2 text-sm"/>
                 <span className="text-muted-foreground">→</span>
                 <input type="time" value={s.breakTo} disabled={!s.enabled}
-                  onChange={e => setSchedule(p => p.map((x, idx) => idx===i ? {...x, breakTo: e.target.value} : x))}
+                  onChange={e => setSchedule((p: any[]) => p.map((x: any, idx: number) => idx===i ? {...x, breakTo: e.target.value} : x))}
                   className="h-9 w-24 rounded-lg border bg-background px-2 text-sm"/>
 
                 <Badge variant="outline" className="ml-1">{s.slots} slots</Badge>
@@ -134,7 +135,7 @@ function ScheduleScreen() {
 
               <label className="flex items-center gap-2 cursor-pointer shrink-0">
                 <input type="checkbox" checked={s.enabled}
-                  onChange={e => setSchedule(p => p.map((x, idx) => idx===i ? {...x, enabled: e.target.checked} : x))}
+                  onChange={e => setSchedule((p: any[]) => p.map((x: any, idx: number) => idx===i ? {...x, enabled: e.target.checked} : x))}
                   className="h-4 w-4 accent-primary"/>
                 <span className="text-sm">Enabled</span>
               </label>
@@ -143,7 +144,16 @@ function ScheduleScreen() {
         ))}
       </div>
 
-      <div className="mt-6 bg-gradient-card border rounded-2xl p-6 shadow-card">
+      {/* ─── Monthly Calendar & Leave Metrics ─── */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2">
+          <CalendarClock className="h-5 w-5 text-primary" />
+          Monthly Attendance & Leave Tracker
+        </h2>
+        <ScheduleCalendar role="doctor" accentClass="bg-gradient-primary" />
+      </div>
+
+      <div className="mt-8 bg-gradient-card border rounded-2xl p-6 shadow-card">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold flex items-center gap-2"><CalendarClock className="h-4 w-4 text-primary"/>Blocked Dates</h3>
           <Button size="sm" onClick={() => setBlockOpen(true)} className="bg-gradient-primary text-white"><Plus className="h-4 w-4 mr-1.5"/>Block date</Button>

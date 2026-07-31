@@ -13,6 +13,7 @@ import { doctorSlides } from "@/lib/mockData";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
 import { appointmentAPI, patientAPI, notificationAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
+import { getUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/doctor/")({
   head: () => ({ meta: [{ title: "Doctor — MediCore" }] }),
@@ -75,6 +76,8 @@ const MOCK_ACTIVITY: ApiNotif[] = [
 
 // DoctorScreen — main dashboard with slideshow, charts, today's queue, quick actions.
 function DoctorScreen() {
+  const currentUser = getUser();
+  const doctorDisplayName = currentUser?.name ? (currentUser.name.toLowerCase().startsWith("dr.") ? currentUser.name : `Dr. ${currentUser.name}`) : "Dr. Sarah Khan";
   const [activityRange, setActivityRange] = useState<"week" | "month" | "year">("week");
   const [recoveryCohort, setRecoveryCohort] = useState<"cardio" | "ortho" | "general">("cardio");
 
@@ -112,7 +115,7 @@ function DoctorScreen() {
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             className="text-3xl md:text-4xl font-bold tracking-tight"
           >
-            Good morning, <span className="text-gradient">Doctor</span> 👋
+            Good morning, <span className="text-gradient">{doctorDisplayName}</span> 👋
           </motion.h1>
           <p className="text-muted-foreground mt-1">You have {appointments.length || 8} appointment{appointments.length !== 1 ? "s" : ""} scheduled today.</p>
         </div>

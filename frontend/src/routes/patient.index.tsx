@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { patientNav } from "@/lib/roleNav";
 import { appointmentAPI, prescriptionAPI, billAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
+import { getUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/patient/")({
   head: () => ({ meta: [{ title: "Patient Portal — MediCore" }] }),
@@ -26,6 +27,8 @@ const statusColors: Record<string, string> = {
 };
 
 function PatientScreen() {
+  const currentUser = getUser();
+  const patientName = currentUser?.name || "Patient";
   const { data: rawAppts } = useApi(() => appointmentAPI.getAll());
   const { data: rawRx } = useApi(() => prescriptionAPI.getAll());
   const { data: rawBills } = useApi(() => billAPI.getAll());
@@ -44,7 +47,7 @@ function PatientScreen() {
   return (
     <AppShell role="patient" title="Patient Portal" nav={patientNav}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back 👋</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back, <span className="text-gradient">{patientName}</span> 👋</h1>
         <p className="text-muted-foreground">Here's your health summary.</p>
       </div>
 

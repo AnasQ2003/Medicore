@@ -85,6 +85,24 @@ function LoginScreen() {
         if (res.success && res.data) {
           // Validate the returned role matches the selected role tab
           const userRole = res.data.role as Role;
+
+          // 🔒 Role mismatch guard — only allow login if credentials belong to this role
+          if (userRole !== role) {
+            const roleLabels: Record<string, string> = {
+              "super-admin": "Super Admin",
+              doctor: "Doctor",
+              nurse: "Nurse",
+              receptionist: "Receptionist",
+              patient: "Patient",
+            };
+            toast.error(`Access Denied`, {
+              description: `These credentials belong to a ${roleLabels[userRole] || userRole} account. Please switch to the correct role tab or use the right credentials.`,
+              duration: 5000,
+            });
+            setIsLoading(false);
+            return;
+          }
+
           saveUser({ id: res.data.id, email: res.data.email, name: res.data.name, role: userRole, patientCode: res.data.patientCode, token: res.data.token });
           
           // Handle remember me functionality

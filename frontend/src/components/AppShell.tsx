@@ -149,7 +149,7 @@ export function AppShell({
         </button>
       </div>
 
-      <nav className="sidebar-nav flex flex-col gap-1 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
+      <nav className="sidebar-nav flex flex-col gap-1 overflow-y-auto overflow-x-hidden flex-1 min-h-0" style={{ overscrollBehavior: "contain" }}>
         {nav.map((item, index) => {
           const active = pathname === item.to || (item.to !== `/${role}` && pathname.startsWith(item.to));
           return (
@@ -226,6 +226,7 @@ export function AppShell({
               initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }}
               transition={{ type: "spring", damping: 25 }}
               className="fixed top-0 left-0 h-screen z-50 md:hidden"
+              style={{ overscrollBehavior: "contain" }}
             >
               {Sidebar}
             </motion.div>
@@ -350,7 +351,7 @@ export function AppShell({
                                       onClick={() => {
                                         setSearchOpen(false);
                                         setSearchQuery("");
-                                        navigate({ to: `/${role}/patients/$id` as any, params: { id: p.id } });
+                                        navigate({ to: `/${role}/patients/$id`, params: { id: p.id } } as any);
                                       }}
                                       className="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition-colors"
                                     >

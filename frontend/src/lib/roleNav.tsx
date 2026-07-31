@@ -34,6 +34,7 @@ export const nurseNav: RoleNavItem[] = [
   { label: "Nurse Tasks", to: "/nurse/tasks", icon: <ClipboardCheck className="h-4 w-4" /> },
   { label: "Nurse Beds", to: "/nurse/beds", icon: <Bed className="h-4 w-4" /> },
   { label: "Nurse Injections", to: "/nurse/injections", icon: <Syringe className="h-4 w-4" /> },
+  { label: "Schedule", to: "/nurse/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Nurse Notifications", to: "/nurse/notifications", icon: <Bell className="h-4 w-4" /> },
 ];
 
@@ -45,6 +46,7 @@ export const receptionistNav: RoleNavItem[] = [
   { label: "Receptionist Patients", to: "/receptionist/patients", icon: <Users className="h-4 w-4" /> },
   { label: "Receptionist Billing", to: "/receptionist/billing", icon: <Receipt className="h-4 w-4" /> },
   { label: "Receptionist Queue", to: "/receptionist/queue", icon: <CalendarClock className="h-4 w-4" /> },
+  { label: "Schedule", to: "/receptionist/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Receptionist Notifications", to: "/receptionist/notifications", icon: <Bell className="h-4 w-4" /> },
 ];
 
@@ -55,6 +57,7 @@ export const patientNav: RoleNavItem[] = [
   { label: "Patient Lab Reports", to: "/patient/reports", icon: <FlaskConical className="h-4 w-4" /> },
   { label: "Patient Bills", to: "/patient/bills", icon: <CreditCard className="h-4 w-4" /> },
   { label: "Patient Downloads", to: "/patient/downloads", icon: <Download className="h-4 w-4" /> },
+  { label: "Schedule & Attendance", to: "/patient/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Patient Profile", to: "/patient/profile", icon: <UserCircle className="h-4 w-4" /> },
   { label: "Patient Notifications", to: "/patient/notifications", icon: <Bell className="h-4 w-4" /> },
 ];

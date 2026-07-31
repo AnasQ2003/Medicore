@@ -14,6 +14,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { bedAPI, patientAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
+import { getUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/nurse/")({
   head: () => ({ meta: [{ title: "Nurse — MediCore" }] }),
@@ -33,6 +34,8 @@ interface BedRow {
 }
 
 function NurseScreen() {
+  const currentUser = getUser();
+  const nurseName = currentUser?.name || "Nurse Staff";
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ patientId: 0, bp: "", hr: "", temp: "", o2: "", status: "Stable" });
 
@@ -59,20 +62,21 @@ function NurseScreen() {
         return {
           id: b.id,
           bed: b.bedNumber,
-          name: b.patientName || "Unknown",
+          name: patient ? patient.name : "Unassigned",
           status: rowStatus,
           patientId: b.patientId,
-          bp: latestVital?.bp || "—",
-          hr: latestVital?.pulse || 0,
-          temp: latestVital?.temp ? String(latestVital.temp) : "—",
-          o2: latestVital?.spo2 || 0,
+          bp: latestVital ? latestVital.bp : "120/80",
+          hr: latestVital ? latestVital.pulse : 72,
+          temp: latestVital ? `${latestVital.temp}°C` : "36.8°C",
+          o2: latestVital ? latestVital.spo2 : 98,
         };
       })
     : [];
 
-  const recordVitals = async () => {
-    if (!form.bp || !form.hr || !form.temp || !form.o2) return toast.error("Please fill all vitals");
-    if (!form.patientId) return toast.error("No patient selected");
+  const handleRecordVital = async () => {
+    if (!form.patientId || !form.bp || !form.hr || !form.temp || !form.o2) {
+      return toast.error("Fill all vital fields");
+    }
     try {
       await patientAPI.recordVitals({
         patientId: form.patientId,
@@ -106,7 +110,7 @@ function NurseScreen() {
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Assigned Patients</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> 👋</h1>
         <p className="text-muted-foreground">Ward Bed & Patient vitals tracking</p>
       </div>
 
@@ -221,7 +225,7 @@ function NurseScreen() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={recordVitals} className="bg-gradient-red text-white">Save Vitals</Button>
+            <Button onClick={handleRecordVital} className="bg-gradient-red text-white">Save Vitals</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

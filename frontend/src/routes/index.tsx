@@ -20,9 +20,14 @@ function SplashScreen() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const user = getUser();
+    if (user && roleMeta[user.role]) {
+      navigate({ to: roleMeta[user.role].path });
+      return;
+    }
     const t = setTimeout(() => {
       navigate({ to: "/login" });
-    }, 2000);
+    }, 600);
     return () => clearTimeout(t);
   }, [navigate]);
 
