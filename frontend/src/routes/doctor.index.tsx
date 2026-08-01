@@ -115,13 +115,13 @@ function DoctorScreen() {
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
             className="text-3xl md:text-4xl font-bold tracking-tight"
           >
-            Good morning, <span className="text-gradient">{doctorDisplayName}</span> 👋
+            Good morning, <span className="text-gradient">{doctorDisplayName}</span>
           </motion.h1>
           <p className="text-muted-foreground mt-1">You have {appointments.length || 8} appointment{appointments.length !== 1 ? "s" : ""} scheduled today.</p>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline"><Link to="/doctor/prescriptions"><Pill className="h-4 w-4 mr-2"/>New Rx</Link></Button>
-          <Button asChild className="bg-gradient-primary text-white shadow-glow"><Link to="/doctor/appointments"><Calendar className="h-4 w-4 mr-2"/>Schedule Queue</Link></Button>
+          <Button asChild variant="outline"><Link to="/doctor/prescriptions"><Pill className="h-4 w-4 mr-2" />New Rx</Link></Button>
+          <Button asChild className="bg-gradient-primary text-white shadow-glow"><Link to="/doctor/appointments"><Calendar className="h-4 w-4 mr-2" />Schedule Queue</Link></Button>
         </div>
       </div>
 
@@ -135,12 +135,12 @@ function DoctorScreen() {
 
       {/* Slideshow + Quick actions */}
       <div className="grid lg:grid-cols-3 gap-6 mt-6">
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.2}} className="lg:col-span-2">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="lg:col-span-2">
           <Slideshow slides={doctorSlides} />
         </motion.div>
 
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.25}} className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card space-y-3">
-          <h3 className="font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Quick Actions</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card space-y-3">
+          <h3 className="font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary" />Quick Actions</h3>
           {[
             { label: "Today's queue", to: "/doctor/appointments", icon: Calendar, c: "bg-blue-500" },
             { label: "View all patients", to: "/doctor/patients", icon: Users, c: "bg-emerald-500" },
@@ -148,7 +148,7 @@ function DoctorScreen() {
             { label: "Apply for leave", to: "/doctor/leave", icon: AlertCircle, c: "bg-amber-500" },
             { label: "Set availability", to: "/doctor/schedule", icon: Clock, c: "bg-violet-500" },
           ].map((a, i) => (
-            <motion.div key={a.label} initial={{opacity:0,x:10}} animate={{opacity:1,x:0}} transition={{delay:0.3+i*0.05}}>
+            <motion.div key={a.label} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.05 }}>
               <Link to={a.to as any} className="group flex items-center gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary transition-all hover:translate-x-1">
                 <div className={`h-9 w-9 rounded-lg ${a.c} flex items-center justify-center text-white shadow-md`}>
                   <a.icon className="h-4 w-4" />
@@ -164,10 +164,10 @@ function DoctorScreen() {
       {/* Detailed & Filtered Charts */}
       <div className="grid lg:grid-cols-2 gap-6 mt-6">
         {/* Chart 1: Activity Chart */}
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.3}} className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h3 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary"/>Consultation Activity</h3>
+              <h3 className="font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" />Consultation Activity</h3>
               <p className="text-xs text-muted-foreground">Scheduled appointments vs completed consultations</p>
             </div>
             {/* Filter buttons */}
@@ -176,11 +176,10 @@ function DoctorScreen() {
                 <button
                   key={r}
                   onClick={() => setActivityRange(r)}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition-all capitalize ${
-                    activityRange === r
+                  className={`px-2.5 py-1 rounded-lg font-medium transition-all capitalize ${activityRange === r
                       ? "bg-white text-primary shadow-sm font-semibold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   {r}
                 </button>
@@ -189,30 +188,30 @@ function DoctorScreen() {
           </div>
 
           <div className="flex items-center gap-4 text-xs mb-3 text-muted-foreground">
-            <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-blue-500 inline-block"/> Scheduled</div>
-            <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-emerald-500 inline-block"/> Completed</div>
+            <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-blue-500 inline-block" /> Scheduled</div>
+            <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-emerald-500 inline-block" /> Completed</div>
           </div>
 
           <ResponsiveContainer width="100%" height={230}>
             <BarChart data={activeActivityData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15}/>
-              <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))"/>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))" />
               <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" label={{ value: "Consultations", angle: -90, position: "insideLeft", fontSize: 10 }} />
               <Tooltip
                 contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "rgba(255, 255, 255, 0.95)", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                 formatter={(val: any, name: any) => [val, name === "apps" ? "Scheduled" : "Completed"]}
               />
-              <Bar dataKey="apps" fill="#3b82f6" radius={[6,6,0,0]} name="Scheduled" />
-              <Bar dataKey="completed" fill="#10b981" radius={[6,6,0,0]} name="Completed" />
+              <Bar dataKey="apps" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Scheduled" />
+              <Bar dataKey="completed" fill="#10b981" radius={[6, 6, 0, 0]} name="Completed" />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
 
         {/* Chart 2: Patient Recovery Trend */}
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.35}} className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h3 className="font-semibold flex items-center gap-2"><Heart className="h-4 w-4 text-rose-500"/>Patient Recovery Index</h3>
+              <h3 className="font-semibold flex items-center gap-2"><Heart className="h-4 w-4 text-rose-500" />Patient Recovery Index</h3>
               <p className="text-xs text-muted-foreground">Average recovery progress score across cohort</p>
             </div>
             {/* Filter buttons */}
@@ -221,11 +220,10 @@ function DoctorScreen() {
                 <button
                   key={c}
                   onClick={() => setRecoveryCohort(c)}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition-all capitalize ${
-                    recoveryCohort === c
+                  className={`px-2.5 py-1 rounded-lg font-medium transition-all capitalize ${recoveryCohort === c
                       ? "bg-white text-rose-600 shadow-sm font-semibold"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   {c}
                 </button>
@@ -234,14 +232,14 @@ function DoctorScreen() {
           </div>
 
           <div className="flex items-center gap-4 text-xs mb-3 text-muted-foreground">
-            <div className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-500 inline-block"/> Cohort Score</div>
-            <div className="flex items-center gap-1.5"><span className="h-0.5 w-3 bg-amber-500 inline-block"/> Target Benchmark</div>
+            <div className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-500 inline-block" /> Cohort Score</div>
+            <div className="flex items-center gap-1.5"><span className="h-0.5 w-3 bg-amber-500 inline-block" /> Target Benchmark</div>
           </div>
 
           <ResponsiveContainer width="100%" height={230}>
             <LineChart data={activeRecoveryData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.15}/>
-              <XAxis dataKey="week" fontSize={11} stroke="hsl(var(--muted-foreground))"/>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+              <XAxis dataKey="week" fontSize={11} stroke="hsl(var(--muted-foreground))" />
               <YAxis fontSize={11} domain={[40, 100]} stroke="hsl(var(--muted-foreground))" label={{ value: "Score %", angle: -90, position: "insideLeft", fontSize: 10 }} />
               <Tooltip
                 contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "rgba(255, 255, 255, 0.95)" }}
@@ -256,10 +254,10 @@ function DoctorScreen() {
 
       {/* Today schedule + spotlight patient */}
       <div className="grid lg:grid-cols-3 gap-6 mt-6">
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.4}} className="lg:col-span-2 bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="lg:col-span-2 bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-semibold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary"/>Appointment Queue</h3>
+              <h3 className="font-semibold flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" />Appointment Queue</h3>
               <p className="text-xs text-muted-foreground">{appointments.length || 8} appointments • {appointments.filter(a => a.status === "Completed").length} completed</p>
             </div>
             <Button asChild variant="ghost" size="sm"><Link to="/doctor/appointments">View calendar →</Link></Button>
@@ -273,11 +271,10 @@ function DoctorScreen() {
                 className="flex items-center gap-4 p-3 rounded-xl bg-secondary/40 hover:bg-secondary hover:shadow-md transition-all cursor-pointer"
               >
                 <div className="text-sm font-mono font-semibold text-primary w-14">{a.time}</div>
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-glow shrink-0 ${
-                  a.status === "Completed" ? "bg-emerald-500" :
-                  a.status === "In Consultation" ? "bg-gradient-primary" :
-                  a.status === "Confirmed" ? "bg-blue-500" : "bg-gradient-primary"
-                }`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-glow shrink-0 ${a.status === "Completed" ? "bg-emerald-500" :
+                    a.status === "In Consultation" ? "bg-gradient-primary" :
+                      a.status === "Confirmed" ? "bg-blue-500" : "bg-gradient-primary"
+                  }`}>
                   {a.patient?.[0] ?? "?"}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -286,13 +283,12 @@ function DoctorScreen() {
                 </div>
                 <Badge
                   variant={a.status === "Completed" ? "secondary" : a.status === "Pending" ? "outline" : "default"}
-                  className={`shrink-0 ${
-                    a.status === "Confirmed" ? "bg-accent text-accent-foreground" :
-                    a.status === "Completed" ? "bg-emerald-100 text-emerald-700" :
-                    a.status === "In Consultation" ? "bg-blue-100 text-blue-700" : ""
-                  }`}
+                  className={`shrink-0 ${a.status === "Confirmed" ? "bg-accent text-accent-foreground" :
+                      a.status === "Completed" ? "bg-emerald-100 text-emerald-700" :
+                        a.status === "In Consultation" ? "bg-blue-100 text-blue-700" : ""
+                    }`}
                 >
-                  {a.status === "Completed" && <CheckCircle2 className="h-3 w-3 mr-1"/>}
+                  {a.status === "Completed" && <CheckCircle2 className="h-3 w-3 mr-1" />}
                   {a.status}
                 </Badge>
               </motion.div>
@@ -302,8 +298,8 @@ function DoctorScreen() {
         </motion.div>
 
         {/* Spotlight Patient Card with Fixed BP & Pulse */}
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.45}} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary"/>Spotlight Patient</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
+          <h3 className="font-semibold mb-4 flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" />Spotlight Patient</h3>
           {spotlightPatient ? (
             <>
               <div className="flex items-center gap-3 mb-4 pb-4 border-b">
@@ -322,7 +318,7 @@ function DoctorScreen() {
                 </div>
                 <div>
                   <div className="text-xs uppercase text-muted-foreground tracking-wider mb-1.5">Recovery Progress</div>
-                  <Progress value={68} className="h-2"/>
+                  <Progress value={68} className="h-2" />
                   <div className="text-xs mt-1 text-muted-foreground font-medium">68% — on track</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2">
@@ -337,7 +333,7 @@ function DoctorScreen() {
                 </div>
                 <Button asChild variant="outline" className="w-full mt-3 font-semibold bg-white hover:bg-slate-50 border-border">
                   <Link to="/doctor/patients/$id" params={{ id: String(spotlightPatient.id || 1) }}>
-                    <Stethoscope className="h-4 w-4 mr-2 text-primary"/>Open Full EMR
+                    <Stethoscope className="h-4 w-4 mr-2 text-primary" />Open Full EMR
                   </Link>
                 </Button>
               </div>
@@ -349,28 +345,27 @@ function DoctorScreen() {
       </div>
 
       {/* Recent notifications */}
-      <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.5}} className="mt-6 bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-6 bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Recent Activity</h3>
           <Button asChild variant="ghost" size="sm"><Link to="/doctor/notifications">See all →</Link></Button>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {notifications.slice(0,6).map((n, i) => (
+          {notifications.slice(0, 6).map((n, i) => (
             <motion.div
               key={n.id}
-              initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:0.5+i*0.05}}
-              whileHover={{y: -4}}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.05 }}
+              whileHover={{ y: -4 }}
               className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className={`text-[10px] uppercase ${
-                  n.type === "Consultation" ? "border-blue-300 text-blue-700 bg-blue-50" :
-                  n.type === "Prescription" ? "border-emerald-300 text-emerald-700 bg-emerald-50" :
-                  n.type === "Lab" ? "border-violet-300 text-violet-700 bg-violet-50" :
-                  n.type === "Referral" ? "border-amber-300 text-amber-700 bg-amber-50" :
-                  n.type === "Vital" ? "border-rose-300 text-rose-700 bg-rose-50" :
-                  "border-slate-300 text-slate-700 bg-slate-50"
-                }`}>{n.type}</Badge>
+                <Badge variant="outline" className={`text-[10px] uppercase ${n.type === "Consultation" ? "border-blue-300 text-blue-700 bg-blue-50" :
+                    n.type === "Prescription" ? "border-emerald-300 text-emerald-700 bg-emerald-50" :
+                      n.type === "Lab" ? "border-violet-300 text-violet-700 bg-violet-50" :
+                        n.type === "Referral" ? "border-amber-300 text-amber-700 bg-amber-50" :
+                          n.type === "Vital" ? "border-rose-300 text-rose-700 bg-rose-50" :
+                            "border-slate-300 text-slate-700 bg-slate-50"
+                  }`}>{n.type}</Badge>
                 <span className="text-xs text-muted-foreground font-mono">{n.time}</span>
               </div>
               <div className="font-medium text-sm">{n.title}</div>

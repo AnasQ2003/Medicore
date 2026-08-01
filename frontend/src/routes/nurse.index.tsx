@@ -45,32 +45,32 @@ function NurseScreen() {
   // Map beds to display rows
   const list: BedRow[] = (apiBeds && apiPatients)
     ? (apiBeds as any[]).filter((b: any) => b.status === "Occupied").map((b: any) => {
-        const patient = (apiPatients as any[]).find((p: any) => p.id === b.patientId);
-        const latestVital = patient?.vitals && patient.vitals.length > 0
-          ? [...patient.vitals].sort((a: any, b: any) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0]
-          : null;
-        
-        let rowStatus: "Stable" | "Observation" | "Critical" = "Stable";
-        if (latestVital) {
-          if (latestVital.spo2 < 94 || latestVital.temp > 38.0 || latestVital.pulse > 100) {
-            rowStatus = "Critical";
-          } else if (latestVital.spo2 < 96 || latestVital.temp > 37.5) {
-            rowStatus = "Observation";
-          }
-        }
+      const patient = (apiPatients as any[]).find((p: any) => p.id === b.patientId);
+      const latestVital = patient?.vitals && patient.vitals.length > 0
+        ? [...patient.vitals].sort((a: any, b: any) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0]
+        : null;
 
-        return {
-          id: b.id,
-          bed: b.bedNumber,
-          name: patient ? patient.name : "Unassigned",
-          status: rowStatus,
-          patientId: b.patientId,
-          bp: latestVital ? latestVital.bp : "120/80",
-          hr: latestVital ? latestVital.pulse : 72,
-          temp: latestVital ? `${latestVital.temp}°C` : "36.8°C",
-          o2: latestVital ? latestVital.spo2 : 98,
-        };
-      })
+      let rowStatus: "Stable" | "Observation" | "Critical" = "Stable";
+      if (latestVital) {
+        if (latestVital.spo2 < 94 || latestVital.temp > 38.0 || latestVital.pulse > 100) {
+          rowStatus = "Critical";
+        } else if (latestVital.spo2 < 96 || latestVital.temp > 37.5) {
+          rowStatus = "Observation";
+        }
+      }
+
+      return {
+        id: b.id,
+        bed: b.bedNumber,
+        name: patient ? patient.name : "Unassigned",
+        status: rowStatus,
+        patientId: b.patientId,
+        bp: latestVital ? latestVital.bp : "120/80",
+        hr: latestVital ? latestVital.pulse : 72,
+        temp: latestVital ? `${latestVital.temp}°C` : "36.8°C",
+        o2: latestVital ? latestVital.spo2 : 98,
+      };
+    })
     : [];
 
   const handleRecordVital = async () => {
@@ -110,7 +110,7 @@ function NurseScreen() {
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> 👋</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> </h1>
         <p className="text-muted-foreground">Ward Bed & Patient vitals tracking</p>
       </div>
 
@@ -158,8 +158,8 @@ function NurseScreen() {
                     <td className="px-6 py-4">
                       <Badge className={
                         p.status === "Critical" ? "bg-rose-100 text-rose-700" :
-                        p.status === "Observation" ? "bg-amber-100 text-amber-700" :
-                        "bg-emerald-100 text-emerald-700"
+                          p.status === "Observation" ? "bg-amber-100 text-amber-700" :
+                            "bg-emerald-100 text-emerald-700"
                       }>{p.status}</Badge>
                     </td>
                     <td className="px-6 py-4">
