@@ -27,6 +27,7 @@ import { Route as SuperAdminSettingsRouteImport } from './routes/super-admin.set
 import { Route as SuperAdminReportsRouteImport } from './routes/super-admin.reports'
 import { Route as SuperAdminProfileRouteImport } from './routes/super-admin.profile'
 import { Route as SuperAdminNotificationsRouteImport } from './routes/super-admin.notifications'
+import { Route as SuperAdminNetworkRouteImport } from './routes/super-admin.network'
 import { Route as SuperAdminHospitalsRouteImport } from './routes/super-admin.hospitals'
 import { Route as SuperAdminDoctorsRouteImport } from './routes/super-admin.doctors'
 import { Route as SuperAdminAnalyticsRouteImport } from './routes/super-admin.analytics'
@@ -159,6 +160,11 @@ const SuperAdminProfileRoute = SuperAdminProfileRouteImport.update({
 const SuperAdminNotificationsRoute = SuperAdminNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => SuperAdminRoute,
+} as any)
+const SuperAdminNetworkRoute = SuperAdminNetworkRouteImport.update({
+  id: '/network',
+  path: '/network',
   getParentRoute: () => SuperAdminRoute,
 } as any)
 const SuperAdminHospitalsRoute = SuperAdminHospitalsRouteImport.update({
@@ -429,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
+  '/super-admin/network': typeof SuperAdminNetworkRoute
   '/super-admin/notifications': typeof SuperAdminNotificationsRoute
   '/super-admin/profile': typeof SuperAdminProfileRoute
   '/super-admin/reports': typeof SuperAdminReportsRoute
@@ -486,6 +493,7 @@ export interface FileRoutesByTo {
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
+  '/super-admin/network': typeof SuperAdminNetworkRoute
   '/super-admin/notifications': typeof SuperAdminNotificationsRoute
   '/super-admin/profile': typeof SuperAdminProfileRoute
   '/super-admin/reports': typeof SuperAdminReportsRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
+  '/super-admin/network': typeof SuperAdminNetworkRoute
   '/super-admin/notifications': typeof SuperAdminNotificationsRoute
   '/super-admin/profile': typeof SuperAdminProfileRoute
   '/super-admin/reports': typeof SuperAdminReportsRoute
@@ -615,6 +624,7 @@ export interface FileRouteTypes {
     | '/super-admin/analytics'
     | '/super-admin/doctors'
     | '/super-admin/hospitals'
+    | '/super-admin/network'
     | '/super-admin/notifications'
     | '/super-admin/profile'
     | '/super-admin/reports'
@@ -672,6 +682,7 @@ export interface FileRouteTypes {
     | '/super-admin/analytics'
     | '/super-admin/doctors'
     | '/super-admin/hospitals'
+    | '/super-admin/network'
     | '/super-admin/notifications'
     | '/super-admin/profile'
     | '/super-admin/reports'
@@ -735,6 +746,7 @@ export interface FileRouteTypes {
     | '/super-admin/analytics'
     | '/super-admin/doctors'
     | '/super-admin/hospitals'
+    | '/super-admin/network'
     | '/super-admin/notifications'
     | '/super-admin/profile'
     | '/super-admin/reports'
@@ -886,6 +898,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/super-admin/notifications'
       preLoaderRoute: typeof SuperAdminNotificationsRouteImport
+      parentRoute: typeof SuperAdminRoute
+    }
+    '/super-admin/network': {
+      id: '/super-admin/network'
+      path: '/network'
+      fullPath: '/super-admin/network'
+      preLoaderRoute: typeof SuperAdminNetworkRouteImport
       parentRoute: typeof SuperAdminRoute
     }
     '/super-admin/hospitals': {
@@ -1330,6 +1349,7 @@ interface SuperAdminRouteChildren {
   SuperAdminAnalyticsRoute: typeof SuperAdminAnalyticsRoute
   SuperAdminDoctorsRoute: typeof SuperAdminDoctorsRoute
   SuperAdminHospitalsRoute: typeof SuperAdminHospitalsRoute
+  SuperAdminNetworkRoute: typeof SuperAdminNetworkRoute
   SuperAdminNotificationsRoute: typeof SuperAdminNotificationsRoute
   SuperAdminProfileRoute: typeof SuperAdminProfileRoute
   SuperAdminReportsRoute: typeof SuperAdminReportsRoute
@@ -1342,6 +1362,7 @@ const SuperAdminRouteChildren: SuperAdminRouteChildren = {
   SuperAdminAnalyticsRoute: SuperAdminAnalyticsRoute,
   SuperAdminDoctorsRoute: SuperAdminDoctorsRoute,
   SuperAdminHospitalsRoute: SuperAdminHospitalsRoute,
+  SuperAdminNetworkRoute: SuperAdminNetworkRoute,
   SuperAdminNotificationsRoute: SuperAdminNotificationsRoute,
   SuperAdminProfileRoute: SuperAdminProfileRoute,
   SuperAdminReportsRoute: SuperAdminReportsRoute,
