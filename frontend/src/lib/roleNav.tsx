@@ -23,8 +23,9 @@ export const superAdminNav: RoleNavItem[] = [
   { label: "Super Admin Doctors", to: "/super-admin/doctors", icon: <Stethoscope className="h-4 w-4" /> },
   { label: "Super Admin Reports", to: "/super-admin/reports", icon: <FileText className="h-4 w-4" /> },
   { label: "Super Admin Analytics", to: "/super-admin/analytics", icon: <BarChart3 className="h-4 w-4" /> },
-  { label: "Super Admin Settings", to: "/super-admin/settings", icon: <Settings className="h-4 w-4" /> },
   { label: "Super Admin Notifications", to: "/super-admin/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "My Profile", to: "/super-admin/profile", icon: <UserCircle className="h-4 w-4" /> },
+  { label: "Super Admin Settings", to: "/super-admin/settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
 export const nurseNav: RoleNavItem[] = [
@@ -37,6 +38,7 @@ export const nurseNav: RoleNavItem[] = [
   { label: "Nurse Injections", to: "/nurse/injections", icon: <Syringe className="h-4 w-4" /> },
   { label: "Schedule", to: "/nurse/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Nurse Notifications", to: "/nurse/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "My Profile", to: "/nurse/profile", icon: <UserCircle className="h-4 w-4" /> },
   { label: "Settings", to: "/nurse/settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
@@ -50,6 +52,7 @@ export const receptionistNav: RoleNavItem[] = [
   { label: "Receptionist Queue", to: "/receptionist/queue", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Schedule", to: "/receptionist/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Receptionist Notifications", to: "/receptionist/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "My Profile", to: "/receptionist/profile", icon: <UserCircle className="h-4 w-4" /> },
   { label: "Settings", to: "/receptionist/settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
