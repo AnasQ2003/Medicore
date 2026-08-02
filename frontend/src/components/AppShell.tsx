@@ -485,17 +485,27 @@ export function AppShell({
 
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {/* Light / Dark Mode Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
+          <div className="flex items-center gap-2">
+            {/* Futuristic Animated Theme Pill Switcher */}
+            <div
               onClick={() => setDarkMode(!darkMode)}
+              className="relative flex items-center justify-between w-16 h-8 p-1.5 rounded-full bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 cursor-pointer shadow-inner transition-colors duration-300 select-none group"
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              className="relative hover:bg-primary/10 transition-colors"
             >
-              {darkMode ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
-            </Button>
+              <Sun className={`h-3.5 w-3.5 z-10 transition-transform duration-300 ${!darkMode ? "text-amber-500 scale-110" : "text-slate-400"}`} />
+              <Moon className={`h-3.5 w-3.5 z-10 transition-transform duration-300 ${darkMode ? "text-cyan-400 scale-110" : "text-slate-400"}`} />
+              
+              {/* Sliding Glow Pill Knob */}
+              <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className={`absolute top-1 bottom-1 w-6 rounded-full shadow-md ${
+                  darkMode
+                    ? "right-1 bg-gradient-to-r from-slate-800 to-cyan-950 border border-cyan-500/50 shadow-cyan-500/30"
+                    : "left-1 bg-gradient-to-r from-amber-400 to-yellow-300 border border-amber-300 shadow-amber-500/30"
+                }`}
+              />
+            </div>
 
             {/* Notifications dropdown */}
             <DropdownMenu>

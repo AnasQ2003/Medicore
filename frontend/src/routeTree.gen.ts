@@ -29,6 +29,7 @@ import { Route as SuperAdminProfileRouteImport } from './routes/super-admin.prof
 import { Route as SuperAdminNotificationsRouteImport } from './routes/super-admin.notifications'
 import { Route as SuperAdminNetworkRouteImport } from './routes/super-admin.network'
 import { Route as SuperAdminHospitalsRouteImport } from './routes/super-admin.hospitals'
+import { Route as SuperAdminFacilitiesRouteImport } from './routes/super-admin.facilities'
 import { Route as SuperAdminDoctorsRouteImport } from './routes/super-admin.doctors'
 import { Route as SuperAdminAnalyticsRouteImport } from './routes/super-admin.analytics'
 import { Route as ReceptionistSettingsRouteImport } from './routes/receptionist.settings'
@@ -47,6 +48,7 @@ import { Route as PatientReportsRouteImport } from './routes/patient.reports'
 import { Route as PatientProfileRouteImport } from './routes/patient.profile'
 import { Route as PatientPrescriptionsRouteImport } from './routes/patient.prescriptions'
 import { Route as PatientNotificationsRouteImport } from './routes/patient.notifications'
+import { Route as PatientFacilitiesRouteImport } from './routes/patient.facilities'
 import { Route as PatientDownloadsRouteImport } from './routes/patient.downloads'
 import { Route as PatientBillsRouteImport } from './routes/patient.bills'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient.appointments'
@@ -172,6 +174,11 @@ const SuperAdminHospitalsRoute = SuperAdminHospitalsRouteImport.update({
   path: '/hospitals',
   getParentRoute: () => SuperAdminRoute,
 } as any)
+const SuperAdminFacilitiesRoute = SuperAdminFacilitiesRouteImport.update({
+  id: '/facilities',
+  path: '/facilities',
+  getParentRoute: () => SuperAdminRoute,
+} as any)
 const SuperAdminDoctorsRoute = SuperAdminDoctorsRouteImport.update({
   id: '/doctors',
   path: '/doctors',
@@ -262,6 +269,11 @@ const PatientPrescriptionsRoute = PatientPrescriptionsRouteImport.update({
 const PatientNotificationsRoute = PatientNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientFacilitiesRoute = PatientFacilitiesRouteImport.update({
+  id: '/facilities',
+  path: '/facilities',
   getParentRoute: () => PatientRoute,
 } as any)
 const PatientDownloadsRoute = PatientDownloadsRouteImport.update({
@@ -416,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/bills': typeof PatientBillsRoute
   '/patient/downloads': typeof PatientDownloadsRoute
+  '/patient/facilities': typeof PatientFacilitiesRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/prescriptions': typeof PatientPrescriptionsRoute
   '/patient/profile': typeof PatientProfileRoute
@@ -434,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/receptionist/settings': typeof ReceptionistSettingsRoute
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
+  '/super-admin/facilities': typeof SuperAdminFacilitiesRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
   '/super-admin/network': typeof SuperAdminNetworkRoute
   '/super-admin/notifications': typeof SuperAdminNotificationsRoute
@@ -474,6 +488,7 @@ export interface FileRoutesByTo {
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/bills': typeof PatientBillsRoute
   '/patient/downloads': typeof PatientDownloadsRoute
+  '/patient/facilities': typeof PatientFacilitiesRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/prescriptions': typeof PatientPrescriptionsRoute
   '/patient/profile': typeof PatientProfileRoute
@@ -492,6 +507,7 @@ export interface FileRoutesByTo {
   '/receptionist/settings': typeof ReceptionistSettingsRoute
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
+  '/super-admin/facilities': typeof SuperAdminFacilitiesRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
   '/super-admin/network': typeof SuperAdminNetworkRoute
   '/super-admin/notifications': typeof SuperAdminNotificationsRoute
@@ -539,6 +555,7 @@ export interface FileRoutesById {
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/bills': typeof PatientBillsRoute
   '/patient/downloads': typeof PatientDownloadsRoute
+  '/patient/facilities': typeof PatientFacilitiesRoute
   '/patient/notifications': typeof PatientNotificationsRoute
   '/patient/prescriptions': typeof PatientPrescriptionsRoute
   '/patient/profile': typeof PatientProfileRoute
@@ -557,6 +574,7 @@ export interface FileRoutesById {
   '/receptionist/settings': typeof ReceptionistSettingsRoute
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
+  '/super-admin/facilities': typeof SuperAdminFacilitiesRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
   '/super-admin/network': typeof SuperAdminNetworkRoute
   '/super-admin/notifications': typeof SuperAdminNotificationsRoute
@@ -605,6 +623,7 @@ export interface FileRouteTypes {
     | '/patient/appointments'
     | '/patient/bills'
     | '/patient/downloads'
+    | '/patient/facilities'
     | '/patient/notifications'
     | '/patient/prescriptions'
     | '/patient/profile'
@@ -623,6 +642,7 @@ export interface FileRouteTypes {
     | '/receptionist/settings'
     | '/super-admin/analytics'
     | '/super-admin/doctors'
+    | '/super-admin/facilities'
     | '/super-admin/hospitals'
     | '/super-admin/network'
     | '/super-admin/notifications'
@@ -663,6 +683,7 @@ export interface FileRouteTypes {
     | '/patient/appointments'
     | '/patient/bills'
     | '/patient/downloads'
+    | '/patient/facilities'
     | '/patient/notifications'
     | '/patient/prescriptions'
     | '/patient/profile'
@@ -681,6 +702,7 @@ export interface FileRouteTypes {
     | '/receptionist/settings'
     | '/super-admin/analytics'
     | '/super-admin/doctors'
+    | '/super-admin/facilities'
     | '/super-admin/hospitals'
     | '/super-admin/network'
     | '/super-admin/notifications'
@@ -727,6 +749,7 @@ export interface FileRouteTypes {
     | '/patient/appointments'
     | '/patient/bills'
     | '/patient/downloads'
+    | '/patient/facilities'
     | '/patient/notifications'
     | '/patient/prescriptions'
     | '/patient/profile'
@@ -745,6 +768,7 @@ export interface FileRouteTypes {
     | '/receptionist/settings'
     | '/super-admin/analytics'
     | '/super-admin/doctors'
+    | '/super-admin/facilities'
     | '/super-admin/hospitals'
     | '/super-admin/network'
     | '/super-admin/notifications'
@@ -914,6 +938,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperAdminHospitalsRouteImport
       parentRoute: typeof SuperAdminRoute
     }
+    '/super-admin/facilities': {
+      id: '/super-admin/facilities'
+      path: '/facilities'
+      fullPath: '/super-admin/facilities'
+      preLoaderRoute: typeof SuperAdminFacilitiesRouteImport
+      parentRoute: typeof SuperAdminRoute
+    }
     '/super-admin/doctors': {
       id: '/super-admin/doctors'
       path: '/doctors'
@@ -1038,6 +1069,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/patient/notifications'
       preLoaderRoute: typeof PatientNotificationsRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/facilities': {
+      id: '/patient/facilities'
+      path: '/facilities'
+      fullPath: '/patient/facilities'
+      preLoaderRoute: typeof PatientFacilitiesRouteImport
       parentRoute: typeof PatientRoute
     }
     '/patient/downloads': {
@@ -1288,6 +1326,7 @@ interface PatientRouteChildren {
   PatientAppointmentsRoute: typeof PatientAppointmentsRoute
   PatientBillsRoute: typeof PatientBillsRoute
   PatientDownloadsRoute: typeof PatientDownloadsRoute
+  PatientFacilitiesRoute: typeof PatientFacilitiesRoute
   PatientNotificationsRoute: typeof PatientNotificationsRoute
   PatientPrescriptionsRoute: typeof PatientPrescriptionsRoute
   PatientProfileRoute: typeof PatientProfileRoute
@@ -1301,6 +1340,7 @@ const PatientRouteChildren: PatientRouteChildren = {
   PatientAppointmentsRoute: PatientAppointmentsRoute,
   PatientBillsRoute: PatientBillsRoute,
   PatientDownloadsRoute: PatientDownloadsRoute,
+  PatientFacilitiesRoute: PatientFacilitiesRoute,
   PatientNotificationsRoute: PatientNotificationsRoute,
   PatientPrescriptionsRoute: PatientPrescriptionsRoute,
   PatientProfileRoute: PatientProfileRoute,
@@ -1348,6 +1388,7 @@ const ReceptionistRouteWithChildren = ReceptionistRoute._addFileChildren(
 interface SuperAdminRouteChildren {
   SuperAdminAnalyticsRoute: typeof SuperAdminAnalyticsRoute
   SuperAdminDoctorsRoute: typeof SuperAdminDoctorsRoute
+  SuperAdminFacilitiesRoute: typeof SuperAdminFacilitiesRoute
   SuperAdminHospitalsRoute: typeof SuperAdminHospitalsRoute
   SuperAdminNetworkRoute: typeof SuperAdminNetworkRoute
   SuperAdminNotificationsRoute: typeof SuperAdminNotificationsRoute
@@ -1361,6 +1402,7 @@ interface SuperAdminRouteChildren {
 const SuperAdminRouteChildren: SuperAdminRouteChildren = {
   SuperAdminAnalyticsRoute: SuperAdminAnalyticsRoute,
   SuperAdminDoctorsRoute: SuperAdminDoctorsRoute,
+  SuperAdminFacilitiesRoute: SuperAdminFacilitiesRoute,
   SuperAdminHospitalsRoute: SuperAdminHospitalsRoute,
   SuperAdminNetworkRoute: SuperAdminNetworkRoute,
   SuperAdminNotificationsRoute: SuperAdminNotificationsRoute,
