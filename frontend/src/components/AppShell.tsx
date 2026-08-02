@@ -56,10 +56,10 @@ export function AppShell({
   const [pageLoading, setPageLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Loading MediCore Module…");
 
-  // Route transition loader trigger — stays ~3 seconds for smooth 3D animation telemetry
+  // Route transition loader trigger — stays 3 seconds for moving ambulance animation
   useEffect(() => {
     setPageLoading(true);
-    const timer = setTimeout(() => setPageLoading(false), 2600);
+    const timer = setTimeout(() => setPageLoading(false), 2800);
     return () => clearTimeout(timer);
   }, [pathname]);
 
@@ -634,7 +634,7 @@ export function AppShell({
       </div>
 
       {/* Centered Route Transition & Action Loader */}
-      <MediCoreLoader show={pageLoading} message={loadingMsg} />
+      <MediCoreLoader show={pageLoading} />
     </div>
   );
 }
