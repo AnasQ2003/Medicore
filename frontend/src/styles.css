@@ -532,6 +532,27 @@
   color: #e2e8f0 !important;
 }
 
+/* --- Fixed floating save bar & bottom dialog overlays in dark mode --- */
+.dark .fixed.bottom-6.left-1\/2 {
+  background-color: #0f172a !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8) !important;
+}
+
+.dark header {
+  background-color: rgba(9, 13, 22, 0.88) !important;
+  border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+.dark footer {
+  border-top-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+.dark table tr {
+  border-bottom-color: rgba(51, 65, 85, 0.5) !important;
+}
+
 
 @layer base {
   * { border-color: var(--color-border); }

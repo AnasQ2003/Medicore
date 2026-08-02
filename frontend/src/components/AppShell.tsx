@@ -18,6 +18,8 @@ import {
 } from "./ui/dropdown-menu";
 import { notifications as defaultNotifs } from "@/lib/mockData";
 
+import { MediCoreLoader } from "./MediCoreLoader";
+
 interface NavItem { label: string; to: string; icon: ReactNode }
 
 const roleAccent: Record<Role, string> = {
@@ -51,6 +53,15 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [userNotifs, setUserNotifs] = useState<any[]>([]);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("Loading MediCore Module…");
+
+  // Route transition loader trigger
+  useEffect(() => {
+    setPageLoading(true);
+    const timer = setTimeout(() => setPageLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   // Theme state: Default Light Mode for all users
   const [darkMode, setDarkMode] = useState(() => {
@@ -85,8 +96,8 @@ export function AppShell({
       window.removeEventListener("medicore_leave_requests_updated", loadNotifs);
     };
   }, [user?.email]);
+
   const [collapsed, setCollapsed] = useState(() => {
-    // Persist collapsed state in localStorage
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(`sidebar_collapsed_${role}`);
       return saved === "true";
@@ -96,8 +107,12 @@ export function AppShell({
   const [searchOpen, setSearchOpen] = useState(false);
 
   const handleLogout = () => {
-    clearUser();
-    navigate({ to: "/login", search: { role } as any });
+    setLoadingMsg("Signing out safely…");
+    setPageLoading(true);
+    setTimeout(() => {
+      clearUser();
+      navigate({ to: "/login", search: { role } as any });
+    }, 450);
   };
 
   useEffect(() => {
@@ -285,12 +300,12 @@ export function AppShell({
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border/70 glass-panel flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
-          <div className="flex items-center gap-3 flex-1 max-w-xl">
+        <header className="h-16 border-b border-border/70 glass-panel flex items-center justify-between px-4 md:px-6 sticky top-0 z-30 gap-4">
+          <div className="flex items-center gap-3 flex-1 max-w-2xl">
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen((v) => !v)}>
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <div className="hidden sm:flex items-center gap-2 flex-1 group relative max-w-md">
+            <div className="hidden sm:flex items-center gap-2 flex-1 group relative">
               <div className="relative flex-1">
                 {/* Premium Command Bar */}
                 <div className={`relative flex items-center gap-2.5 rounded-xl border transition-all duration-300 h-10 px-3 overflow-hidden ${
@@ -310,10 +325,10 @@ export function AppShell({
                       setSearchOpen(true);
                     }}
                     onFocus={() => setSearchOpen(true)}
-                    placeholder="Search patients, records…"
+                    placeholder="Search patients, records, prescriptions…"
                     className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground/60 flex-1 min-w-0"
                   />
-                  {searchQuery && (
+                  {searchQuery ? (
                     <button
                       onClick={() => { setSearchQuery(""); setSearchOpen(false); }}
                       className="grid place-items-center h-5 w-5 rounded-md bg-muted/60 hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-all shrink-0"
@@ -321,6 +336,10 @@ export function AppShell({
                     >
                       <X className="h-3 w-3" />
                     </button>
+                  ) : (
+                    <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-border bg-muted/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground shrink-0 select-none">
+                      ⌘K
+                    </kbd>
                   )}
                 </div>
 
@@ -485,15 +504,16 @@ export function AppShell({
 
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Futuristic Animated Theme Pill Switcher */}
-            <div
+          <div className="flex items-center gap-3">
+            {/* Futuristic Animated Theme Switcher Pill */}
+            <button
+              type="button"
               onClick={() => setDarkMode(!darkMode)}
-              className="relative flex items-center justify-between w-16 h-8 p-1.5 rounded-full bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 cursor-pointer shadow-inner transition-colors duration-300 select-none group"
+              className="relative flex items-center justify-between w-14 h-8 p-1 rounded-full bg-secondary/60 hover:bg-secondary border border-border/80 cursor-pointer shadow-inner transition-colors duration-300 select-none group"
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              <Sun className={`h-3.5 w-3.5 z-10 transition-transform duration-300 ${!darkMode ? "text-amber-500 scale-110" : "text-slate-400"}`} />
-              <Moon className={`h-3.5 w-3.5 z-10 transition-transform duration-300 ${darkMode ? "text-cyan-400 scale-110" : "text-slate-400"}`} />
+              <Sun className={`h-3.5 w-3.5 z-10 ml-0.5 transition-transform duration-300 ${!darkMode ? "text-amber-500 scale-110" : "text-muted-foreground/60"}`} />
+              <Moon className={`h-3.5 w-3.5 z-10 mr-0.5 transition-transform duration-300 ${darkMode ? "text-cyan-400 scale-110" : "text-muted-foreground/60"}`} />
               
               {/* Sliding Glow Pill Knob */}
               <motion.div
@@ -505,19 +525,23 @@ export function AppShell({
                     : "left-1 bg-gradient-to-r from-amber-400 to-yellow-300 border border-amber-300 shadow-amber-500/30"
                 }`}
               />
-            </div>
+            </button>
 
             {/* Notifications dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
+                <button
+                  type="button"
+                  className="h-9 w-9 rounded-xl border border-border/70 bg-secondary/40 hover:bg-secondary text-foreground transition-all flex items-center justify-center relative group"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   {unread > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
+                    <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] font-bold text-white flex items-center justify-center ring-2 ring-background animate-pulse">
                       {unread}
                     </span>
                   )}
-                </Button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 bg-popover/98 backdrop-blur-xl border-border/70 shadow-elevated">
                 <DropdownMenuLabel className="flex items-center justify-between">
@@ -551,20 +575,26 @@ export function AppShell({
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Vertical Separator */}
+            <div className="h-6 w-px bg-border/60 mx-0.5 hidden sm:block" />
+
             {/* Profile dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-white/45 transition-colors">
-                  <Avatar className="h-8 w-8 ring-2 ring-primary/20">
-                    <AvatarFallback className={`${accent} text-white text-xs font-bold`}>
-                      {user?.name?.[0] ?? "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden sm:block text-left">
-                    <div className="text-sm font-medium leading-tight">{user?.name}</div>
-                    <div className="text-xs text-muted-foreground capitalize leading-tight">{title}</div>
+                <button className="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-xl bg-secondary/30 hover:bg-secondary/70 border border-border/50 transition-all group">
+                  <div className="relative">
+                    <Avatar className="h-8 w-8 ring-2 ring-primary/20 transition-transform group-hover:scale-105">
+                      <AvatarFallback className={`${accent} text-white text-xs font-bold`}>
+                        {user?.name?.[0] ?? "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
                   </div>
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+                  <div className="hidden sm:block text-left">
+                    <div className="text-xs font-semibold leading-tight text-foreground">{user?.name}</div>
+                    <div className="text-[10px] text-muted-foreground capitalize leading-tight font-medium">{title}</div>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors hidden sm:block ml-0.5" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-popover/98 backdrop-blur-xl border-border/70 shadow-elevated">
@@ -602,6 +632,9 @@ export function AppShell({
         </motion.main>
         <Footer />
       </div>
+
+      {/* Centered Route Transition & Action Loader */}
+      <MediCoreLoader show={pageLoading} message={loadingMsg} />
     </div>
   );
 }

@@ -94,7 +94,7 @@ function ScheduleScreen() {
       <div className="grid gap-4">
         {schedule.map((s: any, i: number) => (
           <motion.div key={s.day} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.05}}
-            className={`relative overflow-hidden rounded-2xl border bg-white p-5 shadow-card transition-all ${!s.enabled ? "opacity-60" : ""}`}>
+            className={`relative overflow-hidden rounded-2xl border bg-gradient-card border-border p-5 shadow-card transition-all ${!s.enabled ? "opacity-60" : ""}`}>
             <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${colors[i]}`}/>
             <div className="flex flex-col md:flex-row md:items-center gap-4 pl-3">
               <div className="md:w-28">

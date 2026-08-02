@@ -97,10 +97,10 @@ export function Footer() {
               Pakistan's most advanced hospital management system — powering smarter, safer, and faster healthcare delivery across multiple branches.
             </p>
             {/* System Status */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-100">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-semibold text-emerald-700">All Systems Operational</span>
-              <span className="ml-auto text-[10px] text-emerald-600 font-mono">99.98%</span>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">All Systems Operational</span>
+              <span className="ml-auto text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">99.98%</span>
             </div>
           </div>
 
@@ -132,10 +132,10 @@ export function Footer() {
             <div className="text-xs font-bold text-foreground uppercase tracking-widest">Compliance</div>
             <div className="space-y-2">
               {[
-                { icon: ShieldCheck, label: "HIPAA Compliant", color: "text-emerald-600", bg: "bg-emerald-50" },
-                { icon: Lock, label: "ISO 27001 Certified", color: "text-blue-600", bg: "bg-blue-50" },
-                { icon: Award, label: "HL7 FHIR Ready", color: "text-violet-600", bg: "bg-violet-50" },
-                { icon: Zap, label: "256-bit AES Encrypted", color: "text-amber-600", bg: "bg-amber-50" },
+                { icon: ShieldCheck, label: "HIPAA Compliant", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border border-emerald-500/20" },
+                { icon: Lock, label: "ISO 27001 Certified", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border border-blue-500/20" },
+                { icon: Award, label: "HL7 FHIR Ready", color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-500/10 border border-violet-500/20" },
+                { icon: Zap, label: "256-bit AES Encrypted", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border border-amber-500/20" },
               ].map(({ icon: Icon, label, color, bg }) => (
                 <div key={label} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${bg}`}>
                   <Icon className={`h-3.5 w-3.5 ${color} flex-shrink-0`} />

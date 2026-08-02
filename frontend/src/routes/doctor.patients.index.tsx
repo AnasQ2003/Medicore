@@ -144,8 +144,8 @@ function PatientsIndexScreen() {
                 }}
                 className={`group relative overflow-hidden rounded-2xl border p-5 shadow-card hover:shadow-elevated transition-all backdrop-blur-md cursor-pointer ${
                   p.gender === "Female"
-                    ? "bg-gradient-to-br from-pink-50/90 to-rose-50/90 border-pink-200 hover:border-pink-400"
-                    : "bg-gradient-to-br from-blue-50/90 to-cyan-50/90 border-blue-200 hover:border-blue-400"
+                    ? "bg-gradient-to-br from-pink-50/90 to-rose-50/90 dark:from-pink-950/40 dark:to-rose-950/40 border-pink-200 dark:border-pink-800/60 hover:border-pink-400"
+                    : "bg-gradient-to-br from-blue-50/90 to-cyan-50/90 dark:from-blue-950/40 dark:to-cyan-950/40 border-blue-200 dark:border-blue-800/60 hover:border-blue-400"
                 }`}
               >
                 <div className={`absolute -top-12 -right-12 h-32 w-32 rounded-full opacity-20 blur-2xl group-hover:opacity-30 transition ${
@@ -159,7 +159,7 @@ function PatientsIndexScreen() {
                     {p.name?.[0] || "?"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-base truncate">{p.name || "Unknown"}</div>
+                    <div className="font-bold text-base truncate text-foreground">{p.name || "Unknown"}</div>
                     <div className="text-xs text-muted-foreground">
                       {p.patientCode || "—"} • {p.age ?? "—"}y {(p.gender?.[0]) ?? ""} • {p.bloodGroup ?? "—"}
                     </div>
@@ -172,7 +172,7 @@ function PatientsIndexScreen() {
 
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {allergyList(p).length > 0 && (
-                    <Badge className="bg-rose-100 text-rose-700 text-[10px]">
+                    <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300 text-[10px]">
                       <AlertTriangle className="h-2.5 w-2.5 mr-1" />{allergyList(p).length} allergy
                     </Badge>
                   )}
@@ -180,17 +180,17 @@ function PatientsIndexScreen() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center mb-4">
-                  <div className="rounded-lg bg-blue-50/90 border border-blue-100 p-2">
-                    <div className="text-[10px] font-semibold text-blue-700">BP</div>
-                    <div className="text-sm font-bold text-blue-900">{bpVal}</div>
+                  <div className="rounded-lg bg-blue-50/90 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-800/60 p-2">
+                    <div className="text-[10px] font-semibold text-blue-700 dark:text-blue-300">BP</div>
+                    <div className="text-sm font-bold text-blue-900 dark:text-blue-100">{bpVal}</div>
                   </div>
-                  <div className="rounded-lg bg-rose-50/90 border border-rose-100 p-2">
-                    <div className="text-[10px] font-semibold text-rose-700">Pulse</div>
-                    <div className="text-sm font-bold text-rose-900">{pulseVal}</div>
+                  <div className="rounded-lg bg-rose-50/90 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-800/60 p-2">
+                    <div className="text-[10px] font-semibold text-rose-700 dark:text-rose-300">Pulse</div>
+                    <div className="text-sm font-bold text-rose-900 dark:text-rose-100">{pulseVal}</div>
                   </div>
-                  <div className="rounded-lg bg-emerald-50/90 border border-emerald-100 p-2">
-                    <div className="text-[10px] font-semibold text-emerald-700">SpO2</div>
-                    <div className="text-sm font-bold text-emerald-900">{spo2Val}</div>
+                  <div className="rounded-lg bg-emerald-50/90 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/60 p-2">
+                    <div className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">SpO2</div>
+                    <div className="text-sm font-bold text-emerald-900 dark:text-emerald-100">{spo2Val}</div>
                   </div>
                 </div>
 

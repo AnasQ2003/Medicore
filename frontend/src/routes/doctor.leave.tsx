@@ -113,7 +113,7 @@ function DoctorLeaveScreen() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-white border rounded-2xl p-5 shadow-card space-y-3"
+                className="bg-gradient-card border border-border rounded-2xl p-5 shadow-card space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/40">
                   <div className="flex items-center gap-3">
@@ -136,7 +136,7 @@ function DoctorLeaveScreen() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-base">
+                        <span className="font-bold text-base text-foreground">
                           {r.fromDate} ({r.fromTime}) → {r.toDate} ({r.toTime})
                         </span>
                         <Badge variant="outline">{r.totalDays} Day(s)</Badge>
@@ -152,10 +152,10 @@ function DoctorLeaveScreen() {
                     <Badge
                       className={`text-xs px-3 py-1 font-semibold ${
                         r.status === "Approved"
-                          ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
                           : r.status === "Pending"
-                          ? "bg-amber-100 text-amber-800 border-amber-200 animate-pulse"
-                          : "bg-rose-100 text-rose-800 border-rose-200"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 animate-pulse"
+                          : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
                       }`}
                     >
                       {r.status === "Pending" ? "⏳ Pending Admin Approval" : r.status}
@@ -165,7 +165,7 @@ function DoctorLeaveScreen() {
                         size="sm"
                         variant="outline"
                         onClick={() => cancelPending(r.id)}
-                        className="text-xs border-rose-200 text-rose-700 hover:bg-rose-50"
+                        className="text-xs border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                       >
                         Cancel Request
                       </Button>
@@ -175,22 +175,24 @@ function DoctorLeaveScreen() {
 
                 {/* Details & Admin decision feedback */}
                 <div className="grid md:grid-cols-2 gap-4 text-xs">
-                  <div className="bg-muted/30 p-3 rounded-xl border space-y-1">
+                  <div className="bg-muted/30 p-3 rounded-xl border border-border/60 space-y-1">
                     <span className="font-bold text-muted-foreground uppercase text-[10px]">Reason & Impact:</span>
                     <p className="text-foreground italic">"{r.reason}"</p>
                     {r.cancelImpactedAppointments && (
-                      <div className="text-amber-700 font-semibold pt-1">
+                      <div className="text-amber-600 dark:text-amber-400 font-semibold pt-1">
                         • {r.impactedCount || 3} patient consultations auto-canceled upon approval.
                       </div>
                     )}
                   </div>
 
                   <div className={`p-3 rounded-xl border space-y-1 ${
-                    r.exceededDays > 0 ? "bg-rose-50/70 border-rose-200" : "bg-emerald-50/70 border-emerald-200"
+                    r.exceededDays > 0
+                      ? "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
+                      : "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
                   }`}>
                     <span className="font-bold uppercase text-[10px]">Quota & Payroll Audit:</span>
                     {r.exceededDays > 0 ? (
-                      <div className="text-rose-800 font-semibold space-y-0.5">
+                      <div className="font-semibold space-y-0.5">
                         <div>⚠️ Request exceeded remaining quota by {r.exceededDays} day(s).</div>
                         <div>
                           Salary Cut Status:{" "}
@@ -204,7 +206,7 @@ function DoctorLeaveScreen() {
                         </div>
                       </div>
                     ) : (
-                      <div className="text-emerald-800 font-semibold">
+                      <div className="font-semibold">
                         ✅ Within annual paid quota. No salary cut applied.
                       </div>
                     )}

@@ -168,10 +168,10 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Present Days", value: present, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
-          { label: "Absent Days", value: absent, icon: XCircle, color: "text-rose-600", bg: "bg-rose-50 border-rose-100" },
-          { label: "Leave Taken", value: leaveDays, icon: FileText, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
-          { label: "Leave Remaining", value: remainingLeave, icon: TrendingDown, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
+          { label: "Present Days", value: present, icon: CheckCircle2, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+          { label: "Absent Days", value: absent, icon: XCircle, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10 border-rose-500/20" },
+          { label: "Leave Taken", value: leaveDays, icon: FileText, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+          { label: "Leave Remaining", value: remainingLeave, icon: TrendingDown, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <motion.div
             key={label}
@@ -192,7 +192,7 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
       </div>
 
       {/* Calendar card */}
-      <div className="rounded-2xl border bg-white shadow-card p-5">
+      <div className="rounded-2xl border bg-gradient-card shadow-card p-5">
         {/* Month/Year Nav */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
