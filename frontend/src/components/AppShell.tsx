@@ -56,12 +56,15 @@ export function AppShell({
   const [pageLoading, setPageLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Loading MediCore Module…");
 
-  // Route transition loader trigger — stays 3 seconds for moving ambulance animation
-  useEffect(() => {
+  // Show loader on current screen, then navigate — correct order
+  const handleNavClick = (to: string) => {
+    if (pathname === to) return; // already on this page
     setPageLoading(true);
-    const timer = setTimeout(() => setPageLoading(false), 2800);
-    return () => clearTimeout(timer);
-  }, [pathname]);
+    setTimeout(() => {
+      setPageLoading(false);
+      navigate({ to: to as any });
+    }, 2800);
+  };
 
   // Theme state: Default Light Mode for all users
   const [darkMode, setDarkMode] = useState(() => {
@@ -107,12 +110,11 @@ export function AppShell({
   const [searchOpen, setSearchOpen] = useState(false);
 
   const handleLogout = () => {
-    setLoadingMsg("Signing out safely…");
     setPageLoading(true);
     setTimeout(() => {
       clearUser();
       navigate({ to: "/login", search: { role } as any });
-    }, 450);
+    }, 2800);
   };
 
   useEffect(() => {
@@ -220,16 +222,11 @@ export function AppShell({
               animate={collapsed ? false : { opacity: 1, x: 0 }}
               transition={{ duration: 0.15, delay: collapsed ? 0 : index * 0.03 }}
             >
-              <Link
-                to={item.to}
+              <button
+                type="button"
                 title={collapsed ? item.label : undefined}
-                onClick={(e) => {
-                  // Prevent any state changes when clicking nav items
-                  if (collapsed) {
-                    // Just navigate, don't change sidebar state
-                  }
-                }}
-                className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                onClick={() => handleNavClick(item.to)}
+                className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
                     ? "bg-white/18 text-white shadow-inner backdrop-blur-sm border border-white/15"
                     : "text-sidebar-foreground hover:bg-white/18 hover:text-white hover:translate-x-1"
@@ -247,14 +244,14 @@ export function AppShell({
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.15 }}
-                      className="flex-1 truncate"
+                      className="flex-1 truncate text-left"
                     >
                       {item.label}
                     </motion.span>
                   )}
                 </AnimatePresence>
                 {!collapsed && active && <motion.div layoutId={`dot-${role}`} className="h-1.5 w-1.5 rounded-full bg-white" />}
-              </Link>
+              </button>
             </motion.div>
           );
         })}
