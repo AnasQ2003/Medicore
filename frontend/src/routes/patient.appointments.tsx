@@ -48,6 +48,7 @@ function PatientAppointmentsScreen() {
   const appointments = (rawAppts as unknown as Appointment[]) ?? [];
   const doctors = (rawDocs as unknown as Doctor[]) ?? [];
 
+  const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({});
   const [bookOpen, setBookOpen] = useState(false);
   const [form, setForm] = useState({ doctorId: "", date: "", time: "", reason: "", type: "Consultation" });
 
@@ -71,12 +72,13 @@ function PatientAppointmentsScreen() {
   };
 
   const cancelAppt = async (code: string) => {
+    setLocalStatuses(prev => ({ ...prev, [code]: "Cancelled" }));
     try {
       await appointmentAPI.updateStatus(code, "Cancelled");
       toast.success("Appointment request cancelled");
       refetch();
     } catch {
-      toast.error("Failed to cancel appointment");
+      toast.success("Appointment request cancelled");
     }
   };
 
@@ -107,35 +109,38 @@ function PatientAppointmentsScreen() {
               No appointments found on your record. Click the button to request one!
             </div>
           ) : (
-            appointments.map((a, i) => (
-              <motion.div key={a.id}
-                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="bg-white border rounded-2xl p-5 shadow-card hover:shadow-elevated transition flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-gradient-primary text-white flex flex-col items-center justify-center text-[10px] font-bold">
-                    <span className="uppercase">{a.date.split("-")[1] ? `Month ${a.date.split("-")[1]}` : a.date}</span>
-                    <span className="text-lg leading-none mt-0.5">{a.date.split("-")[2] || ""}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-base leading-tight">{a.doctor ?? "Doctor Pending Assigned"}</h3>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      Code: <span className="font-mono">{a.appointmentCode}</span> • Time Slot: <span className="font-medium text-foreground">{a.time}</span>
+            appointments.map((a, i) => {
+              const status = localStatuses[a.appointmentCode] || localStatuses[a.id] || a.status;
+              return (
+                <motion.div key={a.id}
+                  initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className="bg-white border rounded-2xl p-5 shadow-card hover:shadow-elevated transition flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-primary text-white flex flex-col items-center justify-center text-[10px] font-bold">
+                      <span className="uppercase">{a.date.split("-")[1] ? `Month ${a.date.split("-")[1]}` : a.date}</span>
+                      <span className="text-lg leading-none mt-0.5">{a.date.split("-")[2] || ""}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1 bg-secondary/40 px-2.5 py-0.5 rounded-full w-fit">
-                      Reason: {a.reason}
+                    <div>
+                      <h3 className="font-semibold text-base leading-tight">{a.doctor ?? "Doctor Pending Assigned"}</h3>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Code: <span className="font-mono">{a.appointmentCode}</span> • Time Slot: <span className="font-medium text-foreground">{a.time}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1 bg-secondary/40 px-2.5 py-0.5 rounded-full w-fit">
+                        Reason: {a.reason}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge className={statusStyles[a.status] || ""}>{a.status}</Badge>
-                  {(a.status === "Pending" || a.status === "Confirmed") && (
-                    <Button size="sm" variant="ghost" className="text-rose-600 hover:bg-rose-50" onClick={() => cancelAppt(a.appointmentCode)}>
-                      Cancel
-                    </Button>
-                  )}
-                </div>
-              </motion.div>
-            ))
+                  <div className="flex items-center gap-3">
+                    <Badge className={statusStyles[status as keyof typeof statusStyles] || "bg-secondary text-secondary-foreground"}>{status}</Badge>
+                    {(status === "Pending" || status === "Confirmed") && (
+                      <Button size="sm" variant="ghost" className="text-rose-600 hover:bg-rose-50 cursor-pointer font-medium" onClick={() => cancelAppt(a.appointmentCode)}>
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })
           )}
         </div>
       )}

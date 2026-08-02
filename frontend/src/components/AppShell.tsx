@@ -250,42 +250,45 @@ export function AppShell({
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen((v) => !v)}>
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <div className="hidden sm:flex items-center gap-2 flex-1 group relative max-w-xl">
+            <div className="hidden sm:flex items-center gap-2 flex-1 group relative max-w-md">
               <div className="relative flex-1">
-                <div className="relative flex items-center gap-2.5 rounded-xl border border-border/80 bg-white shadow-sm hover:border-primary/30 hover:shadow-md focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 focus-within:shadow-md transition-all duration-200 h-10 px-3">
-                  <span className="grid place-items-center h-7 w-7 rounded-md bg-primary/10 text-primary shrink-0">
+                {/* Premium Command Bar */}
+                <div className={`relative flex items-center gap-2.5 rounded-xl border transition-all duration-300 h-10 px-3 overflow-hidden ${
+                  searchOpen && searchQuery.trim() ? "search-bar-active" : "search-bar-idle"
+                }`}>
+                  {/* Icon bubble */}
+                  <div className={`shrink-0 h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                    searchOpen && searchQuery.trim() ? "bg-primary text-white scale-105" : "bg-primary/15 text-primary"
+                  }`}>
                     <Search className="h-3.5 w-3.5" />
-                  </span>
-                  <Input 
+                  </div>
+                  <input
+                    type="text"
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       setSearchOpen(true);
                     }}
                     onFocus={() => setSearchOpen(true)}
-                    placeholder="Search patients, records, prescriptions…" 
-                    className="border-0 bg-transparent focus-visible:ring-0 px-0 h-8 text-sm placeholder:text-muted-foreground/70 flex-1 min-w-0" 
+                    placeholder="Search patients, records…"
+                    className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-foreground placeholder:text-muted-foreground/60 flex-1 min-w-0"
                   />
                   {searchQuery && (
-                    <button 
-                      onClick={() => { setSearchQuery(""); setSearchOpen(false); }} 
-                      className="grid place-items-center h-6 w-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                    <button
+                      onClick={() => { setSearchQuery(""); setSearchOpen(false); }}
+                      className="grid place-items-center h-5 w-5 rounded-md bg-muted/60 hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-all shrink-0"
                       aria-label="Clear search"
                     >
                       <X className="h-3 w-3" />
                     </button>
                   )}
-                  <kbd 
-                    onClick={() => setSearchOpen((v) => !v)} 
-                    className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-border/70 bg-muted/50 text-[10px] font-mono text-muted-foreground shrink-0 cursor-pointer hover:bg-muted hover:text-foreground transition-colors"
-                    title="Toggle search (Ctrl+K)"
-                  >
-                    <Command className="h-2.5 w-2.5" />K
-                  </kbd>
                 </div>
+
 
                 {/* Live Search Results Dropdown Overlay */}
                 <AnimatePresence>
+
+
                   {searchOpen && searchQuery.trim().length > 0 && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setSearchOpen(false)} />

@@ -351,27 +351,37 @@ function DoctorScreen() {
           <Button asChild variant="ghost" size="sm"><Link to="/doctor/notifications">See all →</Link></Button>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {notifications.slice(0, 6).map((n, i) => (
-            <motion.div
-              key={n.id}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.05 }}
-              whileHover={{ y: -4 }}
-              className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className={`text-[10px] uppercase ${n.type === "Consultation" ? "border-blue-300 text-blue-700 bg-blue-50" :
-                    n.type === "Prescription" ? "border-emerald-300 text-emerald-700 bg-emerald-50" :
-                      n.type === "Lab" ? "border-violet-300 text-violet-700 bg-violet-50" :
-                        n.type === "Referral" ? "border-amber-300 text-amber-700 bg-amber-50" :
-                          n.type === "Vital" ? "border-rose-300 text-rose-700 bg-rose-50" :
-                            "border-slate-300 text-slate-700 bg-slate-50"
-                  }`}>{n.type}</Badge>
-                <span className="text-xs text-muted-foreground font-mono">{n.time}</span>
-              </div>
-              <div className="font-medium text-sm">{n.title}</div>
-              <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.body}</div>
-            </motion.div>
-          ))}
+          {notifications.slice(0, 6).map((n, i) => {
+            const targetRoute =
+              n.type === "Prescription" ? "/doctor/prescriptions" :
+              n.type === "Consultation" ? "/doctor/appointments" :
+              n.type === "Lab" || n.type === "Report" ? "/doctor/reports" :
+              n.type === "Vital" || n.type === "Referral" ? "/doctor/patients" :
+              "/doctor/notifications";
+
+            return (
+              <motion.div
+                key={n.id}
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.05 }}
+                whileHover={{ y: -4 }}
+                onClick={() => navigate({ to: targetRoute as any })}
+                className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-primary/40"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline" className={`text-[10px] uppercase ${n.type === "Consultation" ? "border-blue-300 text-blue-700 bg-blue-50" :
+                      n.type === "Prescription" ? "border-emerald-300 text-emerald-700 bg-emerald-50" :
+                        n.type === "Lab" ? "border-violet-300 text-violet-700 bg-violet-50" :
+                          n.type === "Referral" ? "border-amber-300 text-amber-700 bg-amber-50" :
+                            n.type === "Vital" ? "border-rose-300 text-rose-700 bg-rose-50" :
+                              "border-slate-300 text-slate-700 bg-slate-50"
+                    }`}>{n.type}</Badge>
+                  <span className="text-xs text-muted-foreground font-mono">{n.time}</span>
+                </div>
+                <div className="font-medium text-sm group-hover:text-primary transition-colors">{n.title}</div>
+                <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.body}</div>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
     </AppShell>

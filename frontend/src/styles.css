@@ -46,22 +46,19 @@
 }
 
 /* =====================================================
-   GLOBAL HOVER VISIBILITY FIXES — entire application
-   Ensures all dropdown items, menu options, and select
-   options are readable on hover in every role theme.
+   GLOBAL HOVER VISIBILITY FIXES — Dropdowns, Selects & Menus
+   Ensures dropdown items and select options are readable on hover,
+   while preserving white text on primary/gradient buttons.
    ===================================================== */
 
-/* Radix UI DropdownMenu / ContextMenu / Select items — light backgrounds */
-[data-radix-collection-item]:hover,
-[data-radix-collection-item]:focus,
-[data-radix-collection-item][data-highlighted],
-[data-highlighted],
+/* Radix UI DropdownMenu / ContextMenu / Select items — light menu backgrounds */
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted],
 [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover,
 [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus,
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted],
+[role="option"][data-highlighted],
 [role="option"]:hover,
 [role="option"]:focus,
-[role="option"][data-highlighted],
+[data-radix-collection-item][data-highlighted]:not(button.bg-primary *):not(button.bg-gradient-primary *),
 .dropdown-item:hover,
 .dropdown-item:focus,
 .menu-item:hover,
@@ -72,14 +69,13 @@
   font-weight: 500;
 }
 
-/* Force all child text/icons to remain visible inside dropdowns */
-[data-highlighted]:not(.glass-sidebar *):not(.sidebar-nav *) *,
+/* Force child text/icons inside dropdown menus to inherit menu item text color */
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted] *,
 [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover *,
 [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus *,
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted] *,
+[role="option"][data-highlighted] *,
 [role="option"]:hover *,
-[role="option"]:focus *,
-[role="option"][data-highlighted] * {
+[role="option"]:focus * {
   color: inherit !important;
 }
 
@@ -309,34 +305,151 @@
                 0 10px 34px -8px color-mix(in oklch, var(--primary) 55%, transparent);
     transform: translateY(-1px);
   }
+
+  /* Search bar specific utilities */
+  .search-bar-idle {
+    background-color: color-mix(in oklch, var(--foreground) 5%, transparent);
+    border-color: color-mix(in oklch, var(--foreground) 10%, transparent);
+  }
+  .search-bar-idle:hover {
+    background-color: color-mix(in oklch, var(--foreground) 8%, transparent);
+    border-color: color-mix(in oklch, var(--primary) 28%, transparent);
+  }
+  .search-bar-active {
+    background-color: color-mix(in oklch, var(--foreground) 7%, transparent);
+    border-color: color-mix(in oklch, var(--primary) 50%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 18%, transparent),
+                0 2px 12px -2px color-mix(in oklch, var(--primary) 30%, transparent);
+  }
 }
 
-/* Global role-themed hover glow — applies to all interactive controls */
+
+/* Global role-themed hover — animated micro-interactions on all controls */
 button:not(:disabled),
+a.button,
 a[role="button"],
 [role="menuitem"],
 [role="option"],
 [role="tab"],
 .glass-card,
 [data-slot="card"] {
-  transition: box-shadow .28s ease, transform .2s ease, border-color .28s ease, background-color .28s ease, color .2s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease, color 0.15s ease;
 }
+
+/* Micro-lift & shadow animation for buttons, pills, and gradient options on hover */
 button:not(:disabled):hover,
+a.button:hover,
 a[role="button"]:hover,
+.bg-gradient-primary:hover,
+.bg-gradient-red:hover,
+.bg-gradient-green:hover,
+.bg-gradient-sunset:hover,
+.bg-gradient-violet:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 10px 28px -8px color-mix(in oklch, var(--primary) 45%, transparent) !important;
+}
+
+button:not(:disabled):active,
+a.button:active,
+a[role="button"]:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Subtle lift glow on ghost/icon buttons */
+button:not(:disabled):not([class*="bg-gradient"]):not([class*="bg-primary"]):not([class*="bg-accent"]):not([class*="bg-destructive"]):hover,
+a[role="button"]:not([class*="bg-gradient"]):hover {
+  background-color: color-mix(in oklch, var(--primary) 10%, transparent);
+}
+
+/* Menu / dropdown item hover */
 [role="menuitem"]:hover,
 [role="option"]:hover,
 [role="tab"]:hover {
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 45%, transparent),
-              0 10px 28px -10px color-mix(in oklch, var(--primary) 65%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent),
+              0 4px 12px -4px color-mix(in oklch, var(--primary) 40%, transparent);
 }
+
+/* Card hover lift */
 .glass-card:hover,
 [data-slot="card"]:hover {
   box-shadow: var(--shadow-card),
               0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent),
               0 18px 44px -20px color-mix(in oklch, var(--primary) 45%, transparent);
 }
-a:not([role="button"]):hover {
+
+/* Plain anchor hover — only on bare text links, NOT on nav/button/quick-action links */
+a:not([role="button"]):not([class*="flex"]):not([class*="group"]):not([class*="block"]):hover {
   color: var(--primary);
+}
+
+
+/* =====================================================
+   BUTTON HOVER TEXT COLOR PROTECTION
+   Gradient/solid primary buttons must ALWAYS have white text.
+   Outline buttons must ALWAYS have dark foreground text.
+   ===================================================== */
+
+/* White text on solid/gradient primary buttons — never override on hover */
+button.bg-gradient-primary,
+button.bg-gradient-primary:hover,
+button.bg-gradient-primary:focus,
+button.bg-gradient-red,
+button.bg-gradient-red:hover,
+button.bg-gradient-green,
+button.bg-gradient-green:hover,
+button.bg-gradient-sunset,
+button.bg-gradient-sunset:hover,
+button.bg-gradient-violet,
+button.bg-gradient-violet:hover {
+  color: #ffffff !important;
+}
+button.bg-gradient-primary *,
+button.bg-gradient-primary:hover *,
+button.bg-gradient-red *,
+button.bg-gradient-red:hover *,
+button.bg-gradient-green *,
+button.bg-gradient-green:hover *,
+button.bg-gradient-sunset *,
+button.bg-gradient-sunset:hover *,
+button.bg-gradient-violet *,
+button.bg-gradient-violet:hover * {
+  color: #ffffff !important;
+}
+
+/* Gradient asChild buttons render as <a> — protect their white text */
+a.bg-gradient-primary,
+a.bg-gradient-primary:hover,
+a.bg-gradient-red,
+a.bg-gradient-red:hover,
+a.bg-gradient-green,
+a.bg-gradient-green:hover,
+a.bg-gradient-sunset,
+a.bg-gradient-sunset:hover,
+a.bg-gradient-violet,
+a.bg-gradient-violet:hover {
+  color: #ffffff !important;
+}
+a.bg-gradient-primary *,
+a.bg-gradient-primary:hover *,
+a.bg-gradient-red *,
+a.bg-gradient-red:hover *,
+a.bg-gradient-green *,
+a.bg-gradient-green:hover *,
+a.bg-gradient-sunset *,
+a.bg-gradient-sunset:hover *,
+a.bg-gradient-violet *,
+a.bg-gradient-violet:hover * {
+  color: #ffffff !important;
+}
+
+/* Outline button: keep dark foreground on hover — never go invisible */
+button[data-variant="outline"]:hover,
+button[class*="border"]:not([class*="bg-gradient"]):hover {
+  color: var(--foreground) !important;
+}
+button[data-variant="outline"]:hover *,
+button[class*="border"]:not([class*="bg-gradient"]):hover * {
+  color: var(--foreground) !important;
 }
 
 [data-role="doctor"] {
@@ -468,5 +581,4 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
 .bg-gradient-sunset {
   background: linear-gradient(135deg, #d97706, #f59e0b, #e11d48) !important;
 }
-
 

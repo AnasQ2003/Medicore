@@ -16,6 +16,9 @@ import { bedAPI, patientAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { getUser } from "@/lib/auth";
 
+import { Slideshow } from "@/components/Slideshow";
+import { nurseSlides } from "@/lib/mockData";
+
 export const Route = createFileRoute("/nurse/")({
   head: () => ({ meta: [{ title: "Nurse — MediCore" }] }),
   component: NurseScreen,
@@ -110,8 +113,13 @@ function NurseScreen() {
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> 🧑‍⚕️</h1>
         <p className="text-muted-foreground">Ward Bed & Patient vitals tracking</p>
+      </div>
+
+      {/* Nurse Role Hero Slideshow */}
+      <div className="mb-6">
+        <Slideshow slides={nurseSlides} />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

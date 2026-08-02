@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Calendar, FileText, Pill, Receipt, Download } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/StatCard";
@@ -9,6 +9,9 @@ import { patientNav } from "@/lib/roleNav";
 import { appointmentAPI, prescriptionAPI, billAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { getUser } from "@/lib/auth";
+
+import { Slideshow } from "@/components/Slideshow";
+import { patientSlides } from "@/lib/mockData";
 
 export const Route = createFileRoute("/patient/")({
   head: () => ({ meta: [{ title: "Patient Portal — MediCore" }] }),
@@ -27,6 +30,7 @@ const statusColors: Record<string, string> = {
 };
 
 function PatientScreen() {
+  const navigate = useNavigate();
   const currentUser = getUser();
   const patientName = currentUser?.name || "Patient";
   const { data: rawAppts } = useApi(() => appointmentAPI.getAll());
@@ -51,20 +55,27 @@ function PatientScreen() {
         <p className="text-muted-foreground">Here's your health summary.</p>
       </div>
 
+      {/* Hero Slideshow */}
+      <div className="mb-6">
+        <Slideshow slides={patientSlides} />
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Next Appointment"
           value={nextAppt ? nextAppt.date : "None"}
           change={nextAppt ? nextAppt.doctor : ""}
           icon={Calendar} delay={0}
+          to="/patient/appointments"
         />
-        <StatCard label="Active Prescriptions" value={String(activeRx.length)} icon={Pill} delay={0.05} />
-        <StatCard label="Appointments" value={String(appointments.length)} change={`${upcoming.length} upcoming`} icon={FileText} delay={0.1} />
+        <StatCard label="Active Prescriptions" value={String(activeRx.length)} icon={Pill} delay={0.05} to="/patient/prescriptions" />
+        <StatCard label="Appointments" value={String(appointments.length)} change={`${upcoming.length} upcoming`} icon={FileText} delay={0.1} to="/patient/appointments" />
         <StatCard
           label="Outstanding"
           value={totalOwed > 0 ? `$${totalOwed.toFixed(0)}` : "Cleared"}
           change={`${unpaidBills.length} unpaid bills`}
           icon={Receipt} delay={0.15}
+          to="/patient/bills"
         />
       </div>
 
@@ -72,20 +83,24 @@ function PatientScreen() {
         {/* Upcoming Appointments */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="lg:col-span-2 bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
-          <h3 className="font-semibold mb-4">Upcoming Appointments</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Upcoming Appointments</h3>
+            <Button size="sm" variant="ghost" className="text-xs" onClick={() => navigate({ to: "/patient/appointments" as any })}>View All →</Button>
+          </div>
           <div className="space-y-3">
             {upcoming.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">No upcoming appointments.</div>
             ) : upcoming.slice(0, 4).map((a, i) => (
               <motion.div key={a.id}
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 + i * 0.05 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-secondary/40">
+                onClick={() => navigate({ to: "/patient/appointments" as any })}
+                className="flex items-center gap-4 p-4 rounded-xl bg-secondary/40 hover:bg-secondary transition-all cursor-pointer group">
                 <div className="h-14 w-14 rounded-xl bg-gradient-primary flex flex-col items-center justify-center text-primary-foreground flex-shrink-0">
                   <div className="text-[10px] uppercase">{a.date.split("-")[1] ? `Month ${a.date.split("-")[1]}` : a.date.slice(0, 3)}</div>
                   <div className="font-bold text-lg leading-none">{a.date.split("-")[2] ?? a.date}</div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium">{a.doctor ?? "Doctor TBA"}</div>
+                  <div className="font-medium group-hover:text-primary transition-colors">{a.doctor ?? "Doctor TBA"}</div>
                   <div className="text-xs text-muted-foreground">{a.reason} · {a.time}</div>
                 </div>
                 <Badge className={statusColors[a.status] ?? ""}>{a.status}</Badge>
@@ -97,15 +112,22 @@ function PatientScreen() {
         {/* Recent Prescriptions */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
           className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
-          <h3 className="font-semibold mb-4">Recent Prescriptions</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Recent Prescriptions</h3>
+            <Button size="sm" variant="ghost" className="text-xs" onClick={() => navigate({ to: "/patient/prescriptions" as any })}>View All →</Button>
+          </div>
           <div className="space-y-3">
             {prescriptions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">No prescriptions on file.</div>
             ) : prescriptions.slice(0, 4).map((rx) => (
-              <div key={rx.id} className="p-3 rounded-xl bg-secondary/40">
+              <div
+                key={rx.id}
+                onClick={() => navigate({ to: "/patient/prescriptions" as any })}
+                className="p-3 rounded-xl bg-secondary/40 hover:bg-secondary transition-all cursor-pointer group"
+              >
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="font-medium text-sm">{rx.id}</div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">{rx.id}</div>
                     <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{rx.items}</div>
                   </div>
                   <Button size="icon" variant="ghost" className="h-7 w-7"><Download className="h-3.5 w-3.5" /></Button>

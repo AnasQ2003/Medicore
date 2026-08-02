@@ -14,6 +14,8 @@ import useApi from "@/hooks/useApi";
 import { adminAPI } from "@/lib/api/client";
 
 import { getUser } from "@/lib/auth";
+import { Slideshow } from "@/components/Slideshow";
+import { receptionistSlides } from "@/lib/mockData";
 
 export const Route = createFileRoute("/receptionist/")({
   head: () => ({ meta: [{ title: "Receptionist — MediCore" }] }),
@@ -66,8 +68,13 @@ function ReceptionistScreen() {
   return (
     <AppShell role="receptionist" title="Reception" nav={receptionistNav}>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{receptionName}</span> </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{receptionName}</span> 👋</h1>
         <p className="text-muted-foreground">Register patients & manage appointments.</p>
+      </div>
+
+      {/* Hero Slideshow */}
+      <div className="mb-6">
+        <Slideshow slides={receptionistSlides} />
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

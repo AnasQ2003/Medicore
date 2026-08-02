@@ -196,3 +196,172 @@ export const doctorSlides = [
     ],
   },
 ];
+
+export const patientSlides = [
+  {
+    title: "Your Personal Health & Wellness Care Plan",
+    subtitle: "Patient Portal",
+    badge: "Active Plan",
+    body: "Track your upcoming specialist consultations, download digital lab results instantly, and manage your active prescriptions in one secure place.",
+    gradient: "bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600",
+    emoji: "💖",
+    stats: [
+      { label: "Next Visit", value: "Tomorrow", change: "09:30 AM" },
+      { label: "Active Rx", value: "3 Medications", change: "Refill Ready" },
+      { label: "Lab Reports", value: "2 Ready", change: "PDF Download" },
+    ],
+  },
+  {
+    title: "24/7 Digital Telehealth & EMR Access",
+    subtitle: "Care Anywhere",
+    badge: "Instant Connect",
+    body: "Book virtual consultations with top hospital specialists, share your clinical history safely, and receive instant digital prescriptions.",
+    gradient: "bg-gradient-to-r from-blue-600 via-sky-600 to-teal-600",
+    emoji: "📱",
+    stats: [
+      { label: "Specialists", value: "18 Available", change: "Online" },
+      { label: "Avg Wait", value: "5 mins", change: "Fast Pass" },
+      { label: "EMR Sync", value: "100%", change: "HIPAA Safe" },
+    ],
+  },
+  {
+    title: "Medication Adherence & Daily Reminders",
+    subtitle: "Rx Assistant",
+    badge: "On Schedule",
+    body: "Never miss a dose. Receive automatic push notifications and SMS alerts for morning, afternoon, and bedtime prescriptions.",
+    gradient: "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700",
+    emoji: "💊",
+    stats: [
+      { label: "Doses Taken", value: "14 / 14", change: "100% Score" },
+      { label: "Next Dose", value: "08:00 PM", change: "After Dinner" },
+      { label: "Refills Left", value: "2 Bottles", change: "Auto-order" },
+    ],
+  },
+];
+
+export const nurseSlides = [
+  {
+    title: "Inpatient Ward Vitals & Triage Tracker",
+    subtitle: "Nursing Station",
+    badge: "Live Monitoring",
+    body: "Real-time telemetry and ward bed monitoring. 14 beds occupied, 2 patients requiring priority vitals log, and 1 stat medication order.",
+    gradient: "bg-gradient-to-r from-rose-600 via-red-600 to-pink-700",
+    emoji: "🩺",
+    stats: [
+      { label: "Occupied Beds", value: "14 / 16", change: "87% Capacity" },
+      { label: "Critical Vitals", value: "1 Alert", change: "Room 302" },
+      { label: "Stat Orders", value: "2 Pending", change: "Urgent" },
+    ],
+  },
+  {
+    title: "Medication Dosage & IV Administration Queue",
+    subtitle: "Pharmacy Dispatch",
+    badge: "Shift Routine",
+    body: "All evening antibiotic infusions and pain management medications are prepared. Ensure barcode patient verification before administration.",
+    gradient: "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600",
+    emoji: "💉",
+    stats: [
+      { label: "IV Infusions", value: "6 Scheduled", change: "On Time" },
+      { label: "Oral Doses", value: "18 Administered", change: "Logged" },
+      { label: "Discharge Px", value: "3 Cleared", change: "Ready" },
+    ],
+  },
+  {
+    title: "Shift Handover & Patient Care Notes",
+    subtitle: "Nurse Roster",
+    badge: "Shift Change",
+    body: "Review structured SBAR handover notes between day and night shifts. All nursing notes automatically saved to patient EMR files.",
+    gradient: "bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600",
+    emoji: "📋",
+    stats: [
+      { label: "Handovers", value: "8 Completed", change: "Signed" },
+      { label: "Care Plans", value: "14 Active", change: "Updated" },
+      { label: "Staff Duty", value: "6 Nurses", change: "On Floor" },
+    ],
+  },
+];
+
+export const receptionistSlides = [
+  {
+    title: "Front Desk Registration & OPD Queue Hub",
+    subtitle: "Reception Control",
+    badge: "Live Queue",
+    body: "38 patients registered today. Fast-track new patient onboarding, generate encrypted QR medical cards, and dispatch tokens.",
+    gradient: "bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600",
+    emoji: "🎫",
+    stats: [
+      { label: "Registrations", value: "38 Today", change: "+12%" },
+      { label: "Token Queue", value: "6 Waiting", change: "< 8m wait" },
+      { label: "Check-ins", value: "94%", change: "High Flow" },
+    ],
+  },
+  {
+    title: "Doctor Availability & Consultation Slot Management",
+    subtitle: "Schedule Roster",
+    badge: "OPD Roster",
+    body: "Dr. Sarah Khan (Cardiology) has 4 open slots remaining. Dr. Imran Ali (Dermatology) is fully booked until 16:00 PM.",
+    gradient: "bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600",
+    emoji: "👨‍⚕️",
+    stats: [
+      { label: "On Duty", value: "8 Doctors", change: "Active" },
+      { label: "Open Slots", value: "12 Left", change: "Booking" },
+      { label: "Emergencies", value: "0 In Queue", change: "Clear" },
+    ],
+  },
+  {
+    title: "Billing Clearance & OPD Fee Collection",
+    subtitle: "Counter 1 & 2",
+    badge: "Fast Pay",
+    body: "Process credit card, cash, and insurance clearance instantly. Automatic invoice generation and SMS receipt dispatch.",
+    gradient: "bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700",
+    emoji: "💳",
+    stats: [
+      { label: "Invoices", value: "42 Settled", change: "Cleared" },
+      { label: "Insurance", value: "18 Verified", change: "Instant" },
+      { label: "Receipts", value: "100%", change: "Digital" },
+    ],
+  },
+];
+
+export const adminSlides = [
+  {
+    title: "Enterprise Hospital Operations & Network Analytics",
+    subtitle: "Super Admin Command",
+    badge: "Executive Panel",
+    body: "MediCore network operating at peak efficiency across 4 hospital branches. Overall bed occupancy is 78% with zero system downtime.",
+    gradient: "bg-gradient-to-r from-violet-600 via-indigo-700 to-purple-800",
+    emoji: "🏥",
+    stats: [
+      { label: "Active Doctors", value: "142 Staff", change: "+4 this mo" },
+      { label: "Bed Occupancy", value: "78%", change: "Optimal" },
+      { label: "Daily Patients", value: "1,240", change: "+18%" },
+    ],
+  },
+  {
+    title: "Financial Audits & Revenue Clearance Overview",
+    subtitle: "Finance & Billing",
+    badge: "Audit Verified",
+    body: "Monthly revenue targets reached 94% of budget projection. Insurance claim turnaround time reduced to 1.8 business days.",
+    gradient: "bg-gradient-to-r from-emerald-600 via-teal-700 to-green-800",
+    emoji: "📊",
+    stats: [
+      { label: "Monthly Rev", value: "$420,000", change: "+8.4%" },
+      { label: "Claims Cleared", value: "98.2%", change: "Fast Track" },
+      { label: "Audit Score", value: "A+", change: "Compliant" },
+    ],
+  },
+  {
+    title: "Security, Session Audits & PMC License Compliance",
+    subtitle: "System Integrity",
+    badge: "HIPAA Compliant",
+    body: "Zero security incidents logged. Real-time session monitoring active for all 150 concurrent medical staff users.",
+    gradient: "bg-gradient-to-r from-rose-600 via-pink-700 to-red-800",
+    emoji: "🛡️",
+    stats: [
+      { label: "Audit Log", value: "Active", change: "100% Tracked" },
+      { label: "PMC Licenses", value: "All Verified", change: "Valid" },
+      { label: "System Uptime", value: "99.99%", change: "Stable" },
+    ],
+  },
+];
+

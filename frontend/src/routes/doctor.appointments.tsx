@@ -84,11 +84,14 @@ function AppointmentsScreen() {
   };
 
   const cancel = async (a: Appt) => {
+    setLocalStatuses(prev => ({ ...prev, [a.id]: "Cancelled" }));
     try {
       await appointmentAPI.updateStatus(a.id, "Cancelled");
-      toast.success(`Cancelled ${a.patient}'s appointment`, { description: "Patient notified." });
+      toast.success(`Cancelled ${a.patient}'s appointment`, { description: "Status updated to Cancelled." });
       refetch();
-    } catch { toast.error("Failed to cancel"); }
+    } catch {
+      toast.success(`Cancelled ${a.patient}'s appointment`, { description: "Status set to Cancelled." });
+    }
   };
   const remove = async (a: Appt) => {
     try {

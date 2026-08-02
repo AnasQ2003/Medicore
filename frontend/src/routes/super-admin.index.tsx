@@ -15,8 +15,9 @@ import {
 import { superAdminNav } from "@/lib/roleNav";
 import { adminAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
-import { useState, useMemo } from "react";
-import { getUser } from "@/lib/auth";
+import { getUser, getLoginAuditLogs, type LoginAuditLog } from "@/lib/auth";
+import { Slideshow } from "@/components/Slideshow";
+import { adminSlides } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -200,6 +201,11 @@ function SuperAdminScreen() {
             System Backup
           </Button>
         </div>
+      </div>
+
+      {/* Executive Hero Slideshow */}
+      <div className="mb-6">
+        <Slideshow slides={adminSlides} />
       </div>
 
       {/* Interactive Stat Cards Grid */}
@@ -559,6 +565,85 @@ function SuperAdminScreen() {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+
+      {/* TODAY'S USER LOGIN AUDIT TRAIL — Super Admin Exclusive View */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card mt-6"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-gradient-violet text-white text-[10px] uppercase font-bold tracking-wider">Super Admin Exclusive</Badge>
+              <span className="text-xs text-muted-foreground">• Live Login Monitor</span>
+            </div>
+            <h3 className="font-bold text-lg flex items-center gap-2 mt-1">
+              <Users className="h-5 w-5 text-violet-500" />
+              Today's User Login & Session Audit Trail
+            </h3>
+            <p className="text-xs text-muted-foreground">Comprehensive record of all role logins, exact timestamps, and network access points</p>
+          </div>
+          <Badge variant="outline" className="self-start sm:self-auto bg-emerald-50 text-emerald-700 border-emerald-200 text-xs px-3 py-1 font-semibold flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            {getLoginAuditLogs().length} Active Logins Logged Today
+          </Badge>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground bg-secondary/20">
+                <th className="p-3 font-semibold">User & Email</th>
+                <th className="p-3 font-semibold">Role</th>
+                <th className="p-3 font-semibold">Exact Login Time</th>
+                <th className="p-3 font-semibold">IP Address</th>
+                <th className="p-3 font-semibold">Client Device</th>
+                <th className="p-3 font-semibold text-right">Auth Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {getLoginAuditLogs().map((log: LoginAuditLog) => {
+                const roleBadgeColors: Record<string, string> = {
+                  'super-admin': 'bg-purple-100 text-purple-700 border-purple-200',
+                  doctor: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                  nurse: 'bg-rose-100 text-rose-700 border-rose-200',
+                  receptionist: 'bg-sky-100 text-sky-700 border-sky-200',
+                  patient: 'bg-amber-100 text-amber-700 border-amber-200',
+                };
+                return (
+                  <tr key={log.id} className="hover:bg-secondary/30 transition-colors">
+                    <td className="p-3">
+                      <div className="font-semibold text-foreground">{log.name}</div>
+                      <div className="text-[11px] text-muted-foreground font-mono">{log.email}</div>
+                    </td>
+                    <td className="p-3">
+                      <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0.5 ${roleBadgeColors[log.role] || 'bg-gray-100 text-gray-700'}`}>
+                        {log.role}
+                      </Badge>
+                    </td>
+                    <td className="p-3 font-medium text-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        {log.loginTime}
+                      </div>
+                    </td>
+                    <td className="p-3 font-mono text-muted-foreground">{log.ip}</td>
+                    <td className="p-3 text-muted-foreground">{log.device}</td>
+                    <td className="p-3 text-right">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[11px] border border-emerald-200">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                        {log.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
