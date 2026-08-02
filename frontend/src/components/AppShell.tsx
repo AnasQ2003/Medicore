@@ -50,7 +50,23 @@ export function AppShell({
   const [user, setUser] = useState<MockUser | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [userNotifs, setUserNotifs] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    const loadNotifs = () => {
+      const key = `medicore_user_notifications_${user.email}`;
+      const saved = JSON.parse(localStorage.getItem(key) || "[]");
+      setUserNotifs(saved);
+    };
+    loadNotifs();
+    window.addEventListener("storage", loadNotifs);
+    window.addEventListener("medicore_leave_requests_updated", loadNotifs);
+    return () => {
+      window.removeEventListener("storage", loadNotifs);
+      window.removeEventListener("medicore_leave_requests_updated", loadNotifs);
+    };
+  }, [user?.email]);
   const [collapsed, setCollapsed] = useState(() => {
     // Persist collapsed state in localStorage
     if (typeof window !== "undefined") {
@@ -119,8 +135,8 @@ export function AppShell({
     }
   }, [collapsed, role]);
 
-  const onLogout = () => { clearUser(); navigate({ to: "/login" }); };
-  const unread = defaultNotifs.filter((n) => n.unread).length;
+  const allNotifs = [...userNotifs, ...defaultNotifs];
+  const unread = allNotifs.filter((n) => n.unread).length;
   const accent = roleAccent[role];
   const profileBase = `/${role}/profile`;
   const sidebarWidth = collapsed ? "w-16" : "w-64";
@@ -465,7 +481,7 @@ export function AppShell({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <div className="max-h-80 overflow-y-auto">
-                  {defaultNotifs.slice(0, 6).map((n) => (
+                  {allNotifs.slice(0, 6).map((n) => (
                     <DropdownMenuItem key={n.id} asChild>
                       <Link
                         to={notifTarget(role, n.type) as any}

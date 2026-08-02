@@ -17,6 +17,7 @@ import { adminAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { getUser, getLoginAuditLogs, type LoginAuditLog } from "@/lib/auth";
 import { Slideshow } from "@/components/Slideshow";
+import { AdminLeaveApprovalDesk } from "@/components/AdminLeaveApprovalDesk";
 import { adminSlides } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -503,6 +504,11 @@ function SuperAdminScreen() {
             <RefreshCw className="h-3.5 w-3.5 mr-2" /> Run Health Diagnostics
           </Button>
         </motion.div>
+      </div>
+
+      {/* Admin Leave & Schedule Exception Approval Hub */}
+      <div className="mb-8">
+        <AdminLeaveApprovalDesk />
       </div>
 
       {/* Interactive System Audit Log Table */}

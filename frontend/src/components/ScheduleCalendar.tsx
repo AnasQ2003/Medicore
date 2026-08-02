@@ -7,6 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getUser, type Role } from "@/lib/auth";
+import { getLeaveRequests, type LeaveRequest } from "@/lib/leaveStore";
+import { LeaveRequestModal } from "@/components/LeaveRequestModal";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -72,17 +75,25 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [leaveOpen, setLeaveOpen] = useState(false);
-  const [leaveFrom, setLeaveFrom] = useState("");
-  const [leaveTo, setLeaveTo] = useState("");
-  const [leaveReason, setLeaveReason] = useState("");
-  const [leaveType, setLeaveType] = useState("Medical");
+  const user = getUser();
+  const currentRole: Role = (role as Role) || user?.role || "nurse";
 
-  // Mock leave applications stored in state
-  const [applications, setApplications] = useState<LeaveApplication[]>([
-    { id: "LV-001", from: "2026-07-10", to: "2026-07-11", reason: "Medical checkup", status: "approved" },
-    { id: "LV-002", from: "2026-06-20", to: "2026-06-21", reason: "Family event", status: "approved" },
-    { id: "LV-003", from: "2026-07-25", to: "2026-07-26", reason: "Personal leave", status: "pending" },
-  ]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+
+  const loadRequests = () => {
+    const all = getLeaveRequests();
+    const filtered = all.filter(
+      (r) => r.applicantEmail === user?.email || r.applicantRole === currentRole
+    );
+    setLeaveRequests(filtered);
+  };
+
+  useEffect(() => {
+    loadRequests();
+    const handleUpdate = () => loadRequests();
+    window.addEventListener("medicore_leave_requests_updated", handleUpdate);
+    return () => window.removeEventListener("medicore_leave_requests_updated", handleUpdate);
+  }, [user, currentRole]);
 
   // Is the selected month/year in the future (beyond current month)?
   const isFutureMonth = viewYear > today.getFullYear() ||
@@ -97,7 +108,8 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
   const absent = records.filter(r => r.status === "absent").length;
   const leaveDays = records.filter(r => r.status === "leave").length;
   const totalWorkdays = records.filter(r => r.status !== "off").length;
-  const remainingLeave = Math.max(0, 18 - applications.filter(a => a.status === "approved").length * 2);
+  const approvedCount = leaveRequests.filter(a => a.status === "Approved").reduce((sum, r) => sum + r.totalDays, 0);
+  const remainingLeave = Math.max(0, 18 - approvedCount);
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
@@ -292,76 +304,42 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
         </div>
 
         <div className="space-y-2">
-          {applications.length === 0 && (
+          {leaveRequests.length === 0 && (
             <div className="text-sm text-muted-foreground text-center py-6">No leave applications yet.</div>
           )}
-          {applications.map(app => (
+          {leaveRequests.map(app => (
             <div key={app.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border bg-background hover:bg-muted/30 transition-colors">
               <div className="flex items-center gap-3">
-                <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold
-                  ${app.status === "approved" ? "bg-emerald-100 text-emerald-700" :
-                    app.status === "rejected" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}
+                <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold
+                  ${app.status === "Approved" ? "bg-emerald-100 text-emerald-700" :
+                    app.status === "Rejected" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}
                 `}>
                   {app.id.slice(-3)}
                 </div>
                 <div>
-                  <div className="text-sm font-semibold">{app.reason}</div>
-                  <div className="text-xs text-muted-foreground">{app.from} → {app.to}</div>
+                  <div className="text-sm font-semibold">{app.reason} ({app.requestType})</div>
+                  <div className="text-xs text-muted-foreground">{app.fromDate} → {app.toDate} ({app.totalDays}d)</div>
                 </div>
               </div>
               <Badge className={
-                app.status === "approved" ? "bg-emerald-100 text-emerald-700 border-emerald-200" :
-                app.status === "rejected" ? "bg-rose-100 text-rose-700 border-rose-200" :
+                app.status === "Approved" ? "bg-emerald-100 text-emerald-700 border-emerald-200" :
+                app.status === "Rejected" ? "bg-rose-100 text-rose-700 border-rose-200" :
                 "bg-amber-100 text-amber-700 border-amber-200"
               }>
-                {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                {app.status === "Pending" ? "⏳ Pending Admin Action" : app.status}
               </Badge>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Apply for Leave Dialog */}
-      <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Apply for Leave
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>From Date</Label>
-                <Input type="date" value={leaveFrom} onChange={e => setLeaveFrom(e.target.value)} className="mt-1.5" />
-              </div>
-              <div>
-                <Label>To Date</Label>
-                <Input type="date" value={leaveTo} onChange={e => setLeaveTo(e.target.value)} className="mt-1.5" />
-              </div>
-            </div>
-            <div>
-              <Label>Leave Type</Label>
-              <select value={leaveType} onChange={e => setLeaveType(e.target.value)}
-                className="mt-1.5 h-10 w-full rounded-xl border bg-background px-3 text-sm">
-                {["Medical", "Annual", "Emergency", "Maternity/Paternity", "Study", "Unpaid"].map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label>Reason / Notes</Label>
-              <Input value={leaveReason} onChange={e => setLeaveReason(e.target.value)}
-                placeholder="Brief reason for leave..." className="mt-1.5" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setLeaveOpen(false)}>Cancel</Button>
-            <Button onClick={applyLeave} className={`${accentClass} text-white`}>Submit Application</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Shared Leave Request Modal */}
+      <LeaveRequestModal
+        open={leaveOpen}
+        onOpenChange={setLeaveOpen}
+        role={currentRole}
+        onRequestSubmitted={loadRequests}
+      />
     </div>
   );
 }
