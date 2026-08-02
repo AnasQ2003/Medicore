@@ -56,10 +56,10 @@ export function AppShell({
   const [pageLoading, setPageLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Loading MediCore Module…");
 
-  // Route transition loader trigger
+  // Route transition loader trigger — stays ~3 seconds for smooth 3D animation telemetry
   useEffect(() => {
     setPageLoading(true);
-    const timer = setTimeout(() => setPageLoading(false), 400);
+    const timer = setTimeout(() => setPageLoading(false), 2600);
     return () => clearTimeout(timer);
   }, [pathname]);
 
