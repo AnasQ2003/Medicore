@@ -51,69 +51,87 @@
    options are readable on hover in every role theme.
    ===================================================== */
 
-/* Radix UI DropdownMenu / ContextMenu / Select items */
+/* Radix UI DropdownMenu / ContextMenu / Select items — light backgrounds */
 [data-radix-collection-item]:hover,
 [data-radix-collection-item]:focus,
 [data-radix-collection-item][data-highlighted],
 [data-highlighted],
-[role="menuitem"]:hover,
-[role="menuitem"]:focus,
-[role="menuitem"][data-highlighted],
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover,
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus,
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted],
 [role="option"]:hover,
 [role="option"]:focus,
 [role="option"][data-highlighted],
-[role="listitem"]:hover,
 .dropdown-item:hover,
 .dropdown-item:focus,
 .menu-item:hover,
 .menu-item:focus {
-  background-color: oklch(0.55 0.18 245 / 12%) !important;
-  color: oklch(0.2 0.04 245) !important;
+  background-color: oklch(0.52 0.2 250 / 14%) !important;
+  color: oklch(0.18 0.03 245) !important;
   outline: none !important;
+  font-weight: 500;
 }
 
-/* Force all child text/icons to remain visible */
-[data-highlighted] *,
-[role="menuitem"]:hover *,
-[role="menuitem"]:focus *,
-[role="menuitem"][data-highlighted] *,
+/* Force all child text/icons to remain visible inside dropdowns */
+[data-highlighted]:not(.glass-sidebar *):not(.sidebar-nav *) *,
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover *,
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus *,
+[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted] *,
 [role="option"]:hover *,
 [role="option"]:focus *,
 [role="option"][data-highlighted] * {
   color: inherit !important;
 }
 
-/* Destructive menu items stay red on hover */
+/* Destructive menu items stay red on hover — light dropdown backgrounds */
 [role="menuitem"].text-destructive:hover,
 [role="menuitem"].text-destructive:focus,
 [role="menuitem"].text-destructive[data-highlighted] {
-  background-color: oklch(0.97 0.02 15) !important;
-  color: oklch(0.55 0.22 15) !important;
+  background-color: oklch(0.6 0.23 25 / 10%) !important;
+  color: oklch(0.52 0.24 25) !important;
+  font-weight: 600 !important;
 }
 [role="menuitem"].text-destructive:hover *,
 [role="menuitem"].text-destructive:focus *,
 [role="menuitem"].text-destructive[data-highlighted] * {
-  color: oklch(0.55 0.22 15) !important;
+  color: oklch(0.52 0.24 25) !important;
 }
 
 /* Select/Combobox options - ensure dark text on light bg */
 [role="option"][aria-selected="true"],
 [role="option"][data-selected] {
-  background-color: oklch(0.55 0.18 245 / 15%) !important;
-  color: oklch(0.2 0.04 245) !important;
+  background-color: oklch(0.52 0.2 250 / 18%) !important;
+  color: oklch(0.18 0.03 245) !important;
   font-weight: 600 !important;
 }
 
-/* Sidebar nav items - keep white text */
-.glass-sidebar [role="menuitem"]:hover,
+/* ================= SIDEBAR NAV ITEMS (dark background) ================= */
+/* Always keep WHITE text on dark sidebar — never fade */
+.glass-sidebar a,
+.glass-sidebar [role="menuitem"],
+.sidebar-nav a,
+.sidebar-nav [role="menuitem"] {
+  color: #f1f5f9 !important;
+}
 .glass-sidebar a:hover,
-.sidebar-nav a:hover {
+.glass-sidebar a:focus,
+.glass-sidebar [role="menuitem"]:hover,
+.glass-sidebar [role="menuitem"]:focus,
+.sidebar-nav a:hover,
+.sidebar-nav a:focus {
+  background-color: rgba(255, 255, 255, 0.2) !important;
   color: #ffffff !important;
 }
-.glass-sidebar [role="menuitem"]:hover *,
 .glass-sidebar a:hover *,
-.sidebar-nav a:hover * {
-  color: #ffffff !important;
+.glass-sidebar a:focus *,
+.glass-sidebar [role="menuitem"]:hover *,
+.glass-sidebar [role="menuitem"]:focus *,
+.sidebar-nav a:hover *,
+.sidebar-nav a:focus *,
+.glass-sidebar a *,
+.glass-sidebar [role="menuitem"] *,
+.sidebar-nav a * {
+  color: inherit !important;
 }
 
 

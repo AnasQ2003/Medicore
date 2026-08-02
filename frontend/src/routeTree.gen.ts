@@ -29,6 +29,7 @@ import { Route as SuperAdminNotificationsRouteImport } from './routes/super-admi
 import { Route as SuperAdminHospitalsRouteImport } from './routes/super-admin.hospitals'
 import { Route as SuperAdminDoctorsRouteImport } from './routes/super-admin.doctors'
 import { Route as SuperAdminAnalyticsRouteImport } from './routes/super-admin.analytics'
+import { Route as ReceptionistSettingsRouteImport } from './routes/receptionist.settings'
 import { Route as ReceptionistScheduleRouteImport } from './routes/receptionist.schedule'
 import { Route as ReceptionistRegisterRouteImport } from './routes/receptionist.register'
 import { Route as ReceptionistQueueRouteImport } from './routes/receptionist.queue'
@@ -37,6 +38,7 @@ import { Route as ReceptionistNotificationsRouteImport } from './routes/receptio
 import { Route as ReceptionistDoctorsRouteImport } from './routes/receptionist.doctors'
 import { Route as ReceptionistBillingRouteImport } from './routes/receptionist.billing'
 import { Route as ReceptionistAppointmentsRouteImport } from './routes/receptionist.appointments'
+import { Route as PatientSettingsRouteImport } from './routes/patient.settings'
 import { Route as PatientScheduleRouteImport } from './routes/patient.schedule'
 import { Route as PatientReportsRouteImport } from './routes/patient.reports'
 import { Route as PatientProfileRouteImport } from './routes/patient.profile'
@@ -47,12 +49,14 @@ import { Route as PatientBillsRouteImport } from './routes/patient.bills'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient.appointments'
 import { Route as NurseVitalsRouteImport } from './routes/nurse.vitals'
 import { Route as NurseTasksRouteImport } from './routes/nurse.tasks'
+import { Route as NurseSettingsRouteImport } from './routes/nurse.settings'
 import { Route as NurseScheduleRouteImport } from './routes/nurse.schedule'
 import { Route as NursePatientsRouteImport } from './routes/nurse.patients'
 import { Route as NurseNotificationsRouteImport } from './routes/nurse.notifications'
 import { Route as NurseMedicationsRouteImport } from './routes/nurse.medications'
 import { Route as NurseInjectionsRouteImport } from './routes/nurse.injections'
 import { Route as NurseBedsRouteImport } from './routes/nurse.beds'
+import { Route as DoctorSettingsRouteImport } from './routes/doctor.settings'
 import { Route as DoctorScheduleRouteImport } from './routes/doctor.schedule'
 import { Route as DoctorReportsRouteImport } from './routes/doctor.reports'
 import { Route as DoctorProfileRouteImport } from './routes/doctor.profile'
@@ -164,6 +168,11 @@ const SuperAdminAnalyticsRoute = SuperAdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => SuperAdminRoute,
 } as any)
+const ReceptionistSettingsRoute = ReceptionistSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ReceptionistRoute,
+} as any)
 const ReceptionistScheduleRoute = ReceptionistScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -206,6 +215,11 @@ const ReceptionistAppointmentsRoute =
     path: '/appointments',
     getParentRoute: () => ReceptionistRoute,
   } as any)
+const PatientSettingsRoute = PatientSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PatientRoute,
+} as any)
 const PatientScheduleRoute = PatientScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -256,6 +270,11 @@ const NurseTasksRoute = NurseTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => NurseRoute,
 } as any)
+const NurseSettingsRoute = NurseSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => NurseRoute,
+} as any)
 const NurseScheduleRoute = NurseScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -285,6 +304,11 @@ const NurseBedsRoute = NurseBedsRouteImport.update({
   id: '/beds',
   path: '/beds',
   getParentRoute: () => NurseRoute,
+} as any)
+const DoctorSettingsRoute = DoctorSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DoctorRoute,
 } as any)
 const DoctorScheduleRoute = DoctorScheduleRouteImport.update({
   id: '/schedule',
@@ -354,12 +378,14 @@ export interface FileRoutesByFullPath {
   '/doctor/profile': typeof DoctorProfileRoute
   '/doctor/reports': typeof DoctorReportsRoute
   '/doctor/schedule': typeof DoctorScheduleRoute
+  '/doctor/settings': typeof DoctorSettingsRoute
   '/nurse/beds': typeof NurseBedsRoute
   '/nurse/injections': typeof NurseInjectionsRoute
   '/nurse/medications': typeof NurseMedicationsRoute
   '/nurse/notifications': typeof NurseNotificationsRoute
   '/nurse/patients': typeof NursePatientsRoute
   '/nurse/schedule': typeof NurseScheduleRoute
+  '/nurse/settings': typeof NurseSettingsRoute
   '/nurse/tasks': typeof NurseTasksRoute
   '/nurse/vitals': typeof NurseVitalsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
@@ -370,6 +396,7 @@ export interface FileRoutesByFullPath {
   '/patient/profile': typeof PatientProfileRoute
   '/patient/reports': typeof PatientReportsRoute
   '/patient/schedule': typeof PatientScheduleRoute
+  '/patient/settings': typeof PatientSettingsRoute
   '/receptionist/appointments': typeof ReceptionistAppointmentsRoute
   '/receptionist/billing': typeof ReceptionistBillingRoute
   '/receptionist/doctors': typeof ReceptionistDoctorsRoute
@@ -378,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/receptionist/queue': typeof ReceptionistQueueRoute
   '/receptionist/register': typeof ReceptionistRegisterRoute
   '/receptionist/schedule': typeof ReceptionistScheduleRoute
+  '/receptionist/settings': typeof ReceptionistSettingsRoute
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
@@ -404,12 +432,14 @@ export interface FileRoutesByTo {
   '/doctor/profile': typeof DoctorProfileRoute
   '/doctor/reports': typeof DoctorReportsRoute
   '/doctor/schedule': typeof DoctorScheduleRoute
+  '/doctor/settings': typeof DoctorSettingsRoute
   '/nurse/beds': typeof NurseBedsRoute
   '/nurse/injections': typeof NurseInjectionsRoute
   '/nurse/medications': typeof NurseMedicationsRoute
   '/nurse/notifications': typeof NurseNotificationsRoute
   '/nurse/patients': typeof NursePatientsRoute
   '/nurse/schedule': typeof NurseScheduleRoute
+  '/nurse/settings': typeof NurseSettingsRoute
   '/nurse/tasks': typeof NurseTasksRoute
   '/nurse/vitals': typeof NurseVitalsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
@@ -420,6 +450,7 @@ export interface FileRoutesByTo {
   '/patient/profile': typeof PatientProfileRoute
   '/patient/reports': typeof PatientReportsRoute
   '/patient/schedule': typeof PatientScheduleRoute
+  '/patient/settings': typeof PatientSettingsRoute
   '/receptionist/appointments': typeof ReceptionistAppointmentsRoute
   '/receptionist/billing': typeof ReceptionistBillingRoute
   '/receptionist/doctors': typeof ReceptionistDoctorsRoute
@@ -428,6 +459,7 @@ export interface FileRoutesByTo {
   '/receptionist/queue': typeof ReceptionistQueueRoute
   '/receptionist/register': typeof ReceptionistRegisterRoute
   '/receptionist/schedule': typeof ReceptionistScheduleRoute
+  '/receptionist/settings': typeof ReceptionistSettingsRoute
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
@@ -461,12 +493,14 @@ export interface FileRoutesById {
   '/doctor/profile': typeof DoctorProfileRoute
   '/doctor/reports': typeof DoctorReportsRoute
   '/doctor/schedule': typeof DoctorScheduleRoute
+  '/doctor/settings': typeof DoctorSettingsRoute
   '/nurse/beds': typeof NurseBedsRoute
   '/nurse/injections': typeof NurseInjectionsRoute
   '/nurse/medications': typeof NurseMedicationsRoute
   '/nurse/notifications': typeof NurseNotificationsRoute
   '/nurse/patients': typeof NursePatientsRoute
   '/nurse/schedule': typeof NurseScheduleRoute
+  '/nurse/settings': typeof NurseSettingsRoute
   '/nurse/tasks': typeof NurseTasksRoute
   '/nurse/vitals': typeof NurseVitalsRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
@@ -477,6 +511,7 @@ export interface FileRoutesById {
   '/patient/profile': typeof PatientProfileRoute
   '/patient/reports': typeof PatientReportsRoute
   '/patient/schedule': typeof PatientScheduleRoute
+  '/patient/settings': typeof PatientSettingsRoute
   '/receptionist/appointments': typeof ReceptionistAppointmentsRoute
   '/receptionist/billing': typeof ReceptionistBillingRoute
   '/receptionist/doctors': typeof ReceptionistDoctorsRoute
@@ -485,6 +520,7 @@ export interface FileRoutesById {
   '/receptionist/queue': typeof ReceptionistQueueRoute
   '/receptionist/register': typeof ReceptionistRegisterRoute
   '/receptionist/schedule': typeof ReceptionistScheduleRoute
+  '/receptionist/settings': typeof ReceptionistSettingsRoute
   '/super-admin/analytics': typeof SuperAdminAnalyticsRoute
   '/super-admin/doctors': typeof SuperAdminDoctorsRoute
   '/super-admin/hospitals': typeof SuperAdminHospitalsRoute
@@ -519,12 +555,14 @@ export interface FileRouteTypes {
     | '/doctor/profile'
     | '/doctor/reports'
     | '/doctor/schedule'
+    | '/doctor/settings'
     | '/nurse/beds'
     | '/nurse/injections'
     | '/nurse/medications'
     | '/nurse/notifications'
     | '/nurse/patients'
     | '/nurse/schedule'
+    | '/nurse/settings'
     | '/nurse/tasks'
     | '/nurse/vitals'
     | '/patient/appointments'
@@ -535,6 +573,7 @@ export interface FileRouteTypes {
     | '/patient/profile'
     | '/patient/reports'
     | '/patient/schedule'
+    | '/patient/settings'
     | '/receptionist/appointments'
     | '/receptionist/billing'
     | '/receptionist/doctors'
@@ -543,6 +582,7 @@ export interface FileRouteTypes {
     | '/receptionist/queue'
     | '/receptionist/register'
     | '/receptionist/schedule'
+    | '/receptionist/settings'
     | '/super-admin/analytics'
     | '/super-admin/doctors'
     | '/super-admin/hospitals'
@@ -569,12 +609,14 @@ export interface FileRouteTypes {
     | '/doctor/profile'
     | '/doctor/reports'
     | '/doctor/schedule'
+    | '/doctor/settings'
     | '/nurse/beds'
     | '/nurse/injections'
     | '/nurse/medications'
     | '/nurse/notifications'
     | '/nurse/patients'
     | '/nurse/schedule'
+    | '/nurse/settings'
     | '/nurse/tasks'
     | '/nurse/vitals'
     | '/patient/appointments'
@@ -585,6 +627,7 @@ export interface FileRouteTypes {
     | '/patient/profile'
     | '/patient/reports'
     | '/patient/schedule'
+    | '/patient/settings'
     | '/receptionist/appointments'
     | '/receptionist/billing'
     | '/receptionist/doctors'
@@ -593,6 +636,7 @@ export interface FileRouteTypes {
     | '/receptionist/queue'
     | '/receptionist/register'
     | '/receptionist/schedule'
+    | '/receptionist/settings'
     | '/super-admin/analytics'
     | '/super-admin/doctors'
     | '/super-admin/hospitals'
@@ -625,12 +669,14 @@ export interface FileRouteTypes {
     | '/doctor/profile'
     | '/doctor/reports'
     | '/doctor/schedule'
+    | '/doctor/settings'
     | '/nurse/beds'
     | '/nurse/injections'
     | '/nurse/medications'
     | '/nurse/notifications'
     | '/nurse/patients'
     | '/nurse/schedule'
+    | '/nurse/settings'
     | '/nurse/tasks'
     | '/nurse/vitals'
     | '/patient/appointments'
@@ -641,6 +687,7 @@ export interface FileRouteTypes {
     | '/patient/profile'
     | '/patient/reports'
     | '/patient/schedule'
+    | '/patient/settings'
     | '/receptionist/appointments'
     | '/receptionist/billing'
     | '/receptionist/doctors'
@@ -649,6 +696,7 @@ export interface FileRouteTypes {
     | '/receptionist/queue'
     | '/receptionist/register'
     | '/receptionist/schedule'
+    | '/receptionist/settings'
     | '/super-admin/analytics'
     | '/super-admin/doctors'
     | '/super-admin/hospitals'
@@ -818,6 +866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuperAdminAnalyticsRouteImport
       parentRoute: typeof SuperAdminRoute
     }
+    '/receptionist/settings': {
+      id: '/receptionist/settings'
+      path: '/settings'
+      fullPath: '/receptionist/settings'
+      preLoaderRoute: typeof ReceptionistSettingsRouteImport
+      parentRoute: typeof ReceptionistRoute
+    }
     '/receptionist/schedule': {
       id: '/receptionist/schedule'
       path: '/schedule'
@@ -873,6 +928,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/receptionist/appointments'
       preLoaderRoute: typeof ReceptionistAppointmentsRouteImport
       parentRoute: typeof ReceptionistRoute
+    }
+    '/patient/settings': {
+      id: '/patient/settings'
+      path: '/settings'
+      fullPath: '/patient/settings'
+      preLoaderRoute: typeof PatientSettingsRouteImport
+      parentRoute: typeof PatientRoute
     }
     '/patient/schedule': {
       id: '/patient/schedule'
@@ -944,6 +1006,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NurseTasksRouteImport
       parentRoute: typeof NurseRoute
     }
+    '/nurse/settings': {
+      id: '/nurse/settings'
+      path: '/settings'
+      fullPath: '/nurse/settings'
+      preLoaderRoute: typeof NurseSettingsRouteImport
+      parentRoute: typeof NurseRoute
+    }
     '/nurse/schedule': {
       id: '/nurse/schedule'
       path: '/schedule'
@@ -985,6 +1054,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/nurse/beds'
       preLoaderRoute: typeof NurseBedsRouteImport
       parentRoute: typeof NurseRoute
+    }
+    '/doctor/settings': {
+      id: '/doctor/settings'
+      path: '/settings'
+      fullPath: '/doctor/settings'
+      preLoaderRoute: typeof DoctorSettingsRouteImport
+      parentRoute: typeof DoctorRoute
     }
     '/doctor/schedule': {
       id: '/doctor/schedule'
@@ -1082,6 +1158,7 @@ interface DoctorRouteChildren {
   DoctorProfileRoute: typeof DoctorProfileRoute
   DoctorReportsRoute: typeof DoctorReportsRoute
   DoctorScheduleRoute: typeof DoctorScheduleRoute
+  DoctorSettingsRoute: typeof DoctorSettingsRoute
   DoctorIndexRoute: typeof DoctorIndexRoute
 }
 
@@ -1094,6 +1171,7 @@ const DoctorRouteChildren: DoctorRouteChildren = {
   DoctorProfileRoute: DoctorProfileRoute,
   DoctorReportsRoute: DoctorReportsRoute,
   DoctorScheduleRoute: DoctorScheduleRoute,
+  DoctorSettingsRoute: DoctorSettingsRoute,
   DoctorIndexRoute: DoctorIndexRoute,
 }
 
@@ -1107,6 +1185,7 @@ interface NurseRouteChildren {
   NurseNotificationsRoute: typeof NurseNotificationsRoute
   NursePatientsRoute: typeof NursePatientsRoute
   NurseScheduleRoute: typeof NurseScheduleRoute
+  NurseSettingsRoute: typeof NurseSettingsRoute
   NurseTasksRoute: typeof NurseTasksRoute
   NurseVitalsRoute: typeof NurseVitalsRoute
   NurseIndexRoute: typeof NurseIndexRoute
@@ -1119,6 +1198,7 @@ const NurseRouteChildren: NurseRouteChildren = {
   NurseNotificationsRoute: NurseNotificationsRoute,
   NursePatientsRoute: NursePatientsRoute,
   NurseScheduleRoute: NurseScheduleRoute,
+  NurseSettingsRoute: NurseSettingsRoute,
   NurseTasksRoute: NurseTasksRoute,
   NurseVitalsRoute: NurseVitalsRoute,
   NurseIndexRoute: NurseIndexRoute,
@@ -1135,6 +1215,7 @@ interface PatientRouteChildren {
   PatientProfileRoute: typeof PatientProfileRoute
   PatientReportsRoute: typeof PatientReportsRoute
   PatientScheduleRoute: typeof PatientScheduleRoute
+  PatientSettingsRoute: typeof PatientSettingsRoute
   PatientIndexRoute: typeof PatientIndexRoute
 }
 
@@ -1147,6 +1228,7 @@ const PatientRouteChildren: PatientRouteChildren = {
   PatientProfileRoute: PatientProfileRoute,
   PatientReportsRoute: PatientReportsRoute,
   PatientScheduleRoute: PatientScheduleRoute,
+  PatientSettingsRoute: PatientSettingsRoute,
   PatientIndexRoute: PatientIndexRoute,
 }
 
@@ -1162,6 +1244,7 @@ interface ReceptionistRouteChildren {
   ReceptionistQueueRoute: typeof ReceptionistQueueRoute
   ReceptionistRegisterRoute: typeof ReceptionistRegisterRoute
   ReceptionistScheduleRoute: typeof ReceptionistScheduleRoute
+  ReceptionistSettingsRoute: typeof ReceptionistSettingsRoute
   ReceptionistIndexRoute: typeof ReceptionistIndexRoute
 }
 
@@ -1174,6 +1257,7 @@ const ReceptionistRouteChildren: ReceptionistRouteChildren = {
   ReceptionistQueueRoute: ReceptionistQueueRoute,
   ReceptionistRegisterRoute: ReceptionistRegisterRoute,
   ReceptionistScheduleRoute: ReceptionistScheduleRoute,
+  ReceptionistSettingsRoute: ReceptionistSettingsRoute,
   ReceptionistIndexRoute: ReceptionistIndexRoute,
 }
 

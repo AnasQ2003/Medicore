@@ -13,6 +13,7 @@ export const doctorNav: RoleNavItem[] = [
   { label: "Leave",          to: "/doctor/leave",          icon: <CalendarOff className="h-4 w-4" /> },
   { label: "Notifications",  to: "/doctor/notifications",  icon: <Bell className="h-4 w-4" /> },
   { label: "My Profile",     to: "/doctor/profile",        icon: <User className="h-4 w-4" /> },
+  { label: "Settings",       to: "/doctor/settings",       icon: <Settings className="h-4 w-4" /> },
 ];
 
 export const superAdminNav: RoleNavItem[] = [
@@ -36,6 +37,7 @@ export const nurseNav: RoleNavItem[] = [
   { label: "Nurse Injections", to: "/nurse/injections", icon: <Syringe className="h-4 w-4" /> },
   { label: "Schedule", to: "/nurse/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Nurse Notifications", to: "/nurse/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "Settings", to: "/nurse/settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
 export const receptionistNav: RoleNavItem[] = [
@@ -48,6 +50,7 @@ export const receptionistNav: RoleNavItem[] = [
   { label: "Receptionist Queue", to: "/receptionist/queue", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Schedule", to: "/receptionist/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Receptionist Notifications", to: "/receptionist/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "Settings", to: "/receptionist/settings", icon: <Settings className="h-4 w-4" /> },
 ];
 
 export const patientNav: RoleNavItem[] = [
@@ -60,4 +63,5 @@ export const patientNav: RoleNavItem[] = [
   { label: "Schedule & Attendance", to: "/patient/schedule", icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Patient Profile", to: "/patient/profile", icon: <UserCircle className="h-4 w-4" /> },
   { label: "Patient Notifications", to: "/patient/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "Settings", to: "/patient/settings", icon: <Settings className="h-4 w-4" /> },
 ];

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Sparkles, ChevronRight } from "lucide-react";
+import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Search, ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { clearUser, ensureUserForRole, type Role, type MockUser } from "@/lib/auth";
 import { MediLogo } from "./MediLogo";
@@ -72,7 +72,13 @@ export function AppShell({
   }, []);
 
   useEffect(() => {
-    setUser(ensureUserForRole(role));
+    const resolved = ensureUserForRole(role);
+    // Redirect to login if user is not authenticated or role doesn't match
+    if (!resolved) {
+      navigate({ to: "/login", search: { role } as any });
+      return;
+    }
+    setUser(resolved);
     if (typeof document !== "undefined") {
       // Radix portals render outside [data-role], so mirror role vars onto :root
       // so dropdowns, popovers, toasts follow the current role's theme.
@@ -102,7 +108,7 @@ export function AppShell({
         document.documentElement.style.removeProperty("--gradient-primary");
       }
     };
-  }, [role]);
+  }, [role, navigate]);
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
@@ -170,12 +176,12 @@ export function AppShell({
                 }}
                 className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
-                    ? "bg-white/15 text-white shadow-inner backdrop-blur-sm border border-white/10"
-                    : "text-sidebar-foreground/80 hover:bg-white/10 hover:text-white hover:translate-x-1"
+                    ? "bg-white/18 text-white shadow-inner backdrop-blur-sm border border-white/15"
+                    : "text-sidebar-foreground hover:bg-white/18 hover:text-white hover:translate-x-1"
                 }`}
               >
                 <span className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-200 ${
-                  active ? "bg-white/20" : "bg-white/5 group-hover:bg-white/10"
+                  active ? "bg-white/25" : "bg-white/8 group-hover:bg-white/20"
                 }`}>
                   {item.icon}
                 </span>
@@ -206,6 +212,9 @@ export function AppShell({
       )}
     </aside>
   );
+
+  // Auth guard: if no authenticated user, render nothing while redirecting
+  if (!user) return null;
 
   return (
     <div data-role={role} className="flex min-h-screen w-full bg-background relative">
@@ -241,12 +250,11 @@ export function AppShell({
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen((v) => !v)}>
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <div className="hidden sm:flex items-center gap-2 flex-1 group relative">
+            <div className="hidden sm:flex items-center gap-2 flex-1 group relative max-w-xl">
               <div className="relative flex-1">
-                <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[color:var(--primary)]/40 via-[color:var(--primary)]/10 to-[color:var(--primary)]/40 opacity-60 group-focus-within:opacity-100 blur-md transition-opacity pointer-events-none animate-aurora" />
-                <div className="relative flex items-center gap-2 rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl px-3 h-11 shadow-sm group-focus-within:shadow-glow group-focus-within:border-primary/60 transition-all">
-                  <span className="grid place-items-center h-7 w-7 rounded-lg bg-gradient-to-br from-[color:var(--primary)]/20 to-[color:var(--primary)]/5 border border-[color:var(--primary)]/25">
-                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <div className="relative flex items-center gap-2.5 rounded-xl border border-border/80 bg-white shadow-sm hover:border-primary/30 hover:shadow-md focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 focus-within:shadow-md transition-all duration-200 h-10 px-3">
+                  <span className="grid place-items-center h-7 w-7 rounded-md bg-primary/10 text-primary shrink-0">
+                    <Search className="h-3.5 w-3.5" />
                   </span>
                   <Input 
                     value={searchQuery}
@@ -255,15 +263,25 @@ export function AppShell({
                       setSearchOpen(true);
                     }}
                     onFocus={() => setSearchOpen(true)}
-                    placeholder="Search patients, records, prescriptions… (Ctrl+K)" 
-                    className="border-0 bg-transparent focus-visible:ring-0 px-0 h-8 text-sm placeholder:text-muted-foreground/70" 
+                    placeholder="Search patients, records, prescriptions…" 
+                    className="border-0 bg-transparent focus-visible:ring-0 px-0 h-8 text-sm placeholder:text-muted-foreground/70 flex-1 min-w-0" 
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery("")} className="text-xs text-muted-foreground hover:text-foreground">
-                      <X className="h-3.5 w-3.5" />
+                    <button 
+                      onClick={() => { setSearchQuery(""); setSearchOpen(false); }} 
+                      className="grid place-items-center h-6 w-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-3 w-3" />
                     </button>
                   )}
-                  <kbd onClick={() => setSearchOpen(true)} className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border bg-white/80 text-[10px] font-mono text-muted-foreground shadow-sm cursor-pointer hover:bg-white"><Command className="h-2.5 w-2.5"/>K</kbd>
+                  <kbd 
+                    onClick={() => setSearchOpen((v) => !v)} 
+                    className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-border/70 bg-muted/50 text-[10px] font-mono text-muted-foreground shrink-0 cursor-pointer hover:bg-muted hover:text-foreground transition-colors"
+                    title="Toggle search (Ctrl+K)"
+                  >
+                    <Command className="h-2.5 w-2.5" />K
+                  </kbd>
                 </div>
 
                 {/* Live Search Results Dropdown Overlay */}
@@ -497,8 +515,8 @@ export function AppShell({
                 <DropdownMenuItem asChild>
                   <Link to={`/${role}/notifications` as any}><Bell className="h-4 w-4 mr-2" /> Notifications</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="h-4 w-4 mr-2" /> Settings
+                <DropdownMenuItem asChild>
+                  <Link to={`/${role}/settings` as any}><Settings className="h-4 w-4 mr-2" /> Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">

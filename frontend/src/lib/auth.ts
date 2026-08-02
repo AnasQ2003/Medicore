@@ -40,14 +40,16 @@ export function getUser(): AuthUser | null {
   }
 }
 
-export function ensureUserForRole(role: Role): AuthUser {
+export function ensureUserForRole(role: Role): AuthUser | null {
   const existing = getUser();
-  const targetEmail = role === 'super-admin' ? 'anasahmedcp@gmail.com' : 'abdulahadsip@gmail.com';
-  const user: AuthUser = existing
-    ? { ...existing, role, email: targetEmail }
-    : { email: targetEmail, name: roleMeta[role].label, role };
-  saveUser(user);
-  return user;
+  if (!existing) {
+    return null;
+  }
+  // Ensure the stored user's role matches the requested role.
+  if (existing.role !== role) {
+    return null;
+  }
+  return existing;
 }
 
 export function clearUser() {

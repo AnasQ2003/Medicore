@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo } from "react";
 import hospitalSplashBg from "@/assets/hospital-splash-bg.jpg";
-import { getUser, roleMeta } from "@/lib/auth";
+import { clearUser, getUser, roleMeta } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,11 +20,9 @@ function SplashScreen() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = getUser();
-    if (user && roleMeta[user.role]) {
-      navigate({ to: roleMeta[user.role].path });
-      return;
-    }
+    // Always clear any stale user on splash screen, then navigate to login.
+    // Security: the user must always authenticate explicitly via the login form.
+    clearUser();
     const t = setTimeout(() => {
       navigate({ to: "/login" });
     }, 600);
