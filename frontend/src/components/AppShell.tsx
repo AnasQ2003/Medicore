@@ -75,6 +75,12 @@ export function AppShell({
     }
     return false;
   });
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const handleLogout = () => {
+    clearUser();
+    navigate({ to: "/login", search: { role } as any });
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -538,7 +544,7 @@ export function AppShell({
                   <Link to={`/${role}/settings` as any}><Settings className="h-4 w-4 mr-2" /> Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

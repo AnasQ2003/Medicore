@@ -18,6 +18,8 @@ import { getUser } from "@/lib/auth";
 
 import { Slideshow } from "@/components/Slideshow";
 import { nurseSlides } from "@/lib/mockData";
+import { RoleRequestModal } from "@/components/RoleRequestModal";
+import { Bed } from "lucide-react";
 
 export const Route = createFileRoute("/nurse/")({
   head: () => ({ meta: [{ title: "Nurse — MediCore" }] }),
@@ -108,13 +110,22 @@ function NurseScreen() {
     }
   };
 
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
   const loading = loadingBeds || loadingPatients;
 
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> 🧑‍⚕️</h1>
-        <p className="text-muted-foreground">Ward Bed & Patient vitals tracking</p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{nurseName}</span> 🧑‍⚕️</h1>
+          <p className="text-muted-foreground">Ward Bed & Patient vitals tracking</p>
+        </div>
+        <Button
+          onClick={() => setRequestModalOpen(true)}
+          className="bg-gradient-red text-white shadow-glow-red font-semibold self-start"
+        >
+          <Bed className="h-4 w-4 mr-2" /> 🚨 Request Equipment / Beds from Admin
+        </Button>
       </div>
 
       {/* Nurse Role Hero Slideshow */}
@@ -237,6 +248,14 @@ function NurseScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Role Request Modal for Admin Equipment Demand */}
+      <RoleRequestModal
+        open={requestModalOpen}
+        onOpenChange={setRequestModalOpen}
+        role="nurse"
+        defaultCategory="Equipment & Furniture"
+      />
     </AppShell>
   );
 }

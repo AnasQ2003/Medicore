@@ -23,11 +23,25 @@ export const Route = createFileRoute("/patient/profile")({
 
 const PROFILE_KEY = "medicore_patient_profile";
 
+interface PatientProfile {
+  [key: string]: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  bloodGroup: string;
+  dateOfBirth: string;
+  gender: string;
+  emergencyContact: string;
+  allergies: string;
+  chronicConditions: string;
+}
+
 function PatientProfileScreen() {
   const user = getUser();
   const [editing, setEditing] = useState(false);
 
-  const [form, setForm] = useState(() => {
+  const [form, setForm] = useState<PatientProfile>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(PROFILE_KEY);
       if (saved) {

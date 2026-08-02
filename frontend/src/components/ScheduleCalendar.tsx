@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar, TrendingDown, Clock, CheckCircle2, XCircle, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,11 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
   const currentRole: Role = (role as Role) || user?.role || "nurse";
 
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [leaveFrom, setLeaveFrom] = useState("");
+  const [leaveTo, setLeaveTo] = useState("");
+  const [leaveReason, setLeaveReason] = useState("");
+  const [leaveType, setLeaveType] = useState("Annual Leave");
+  const [applications, setApplications] = useState<LeaveApplication[]>([]);
 
   const loadRequests = () => {
     const all = getLeaveRequests();

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Calendar, Users, Pill, FileText, Activity, TrendingUp, Heart, Clock, Stethoscope, AlertCircle, CheckCircle2, ArrowRight } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -77,6 +77,7 @@ const MOCK_ACTIVITY: ApiNotif[] = [
 // DoctorScreen — main dashboard with slideshow, charts, today's queue, quick actions.
 function DoctorScreen() {
   const currentUser = getUser();
+  const navigate = useNavigate();
   const doctorDisplayName = currentUser?.name ? (currentUser.name.toLowerCase().startsWith("dr.") ? currentUser.name : `Dr. ${currentUser.name}`) : "Dr. Sarah Khan";
   const [activityRange, setActivityRange] = useState<"week" | "month" | "year">("week");
   const [recoveryCohort, setRecoveryCohort] = useState<"cardio" | "ortho" | "general">("cardio");

@@ -76,6 +76,7 @@ export function LeaveRequestModal({
         applicantEmail: user?.email || "staff@medicore.app",
         applicantRole: currentRole,
         department: currentRole === "doctor" ? "Cardiology" : currentRole === "nurse" ? "Ward Care" : "Administration",
+        category: "Leave & Schedule",
         requestType,
         fromDate,
         fromTime,

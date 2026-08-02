@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarOff, CheckCircle2, XCircle, Clock, AlertTriangle, ShieldAlert,
-  User, Mail, FileText, Check, X, DollarSign, Filter, RefreshCw, Send
+  User, Mail, FileText, Check, X, DollarSign, Filter, RefreshCw, Send,
+  Bed, Stethoscope, Receipt, Package, Layers, ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +14,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   getLeaveRequests,
   updateLeaveRequestStatus,
-  type LeaveRequest
+  type LeaveRequest,
+  type RequestCategory
 } from "@/lib/leaveStore";
 import { toast } from "sonner";
 
 export function AdminLeaveApprovalDesk() {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
   const [adminRemarksMap, setAdminRemarksMap] = useState<Record<string, string>>({});
   const [deductionMap, setDeductionMap] = useState<Record<string, boolean>>({});
 
@@ -27,7 +32,6 @@ export function AdminLeaveApprovalDesk() {
     const data = getLeaveRequests();
     setRequests(data);
 
-    // Initialize deduction toggles
     const initDeductions: Record<string, boolean> = {};
     data.forEach((r) => {
       initDeductions[r.id] = r.applyDeduction;
@@ -47,9 +51,13 @@ export function AdminLeaveApprovalDesk() {
   const rejectedCount = requests.filter((r) => r.status === "Rejected").length;
 
   const filteredRequests = requests.filter((r) => {
-    if (filter === "pending") return r.status === "Pending";
-    if (filter === "approved") return r.status === "Approved";
-    if (filter === "rejected") return r.status === "Rejected";
+    if (statusFilter === "pending" && r.status !== "Pending") return false;
+    if (statusFilter === "approved" && r.status !== "Approved") return false;
+    if (statusFilter === "rejected" && r.status !== "Rejected") return false;
+
+    if (roleFilter !== "all" && r.applicantRole !== roleFilter) return false;
+    if (categoryFilter !== "all" && r.category !== categoryFilter) return false;
+
     return true;
   });
 
@@ -64,19 +72,28 @@ export function AdminLeaveApprovalDesk() {
     reloadData();
   };
 
+  const getCategoryIcon = (cat?: RequestCategory) => {
+    switch (cat) {
+      case "Equipment & Furniture": return <Bed className="h-4 w-4 text-rose-500" />;
+      case "Doctor Change & Care": return <Stethoscope className="h-4 w-4 text-amber-500" />;
+      case "Front Desk & Queue": return <Receipt className="h-4 w-4 text-emerald-500" />;
+      default: return <CalendarOff className="h-4 w-4 text-primary" />;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Top Header & Summary Stats */}
+      {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-card border rounded-2xl p-6 shadow-card">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-violet text-white flex items-center justify-center shadow-glow">
-              <CalendarOff className="h-5 w-5" />
+              <Layers className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight">Staff & User Leave Approval Hub</h2>
+              <h2 className="text-xl font-bold tracking-tight">Super Admin Universal Request & Exception Hub</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Review leave applications, manage excess quota salary deductions, and dispatch automated email decisions.
+                Manage leave approvals, nurse furniture/equipment demands, patient doctor change requests, and front desk overrides.
               </p>
             </div>
           </div>
@@ -92,10 +109,10 @@ export function AdminLeaveApprovalDesk() {
       {/* Quick Metric Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Pending Approvals", count: pendingCount, icon: Clock, c: "from-amber-500 to-orange-500", text: "Requires Super Admin Action" },
-          { label: "Total Approved", count: approvedCount, icon: CheckCircle2, c: "from-emerald-500 to-teal-500", text: "Active / Granted Leaves" },
-          { label: "Total Rejected", count: rejectedCount, icon: XCircle, c: "from-rose-500 to-pink-600", text: "Applications Declined" },
-          { label: "Total Received", count: requests.length, icon: FileText, c: "from-violet-500 to-purple-600", text: "Across All Roles" },
+          { label: "Pending Approvals", count: pendingCount, icon: Clock, c: "from-amber-500 to-orange-500" },
+          { label: "Total Approved", count: approvedCount, icon: CheckCircle2, c: "from-emerald-500 to-teal-500" },
+          { label: "Total Rejected", count: rejectedCount, icon: XCircle, c: "from-rose-500 to-pink-600" },
+          { label: "Total Requests", count: requests.length, icon: FileText, c: "from-violet-500 to-purple-600" },
         ].map((s, i) => (
           <motion.div
             key={s.label}
@@ -108,7 +125,7 @@ export function AdminLeaveApprovalDesk() {
             <div className="flex items-center justify-between">
               <s.icon className="h-5 w-5 opacity-80" />
               {s.count > 0 && s.label.includes("Pending") && (
-                <span className="h-2 w-2 rounded-full bg-white animate-ping" />
+                <span className="h-2.5 w-2.5 rounded-full bg-white animate-ping" />
               )}
             </div>
             <div className="text-3xl font-bold mt-3">{s.count}</div>
@@ -117,35 +134,68 @@ export function AdminLeaveApprovalDesk() {
         ))}
       </div>
 
-      {/* Filter Tabs */}
-      <Tabs defaultValue="pending" value={filter} onValueChange={(v: any) => setFilter(v)} className="space-y-4">
-        <TabsList className="bg-muted/60 border p-1 rounded-xl">
-          <TabsTrigger value="pending" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Clock className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
-            Pending Action ({pendingCount})
-          </TabsTrigger>
-          <TabsTrigger value="approved" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
-            Approved ({approvedCount})
-          </TabsTrigger>
-          <TabsTrigger value="rejected" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <XCircle className="h-3.5 w-3.5 mr-1.5 text-rose-500" />
-            Rejected ({rejectedCount})
-          </TabsTrigger>
-          <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            All Applications ({requests.length})
-          </TabsTrigger>
-        </TabsList>
+      {/* Filter Bar: Status, Role, Category */}
+      <div className="bg-white border rounded-2xl p-4 shadow-card space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Status Tabs */}
+          <Tabs defaultValue="pending" value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <TabsList className="bg-muted/60 border p-1 rounded-xl">
+              <TabsTrigger value="pending" className="rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <Clock className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
+                Pending ({pendingCount})
+              </TabsTrigger>
+              <TabsTrigger value="approved" className="rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+                Approved ({approvedCount})
+              </TabsTrigger>
+              <TabsTrigger value="rejected" className="rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <XCircle className="h-3.5 w-3.5 mr-1.5 text-rose-500" />
+                Rejected ({rejectedCount})
+              </TabsTrigger>
+              <TabsTrigger value="all" className="rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                All ({requests.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        <TabsContent value={filter} className="space-y-4">
-          {filteredRequests.length === 0 ? (
-            <div className="rounded-2xl border bg-white p-12 text-center text-muted-foreground space-y-2">
-              <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto opacity-50" />
-              <div className="font-semibold text-lg">No leave applications in this view.</div>
-              <p className="text-xs text-muted-foreground">Select a different tab or check back later.</p>
-            </div>
-          ) : (
-            <AnimatePresence>
+          {/* Role & Category Selectors */}
+          <div className="flex items-center gap-2">
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="h-9 rounded-xl border bg-background px-3 text-xs font-medium"
+            >
+              <option value="all">All Roles</option>
+              <option value="doctor">Doctors</option>
+              <option value="nurse">Nurses</option>
+              <option value="receptionist">Receptionists</option>
+              <option value="patient">Patients</option>
+            </select>
+
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="h-9 rounded-xl border bg-background px-3 text-xs font-medium"
+            >
+              <option value="all">All Categories</option>
+              <option value="Equipment & Furniture">Equipment & Furniture</option>
+              <option value="Doctor Change & Care">Doctor Change</option>
+              <option value="Front Desk & Queue">Front Desk & Queue</option>
+              <option value="Leave & Schedule">Leave & Absence</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Requests List */}
+        {filteredRequests.length === 0 ? (
+          <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground space-y-2">
+            <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto opacity-50" />
+            <div className="font-semibold text-base">No requests match the selected filters.</div>
+            <p className="text-xs">Adjust your role or category filter above.</p>
+          </div>
+        ) : (
+          <AnimatePresence>
+            <div className="space-y-4">
               {filteredRequests.map((req, i) => {
                 const isPending = req.status === "Pending";
                 const currentRemarks = adminRemarksMap[req.id] ?? req.adminRemarks ?? "";
@@ -159,7 +209,7 @@ export function AdminLeaveApprovalDesk() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: i * 0.04 }}
-                    className={`rounded-2xl border bg-white p-6 shadow-card space-y-4 border-l-4 ${
+                    className={`rounded-2xl border bg-white p-5 shadow-card space-y-4 border-l-4 ${
                       req.status === "Approved"
                         ? "border-l-emerald-500"
                         : req.status === "Rejected"
@@ -170,26 +220,31 @@ export function AdminLeaveApprovalDesk() {
                     {/* Header Row */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/50">
                       <div className="flex items-center gap-3">
-                        <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
                           {req.applicantName[0]}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-base">{req.applicantName}</span>
-                            <Badge className="capitalize bg-primary/10 text-primary border-0">
+                            <span className="font-bold text-sm">{req.applicantName}</span>
+                            <Badge className="capitalize bg-primary/10 text-primary border-0 text-[11px]">
                               {req.applicantRole}
                             </Badge>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-[11px]">
                               {req.department}
                             </Badge>
+                            {req.priority === "Emergency" && (
+                              <Badge className="bg-rose-600 text-white border-0 text-[10px] animate-pulse">
+                                🚨 Emergency Alert
+                              </Badge>
+                            )}
                           </div>
                           <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                            <Mail className="h-3 w-3" /> {req.applicantEmail} • Application Ref: <b>{req.id}</b>
+                            <Mail className="h-3 w-3" /> {req.applicantEmail} • Ref: <b>{req.id}</b>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <div className="flex items-center gap-2">
                         <Badge
                           className={`text-xs px-3 py-1 font-semibold ${
                             req.status === "Approved"
@@ -199,44 +254,47 @@ export function AdminLeaveApprovalDesk() {
                               : "bg-amber-100 text-amber-800 border-amber-200 animate-pulse"
                           }`}
                         >
-                          {req.status === "Pending" ? "⏳ Pending Admin Action" : req.status}
+                          {req.status === "Pending" ? "⏳ Action Required" : req.status}
                         </Badge>
                       </div>
                     </div>
 
                     {/* Content Grid */}
                     <div className="grid md:grid-cols-3 gap-4 text-xs">
-                      {/* Column 1: Dates & Request Type */}
+                      {/* Column 1: Category & Specific Details */}
                       <div className="space-y-2 bg-muted/20 rounded-xl p-3 border">
-                        <div className="font-bold text-muted-foreground uppercase text-[10px] tracking-wider">
-                          Schedule Exception Details
+                        <div className="font-bold text-muted-foreground uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                          {getCategoryIcon(req.category)}
+                          {req.category || "General Request"}
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Type:</span>{" "}
+                          <span className="text-muted-foreground">Request Type:</span>{" "}
                           <span className="font-bold text-primary">{req.requestType}</span>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Duration:</span>{" "}
-                          <span className="font-bold text-foreground">
-                            {req.fromDate} ({req.fromTime}) → {req.toDate} ({req.toTime})
-                          </span>
-                        </div>
-                        <div className="pt-1">
-                          <Badge variant="secondary" className="font-mono">
-                            Total: {req.totalDays} Day(s)
-                          </Badge>
-                        </div>
-                        {req.cancelImpactedAppointments && (
-                          <div className="text-[11px] text-amber-700 font-semibold bg-amber-50 p-2 rounded-lg border border-amber-200 mt-2">
-                            ⚠️ Auto-cancels {req.impactedCount || 3} impacted consultations upon approval.
+
+                        {req.requestedItems && (
+                          <div className="bg-white p-2 rounded-lg border font-medium text-rose-900 border-rose-200">
+                            📦 Items Requested: <b>{req.requestedItems}</b>
+                          </div>
+                        )}
+
+                        {req.targetDoctor && (
+                          <div className="bg-white p-2 rounded-lg border font-medium text-amber-900 border-amber-200">
+                            🩺 Doctor Preferred: <b>{req.targetDoctor}</b>
+                          </div>
+                        )}
+
+                        {req.fromDate && req.toDate && (
+                          <div className="text-muted-foreground">
+                            Dates: <b>{req.fromDate} → {req.toDate}</b> ({req.totalDays}d)
                           </div>
                         )}
                       </div>
 
-                      {/* Column 2: Reason & Description */}
+                      {/* Column 2: Statement / Description */}
                       <div className="space-y-2 bg-muted/20 rounded-xl p-3 border">
                         <div className="font-bold text-muted-foreground uppercase text-[10px] tracking-wider">
-                          Applicant Statement
+                          Statement & Justification
                         </div>
                         <p className="text-muted-foreground italic leading-relaxed">
                           "{req.reason}"
@@ -246,44 +304,19 @@ export function AdminLeaveApprovalDesk() {
                         </div>
                       </div>
 
-                      {/* Column 3: Leave Quota & Salary Cut Decision */}
-                      <div className={`space-y-2 rounded-xl p-3 border ${
-                        req.exceededDays > 0 ? "bg-rose-50/60 border-rose-200" : "bg-emerald-50/60 border-emerald-200"
-                      }`}>
-                        <div className="font-bold uppercase text-[10px] tracking-wider flex items-center justify-between">
-                          <span>Staff Quota & Salary Audit</span>
-                          {req.exceededDays > 0 && (
-                            <span className="text-rose-600 font-bold">Quota Exceeded!</span>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-1 text-center py-1">
-                          <div className="bg-white rounded-lg p-1.5 border">
-                            <div className="text-[9px] text-muted-foreground">Annual</div>
-                            <div className="font-bold text-blue-600">{req.annualQuota}d</div>
-                          </div>
-                          <div className="bg-white rounded-lg p-1.5 border">
-                            <div className="text-[9px] text-muted-foreground">Used</div>
-                            <div className="font-bold text-amber-600">{req.usedDaysBefore}d</div>
-                          </div>
-                          <div className="bg-white rounded-lg p-1.5 border">
-                            <div className="text-[9px] text-muted-foreground">Remaining</div>
-                            <div className="font-bold text-emerald-600">{req.remainingDaysBefore}d</div>
-                          </div>
+                      {/* Column 3: Audit & Decision Details */}
+                      <div className="space-y-2 bg-muted/20 rounded-xl p-3 border">
+                        <div className="font-bold text-muted-foreground uppercase text-[10px] tracking-wider flex items-center gap-1">
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          Admin Audit & Action Plan
                         </div>
 
                         {req.exceededDays > 0 ? (
-                          <div className="space-y-2 pt-1">
-                            <div className="text-[11px] font-bold text-rose-800 flex items-center gap-1">
-                              <ShieldAlert className="h-3.5 w-3.5 text-rose-600" />
-                              Exceeds balance by {req.exceededDays} day(s) (${req.estimatedDeduction})
-                            </div>
-
+                          <div className="space-y-1.5 p-2 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-900">
+                            <div className="font-bold">⚠️ Leave Quota Exceeded by {req.exceededDays}d (${req.estimatedDeduction})</div>
                             {isPending ? (
-                              <div className="flex items-center justify-between bg-white p-2 rounded-lg border">
-                                <span className="font-semibold text-rose-900 text-[11px]">
-                                  Apply Salary Cut (${req.estimatedDeduction}):
-                                </span>
+                              <div className="flex items-center justify-between pt-1">
+                                <span>Apply Salary Cut (${req.estimatedDeduction}):</span>
                                 <Switch
                                   checked={currentDeduction}
                                   onCheckedChange={(val) =>
@@ -292,29 +325,25 @@ export function AdminLeaveApprovalDesk() {
                                 />
                               </div>
                             ) : (
-                              <div className="text-[11px] font-bold">
-                                Deduction Decision:{" "}
-                                <span className={req.applyDeduction ? "text-rose-700" : "text-emerald-700"}>
-                                  {req.applyDeduction ? `APPLIED (-$${req.estimatedDeduction})` : "WAIVED (Paid Exception)"}
-                                </span>
+                              <div>
+                                Deduction Status: <b>{req.applyDeduction ? `APPLIED (-$${req.estimatedDeduction})` : "WAIVED (Paid Exception)"}</b>
                               </div>
                             )}
                           </div>
                         ) : (
-                          <div className="text-[11px] text-emerald-700 font-semibold pt-2 flex items-center gap-1">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                            Fully covered by paid allowance. No salary cut required.
+                          <div className="text-[11px] text-emerald-700 font-semibold p-2 bg-white rounded-lg border">
+                            ✅ Standard Request — No Payroll Penalty.
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Admin Action Bar & Remarks */}
+                    {/* Admin Action Bar */}
                     {isPending ? (
-                      <div className="pt-3 border-t border-border/50 space-y-3">
+                      <div className="pt-3 border-t border-border/50 space-y-2">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                           <Input
-                            placeholder="Add Super Admin remarks or instructions for email..."
+                            placeholder="Add Super Admin instructions, allocation notes, or email response..."
                             value={currentRemarks}
                             onChange={(e) =>
                               setAdminRemarksMap((prev) => ({ ...prev, [req.id]: e.target.value }))
@@ -341,7 +370,7 @@ export function AdminLeaveApprovalDesk() {
                     ) : (
                       <div className="pt-2 border-t border-border/50 flex flex-wrap items-center justify-between text-xs text-muted-foreground gap-2">
                         <div>
-                          Admin Remarks: <span className="font-medium text-foreground">{req.adminRemarks || "None"}</span>
+                          Admin Action Remarks: <span className="font-medium text-foreground">{req.adminRemarks || "Processed by Super Admin Desk."}</span>
                         </div>
                         {req.processedAt && (
                           <div>Processed on: {new Date(req.processedAt).toLocaleString()}</div>
@@ -351,10 +380,10 @@ export function AdminLeaveApprovalDesk() {
                   </motion.div>
                 );
               })}
-            </AnimatePresence>
-          )}
-        </TabsContent>
-      </Tabs>
+            </div>
+          </AnimatePresence>
+        )}
+      </div>
     </div>
   );
 }

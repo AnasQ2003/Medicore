@@ -10,8 +10,11 @@ import { appointmentAPI, prescriptionAPI, billAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { getUser } from "@/lib/auth";
 
+import { useState } from "react";
 import { Slideshow } from "@/components/Slideshow";
 import { patientSlides } from "@/lib/mockData";
+import { RoleRequestModal } from "@/components/RoleRequestModal";
+import { UserCheck } from "lucide-react";
 
 export const Route = createFileRoute("/patient/")({
   head: () => ({ meta: [{ title: "Patient Portal — MediCore" }] }),
@@ -48,11 +51,21 @@ function PatientScreen() {
 
   const nextAppt = upcoming[0] ?? null;
 
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+
   return (
     <AppShell role="patient" title="Patient Portal" nav={patientNav}>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back, <span className="text-gradient">{patientName}</span> 👋</h1>
-        <p className="text-muted-foreground">Here's your health summary.</p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Welcome back, <span className="text-gradient">{patientName}</span> 👋</h1>
+          <p className="text-muted-foreground">Here's your health summary.</p>
+        </div>
+        <Button
+          onClick={() => setRequestModalOpen(true)}
+          className="bg-gradient-sunset text-white shadow-glow font-semibold self-start"
+        >
+          <UserCheck className="h-4 w-4 mr-2" /> 🩺 Request Doctor Change / Care Assistance
+        </Button>
       </div>
 
       {/* Hero Slideshow */}
@@ -182,9 +195,16 @@ function PatientScreen() {
               <div className="text-sm font-medium">{a.reason} — {a.status}</div>
             </div>
           ))}
-          {appointments.length === 0 && <div className="text-sm text-muted-foreground">No activity yet.</div>}
         </div>
       </motion.div>
+
+      {/* Role Request Modal for Patient Doctor Change */}
+      <RoleRequestModal
+        open={requestModalOpen}
+        onOpenChange={setRequestModalOpen}
+        role="patient"
+        defaultCategory="Doctor Change & Care"
+      />
     </AppShell>
   );
 }

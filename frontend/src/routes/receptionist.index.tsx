@@ -16,6 +16,7 @@ import { adminAPI } from "@/lib/api/client";
 import { getUser } from "@/lib/auth";
 import { Slideshow } from "@/components/Slideshow";
 import { receptionistSlides } from "@/lib/mockData";
+import { RoleRequestModal } from "@/components/RoleRequestModal";
 
 export const Route = createFileRoute("/receptionist/")({
   head: () => ({ meta: [{ title: "Receptionist — MediCore" }] }),
@@ -65,11 +66,21 @@ function ReceptionistScreen() {
     setRegistering(false);
   };
 
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+
   return (
     <AppShell role="receptionist" title="Reception" nav={receptionistNav}>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{receptionName}</span> 👋</h1>
-        <p className="text-muted-foreground">Register patients & manage appointments.</p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Good morning, <span className="text-gradient">{receptionName}</span> 👋</h1>
+          <p className="text-muted-foreground">Register patients & manage appointments.</p>
+        </div>
+        <Button
+          onClick={() => setRequestModalOpen(true)}
+          className="bg-gradient-green text-white shadow-glow font-semibold self-start"
+        >
+          <Receipt className="h-4 w-4 mr-2" /> 💳 Request Billing Override / Exception from Admin
+        </Button>
       </div>
 
       {/* Hero Slideshow */}
@@ -129,6 +140,14 @@ function ReceptionistScreen() {
           </div>
         </motion.div>
       </div>
+
+      {/* Role Request Modal for Receptionist Front Desk Override */}
+      <RoleRequestModal
+        open={requestModalOpen}
+        onOpenChange={setRequestModalOpen}
+        role="receptionist"
+        defaultCategory="Front Desk & Queue"
+      />
     </AppShell>
   );
 }
