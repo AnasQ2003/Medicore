@@ -47,59 +47,91 @@
 
 /* =====================================================
    GLOBAL HOVER VISIBILITY FIXES — Dropdowns, Selects & Menus
-   Ensures dropdown items and select options are readable on hover,
-   while preserving white text on primary/gradient buttons.
+   Light mode only — dark mode rules are below in the .dark block.
    ===================================================== */
 
-/* Radix UI DropdownMenu / ContextMenu / Select items — light menu backgrounds */
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted],
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover,
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus,
-[role="option"][data-highlighted],
-[role="option"]:hover,
-[role="option"]:focus,
-[data-radix-collection-item][data-highlighted]:not(button.bg-primary *):not(button.bg-gradient-primary *),
-.dropdown-item:hover,
-.dropdown-item:focus,
-.menu-item:hover,
-.menu-item:focus {
+/* LIGHT MODE: Radix UI DropdownMenu / ContextMenu / Select items */
+:not(.dark) [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted],
+:not(.dark) [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover,
+:not(.dark) [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus,
+:not(.dark) [role="option"][data-highlighted],
+:not(.dark) [role="option"]:hover,
+:not(.dark) [role="option"]:focus,
+:not(.dark) [data-radix-collection-item][data-highlighted]:not(button.bg-primary *):not(button.bg-gradient-primary *),
+:not(.dark) .dropdown-item:hover,
+:not(.dark) .dropdown-item:focus,
+:not(.dark) .menu-item:hover,
+:not(.dark) .menu-item:focus {
   background-color: oklch(0.52 0.2 250 / 14%) !important;
   color: oklch(0.18 0.03 245) !important;
   outline: none !important;
   font-weight: 500;
 }
 
-/* Force child text/icons inside dropdown menus to inherit menu item text color */
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted] *,
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover *,
-[role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus *,
-[role="option"][data-highlighted] *,
-[role="option"]:hover *,
-[role="option"]:focus * {
+/* Force child text/icons inside dropdown menus to inherit — LIGHT MODE */
+:not(.dark) [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted] *,
+:not(.dark) [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover *,
+:not(.dark) [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus *,
+:not(.dark) [role="option"][data-highlighted] *,
+:not(.dark) [role="option"]:hover *,
+:not(.dark) [role="option"]:focus * {
   color: inherit !important;
 }
 
-/* Destructive menu items stay red on hover — light dropdown backgrounds */
-[role="menuitem"].text-destructive:hover,
-[role="menuitem"].text-destructive:focus,
-[role="menuitem"].text-destructive[data-highlighted] {
+/* LIGHT MODE: Destructive menu items stay red on hover */
+:not(.dark) [role="menuitem"].text-destructive:hover,
+:not(.dark) [role="menuitem"].text-destructive:focus,
+:not(.dark) [role="menuitem"].text-destructive[data-highlighted] {
   background-color: oklch(0.6 0.23 25 / 10%) !important;
   color: oklch(0.52 0.24 25) !important;
   font-weight: 600 !important;
 }
-[role="menuitem"].text-destructive:hover *,
-[role="menuitem"].text-destructive:focus *,
-[role="menuitem"].text-destructive[data-highlighted] * {
+:not(.dark) [role="menuitem"].text-destructive:hover *,
+:not(.dark) [role="menuitem"].text-destructive:focus *,
+:not(.dark) [role="menuitem"].text-destructive[data-highlighted] * {
   color: oklch(0.52 0.24 25) !important;
 }
 
-/* Select/Combobox options - ensure dark text on light bg */
-[role="option"][aria-selected="true"],
-[role="option"][data-selected] {
+/* LIGHT MODE: Select/Combobox options - ensure dark text on light bg */
+:not(.dark) [role="option"][aria-selected="true"],
+:not(.dark) [role="option"][data-selected] {
   background-color: oklch(0.52 0.2 250 / 18%) !important;
   color: oklch(0.18 0.03 245) !important;
   font-weight: 600 !important;
 }
+
+/* DARK MODE: Dropdown/menu items use light text */
+.dark [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted],
+.dark [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):hover,
+.dark [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *):focus,
+.dark [role="option"][data-highlighted],
+.dark [role="option"]:hover,
+.dark [role="option"]:focus {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #f1f5f9 !important;
+  outline: none !important;
+  font-weight: 500;
+}
+.dark [role="menuitem"]:not(.glass-sidebar *):not(.sidebar-nav *)[data-highlighted] *,
+.dark [role="option"][data-highlighted] * { color: inherit !important; }
+
+/* DARK MODE: Selected options */
+.dark [role="option"][aria-selected="true"],
+.dark [role="option"][data-selected] {
+  background-color: rgba(59, 130, 246, 0.22) !important;
+  color: #93c5fd !important;
+  font-weight: 600 !important;
+}
+
+/* DARK MODE: Destructive items */
+.dark [role="menuitem"].text-destructive:hover,
+.dark [role="menuitem"].text-destructive:focus,
+.dark [role="menuitem"].text-destructive[data-highlighted] {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+  font-weight: 600 !important;
+}
+
 
 /* ================= SIDEBAR NAV ITEMS (dark background) ================= */
 /* Always keep WHITE text on dark sidebar — never fade */
@@ -214,44 +246,292 @@
 
 .dark {
   --background: #090d16;
-  --foreground: #f8fafc;
-  --card: rgba(15, 23, 42, 0.88);
-  --card-foreground: #f8fafc;
+  --foreground: #f1f5f9;
+  --card: rgba(15, 23, 42, 0.94);
+  --card-foreground: #f1f5f9;
   --popover: #0f172a;
-  --popover-foreground: #f8fafc;
+  --popover-foreground: #f1f5f9;
   --primary: #3b82f6;
   --primary-foreground: #ffffff;
   --secondary: #1e293b;
   --secondary-foreground: #e2e8f0;
   --muted: #1e293b;
   --muted-foreground: #94a3b8;
-  --border: rgba(51, 65, 85, 0.8);
+  --accent: #1e40af;
+  --accent-foreground: #e0f2fe;
+  --border: rgba(51, 65, 85, 0.9);
   --input: #0f172a;
   --ring: #3b82f6;
   --gradient-hero: radial-gradient(ellipse at top left, rgba(15, 23, 42, 0.9), transparent 55%),
     radial-gradient(ellipse at bottom right, rgba(30, 41, 59, 0.8), transparent 55%),
     #090d16;
-  --gradient-card: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+  --gradient-card: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
+  --glass-panel: rgba(15, 23, 42, 0.85);
+  --glass-surface: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88));
+  --glass-border: rgba(51, 65, 85, 0.7);
+  --shadow-card: 0 18px 55px -28px rgba(0, 0, 0, 0.7);
 }
 
+/* =====================================================
+   COMPREHENSIVE DARK MODE GLOBAL OVERRIDES
+   Fixes all hardcoded Tailwind bg-white / bg-gray-* 
+   bg-slate-* classes across every screen and role.
+   ===================================================== */
+
+/* --- Page & body background --- */
+.dark body,
+.dark html {
+  background-color: #090d16 !important;
+  color: #f1f5f9 !important;
+}
+
+/* --- White surfaces → dark slate surfaces --- */
+.dark .bg-white,
+.dark [class*="bg-white\/"] {
+  background-color: #0f172a !important;
+}
+
+/* --- Gray surfaces → dark equivalents --- */
+.dark .bg-gray-50  { background-color: #0f172a !important; }
+.dark .bg-gray-100 { background-color: #1e293b !important; }
+.dark .bg-gray-200 { background-color: #1e293b !important; }
+.dark .bg-gray-800 { background-color: #020617 !important; }
+.dark .bg-gray-900 { background-color: #020617 !important; }
+
+/* --- Slate surfaces --- */
+.dark .bg-slate-50  { background-color: #0f172a !important; }
+.dark .bg-slate-100 { background-color: #1e293b !important; }
+.dark .bg-slate-200 { background-color: #1e293b !important; }
+.dark .bg-slate-700 { background-color: #334155 !important; }
+.dark .bg-slate-800 { background-color: #0f172a !important; }
+.dark .bg-slate-900 { background-color: #020617 !important; }
+.dark .bg-slate-950 { background-color: #020617 !important; }
+
+/* --- Zinc / neutral / stone surfaces --- */
+.dark .bg-zinc-50,
+.dark .bg-zinc-100,
+.dark .bg-neutral-50,
+.dark .bg-neutral-100,
+.dark .bg-stone-50,
+.dark .bg-stone-100 { background-color: #0f172a !important; }
+
+/* --- Text colors — force light text in dark mode --- */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-zinc-900,
+.dark .text-zinc-800,
+.dark .text-neutral-900,
+.dark .text-neutral-800,
+.dark .text-black { color: #f1f5f9 !important; }
+
+.dark .text-gray-700,
+.dark .text-slate-700,
+.dark .text-zinc-700,
+.dark .text-neutral-700 { color: #cbd5e1 !important; }
+
+.dark .text-gray-600,
+.dark .text-slate-600,
+.dark .text-zinc-600,
+.dark .text-neutral-600 { color: #94a3b8 !important; }
+
+.dark .text-gray-500,
+.dark .text-slate-500,
+.dark .text-zinc-500,
+.dark .text-neutral-500 { color: #64748b !important; }
+
+/* --- Borders --- */
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-slate-100,
+.dark .border-slate-200 { border-color: rgba(51, 65, 85, 0.6) !important; }
+
+.dark .border-gray-300,
+.dark .border-slate-300 { border-color: rgba(71, 85, 105, 0.7) !important; }
+
+/* --- Inputs, textareas, selects --- */
 .dark input,
 .dark select,
 .dark textarea {
-  color: #f8fafc !important;
+  color: #f1f5f9 !important;
   background-color: #0f172a !important;
-  border-color: #334155 !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: #475569 !important; }
+
+/* --- Dividers --- */
+.dark hr,
+.dark .divide-y > * + *,
+.dark .divide-x > * + * { border-color: rgba(51, 65, 85, 0.6) !important; }
+
+/* --- Tables --- */
+.dark table { background-color: transparent !important; }
+.dark thead,
+.dark thead tr { background-color: rgba(15, 23, 42, 0.95) !important; }
+.dark thead th { color: #94a3b8 !important; border-color: rgba(51, 65, 85, 0.5) !important; }
+.dark tbody tr { background-color: rgba(15, 23, 42, 0.6) !important; color: #f1f5f9 !important; border-color: rgba(51, 65, 85, 0.3) !important; }
+.dark tbody tr:hover { background-color: rgba(30, 41, 59, 0.9) !important; }
+.dark tbody td { color: #e2e8f0 !important; border-color: rgba(51, 65, 85, 0.3) !important; }
+
+/* --- Cards (generic radix UI & shadcn cards) --- */
+.dark [data-slot="card"],
+.dark .card {
+  background-color: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+  color: #f1f5f9 !important;
 }
 
-.dark input::placeholder {
-  color: #64748b !important;
-}
-
+/* --- Dialogs, modals --- */
 .dark [role="dialog"],
-.dark [role="menu"] {
+.dark [data-radix-popper-content-wrapper] [role="dialog"] {
   background-color: #0f172a !important;
-  color: #f8fafc !important;
-  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
 }
+.dark [role="dialog"] h2,
+.dark [role="dialog"] h3,
+.dark [role="dialog"] p { color: #f1f5f9 !important; }
+
+/* --- Dropdown menus & popovers --- */
+.dark [role="menu"],
+.dark [data-radix-select-content],
+.dark [data-radix-dropdown-menu-content],
+.dark [data-radix-popover-content] {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+.dark [role="menuitem"] { color: #e2e8f0 !important; }
+.dark [role="menuitem"]:hover,
+.dark [role="menuitem"][data-highlighted] {
+  background-color: rgba(51, 65, 85, 0.6) !important;
+  color: #f1f5f9 !important;
+}
+.dark [role="separator"],
+.dark [data-radix-select-separator] { background-color: rgba(51, 65, 85, 0.5) !important; }
+
+/* --- Select dropdown options --- */
+.dark [role="option"] { color: #e2e8f0 !important; background-color: transparent !important; }
+.dark [role="option"][aria-selected="true"],
+.dark [role="option"][data-highlighted] {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #93c5fd !important;
+}
+
+/* --- Badges --- */
+.dark .bg-blue-100 { background-color: rgba(59,130,246,0.15) !important; }
+.dark .text-blue-800 { color: #93c5fd !important; }
+.dark .bg-green-100 { background-color: rgba(16,185,129,0.15) !important; }
+.dark .text-green-800 { color: #6ee7b7 !important; }
+.dark .bg-red-100 { background-color: rgba(239,68,68,0.15) !important; }
+.dark .text-red-800 { color: #fca5a5 !important; }
+.dark .bg-yellow-100 { background-color: rgba(234,179,8,0.15) !important; }
+.dark .text-yellow-800 { color: #fde047 !important; }
+.dark .bg-purple-100 { background-color: rgba(168,85,247,0.15) !important; }
+.dark .text-purple-800 { color: #d8b4fe !important; }
+.dark .bg-orange-100 { background-color: rgba(249,115,22,0.15) !important; }
+.dark .text-orange-800 { color: #fdba74 !important; }
+.dark .bg-indigo-100 { background-color: rgba(99,102,241,0.15) !important; }
+.dark .text-indigo-800 { color: #a5b4fc !important; }
+.dark .bg-pink-100 { background-color: rgba(236,72,153,0.15) !important; }
+.dark .text-pink-800 { color: #f9a8d4 !important; }
+.dark .bg-teal-100 { background-color: rgba(20,184,166,0.15) !important; }
+.dark .text-teal-800 { color: #5eead4 !important; }
+.dark .bg-cyan-100 { background-color: rgba(6,182,212,0.15) !important; }
+.dark .text-cyan-800 { color: #67e8f9 !important; }
+.dark .bg-amber-100 { background-color: rgba(245,158,11,0.15) !important; }
+.dark .text-amber-800 { color: #fcd34d !important; }
+.dark .bg-emerald-100 { background-color: rgba(16,185,129,0.15) !important; }
+.dark .text-emerald-800 { color: #6ee7b7 !important; }
+.dark .bg-rose-100 { background-color: rgba(244,63,94,0.15) !important; }
+.dark .text-rose-800 { color: #fda4af !important; }
+
+/* --- Hover backgrounds (search results, list items) --- */
+.dark .hover\:bg-blue-50:hover { background-color: rgba(59,130,246,0.12) !important; }
+.dark .hover\:bg-rose-50:hover { background-color: rgba(244,63,94,0.10) !important; }
+.dark .hover\:bg-violet-50:hover { background-color: rgba(139,92,246,0.10) !important; }
+.dark .hover\:bg-green-50:hover { background-color: rgba(16,185,129,0.10) !important; }
+.dark .hover\:bg-gray-50:hover { background-color: rgba(51,65,85,0.4) !important; }
+.dark .hover\:bg-slate-50:hover { background-color: rgba(51,65,85,0.4) !important; }
+
+/* --- Progress bars --- */
+.dark [data-slot="progress-indicator"] { background-color: #3b82f6 !important; }
+.dark [data-slot="progress"] { background-color: #1e293b !important; }
+
+/* --- Scrollbars in dark mode --- */
+.dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; }
+.dark .scrollbar-thin::-webkit-scrollbar-track { background: #0f172a; }
+
+/* --- Recharts tooltip --- */
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #0f172a !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+  color: #f1f5f9 !important;
+}
+.dark .recharts-tooltip-label { color: #94a3b8 !important; }
+.dark .recharts-tooltip-item { color: #e2e8f0 !important; }
+.dark .recharts-cartesian-axis-tick-value { fill: #64748b !important; }
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line { stroke: rgba(51, 65, 85, 0.4) !important; }
+
+/* --- Glass panel (header) in dark mode --- */
+.dark .glass-panel {
+  background: rgba(9, 13, 22, 0.92) !important;
+  backdrop-filter: blur(24px) saturate(120%);
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+/* --- Amber / Warning colored text visibility --- */
+.dark .text-amber-600 { color: #fbbf24 !important; }
+.dark .text-amber-700 { color: #f59e0b !important; }
+.dark .text-orange-600 { color: #fb923c !important; }
+
+/* --- Muted text in dark mode --- */
+.dark .text-muted-foreground { color: #64748b !important; }
+
+/* --- Shadcn label & description text --- */
+.dark label,
+.dark [data-slot="label"] { color: #cbd5e1 !important; }
+.dark [data-slot="description"] { color: #64748b !important; }
+
+/* --- Shadcn popover / tooltip content --- */
+.dark [data-radix-popper-content-wrapper] {
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+}
+
+/* --- Select trigger button --- */
+.dark [data-slot="select-trigger"] {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+/* --- Switch and checkbox --- */
+.dark [data-slot="switch"][data-state="unchecked"] { background-color: #334155 !important; }
+
+/* --- Tab lists --- */
+.dark [role="tablist"] { background-color: #1e293b !important; }
+.dark [role="tab"] { color: #94a3b8 !important; }
+.dark [role="tab"][aria-selected="true"],
+.dark [role="tab"][data-state="active"] { background-color: #0f172a !important; color: #f1f5f9 !important; }
+
+/* --- Alert components --- */
+.dark [data-slot="alert"] {
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+  color: #f1f5f9 !important;
+}
+
+/* --- Code / pre blocks --- */
+.dark pre,
+.dark code {
+  background-color: #020617 !important;
+  color: #e2e8f0 !important;
+}
+
 
 @layer base {
   * { border-color: var(--color-border); }

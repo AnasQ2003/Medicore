@@ -178,7 +178,7 @@ function DoctorScreen() {
                   key={r}
                   onClick={() => setActivityRange(r)}
                   className={`px-2.5 py-1 rounded-lg font-medium transition-all capitalize ${activityRange === r
-                      ? "bg-white text-primary shadow-sm font-semibold"
+                      ? "bg-primary text-white shadow-sm font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
@@ -199,7 +199,7 @@ function DoctorScreen() {
               <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))" />
               <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" label={{ value: "Consultations", angle: -90, position: "insideLeft", fontSize: 10 }} />
               <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "rgba(255, 255, 255, 0.95)", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+                contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "var(--popover)", color: "var(--popover-foreground)", boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                 formatter={(val: any, name: any) => [val, name === "apps" ? "Scheduled" : "Completed"]}
               />
               <Bar dataKey="apps" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Scheduled" />
@@ -222,7 +222,7 @@ function DoctorScreen() {
                   key={c}
                   onClick={() => setRecoveryCohort(c)}
                   className={`px-2.5 py-1 rounded-lg font-medium transition-all capitalize ${recoveryCohort === c
-                      ? "bg-white text-rose-600 shadow-sm font-semibold"
+                      ? "bg-primary text-white shadow-sm font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
@@ -243,7 +243,7 @@ function DoctorScreen() {
               <XAxis dataKey="week" fontSize={11} stroke="hsl(var(--muted-foreground))" />
               <YAxis fontSize={11} domain={[40, 100]} stroke="hsl(var(--muted-foreground))" label={{ value: "Score %", angle: -90, position: "insideLeft", fontSize: 10 }} />
               <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "rgba(255, 255, 255, 0.95)" }}
+                contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "var(--popover)", color: "var(--popover-foreground)" }}
                 formatter={(val: any, name: any) => [`${val}%`, name === "score" ? "Cohort Score" : "Target"]}
               />
               <Line type="monotone" dataKey="target" stroke="#f59e0b" strokeDasharray="4 4" strokeWidth={2} dot={false} name="Target Benchmark" />
@@ -323,16 +323,16 @@ function DoctorScreen() {
                   <div className="text-xs mt-1 text-muted-foreground font-medium">68% — on track</div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2">
-                  <div className="rounded-xl bg-blue-50/90 border border-blue-200 p-3 text-center shadow-sm">
-                    <div className="text-xs font-semibold text-blue-700">BP</div>
-                    <div className="font-bold text-base text-blue-900 mt-0.5">{spotlightPatient.vitals?.[0]?.bp || "120/80"}</div>
+                  <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-center shadow-sm">
+                    <div className="text-xs font-semibold text-blue-500">BP</div>
+                    <div className="font-bold text-base text-blue-400 mt-0.5">{spotlightPatient.vitals?.[0]?.bp || "120/80"}</div>
                   </div>
-                  <div className="rounded-xl bg-rose-50/90 border border-rose-200 p-3 text-center shadow-sm">
-                    <div className="text-xs font-semibold text-rose-700">Pulse</div>
-                    <div className="font-bold text-base text-rose-900 mt-0.5">{spotlightPatient.vitals?.[0]?.pulse ? spotlightPatient.vitals[0].pulse + " bpm" : "72 bpm"}</div>
+                  <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-center shadow-sm">
+                    <div className="text-xs font-semibold text-rose-500">Pulse</div>
+                    <div className="font-bold text-base text-rose-400 mt-0.5">{spotlightPatient.vitals?.[0]?.pulse ? spotlightPatient.vitals[0].pulse + " bpm" : "72 bpm"}</div>
                   </div>
                 </div>
-                <Button asChild variant="outline" className="w-full mt-3 font-semibold bg-white hover:bg-slate-50 border-border">
+                <Button asChild variant="outline" className="w-full mt-3 font-semibold border-border">
                   <Link to="/doctor/patients/$id" params={{ id: String(spotlightPatient.id || 1) }}>
                     <Stethoscope className="h-4 w-4 mr-2 text-primary" />Open Full EMR
                   </Link>
@@ -366,15 +366,15 @@ function DoctorScreen() {
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + i * 0.05 }}
                 whileHover={{ y: -4 }}
                 onClick={() => navigate({ to: targetRoute as any })}
-                className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-primary/40"
+                className="rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-primary/40"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Badge variant="outline" className={`text-[10px] uppercase ${n.type === "Consultation" ? "border-blue-300 text-blue-700 bg-blue-50" :
-                      n.type === "Prescription" ? "border-emerald-300 text-emerald-700 bg-emerald-50" :
-                        n.type === "Lab" ? "border-violet-300 text-violet-700 bg-violet-50" :
-                          n.type === "Referral" ? "border-amber-300 text-amber-700 bg-amber-50" :
-                            n.type === "Vital" ? "border-rose-300 text-rose-700 bg-rose-50" :
-                              "border-slate-300 text-slate-700 bg-slate-50"
+                  <Badge className={`text-[10px] uppercase ${n.type === "Consultation" ? "border-blue-500/30 text-blue-400 bg-blue-500/10" :
+                      n.type === "Prescription" ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10" :
+                        n.type === "Lab" ? "border-violet-500/30 text-violet-400 bg-violet-500/10" :
+                          n.type === "Referral" ? "border-amber-500/30 text-amber-400 bg-amber-500/10" :
+                            n.type === "Vital" ? "border-rose-500/30 text-rose-400 bg-rose-500/10" :
+                              "border-slate-500/30 text-slate-400 bg-slate-500/10"
                     }`}>{n.type}</Badge>
                   <span className="text-xs text-muted-foreground font-mono">{n.time}</span>
                 </div>

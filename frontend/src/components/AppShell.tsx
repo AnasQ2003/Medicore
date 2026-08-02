@@ -337,7 +337,7 @@ export function AppShell({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute left-0 right-0 top-14 z-50 rounded-2xl border border-border bg-white/95 backdrop-blur-xl shadow-2xl p-4 max-h-[420px] overflow-y-auto space-y-3"
+                        className="absolute left-0 right-0 top-14 z-50 rounded-2xl border border-border bg-popover/98 backdrop-blur-xl shadow-2xl p-4 max-h-[420px] overflow-y-auto space-y-3"
                       >
                         <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
                           Search Results for "{searchQuery}"
@@ -414,7 +414,7 @@ export function AppShell({
                                         setSearchQuery("");
                                         navigate({ to: `/${role}/patients/$id`, params: { id: p.id } } as any);
                                       }}
-                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50 cursor-pointer transition-colors"
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-primary/10 cursor-pointer transition-colors"
                                     >
                                       <div className="flex items-center gap-2 text-sm font-medium">
                                         <div className="h-6 w-6 rounded-full bg-blue-500 text-white font-bold text-xs flex items-center justify-center">{p.name[0]}</div>
@@ -438,7 +438,7 @@ export function AppShell({
                                         setSearchQuery("");
                                         navigate({ to: rx.rolePath as any });
                                       }}
-                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-rose-50 cursor-pointer transition-colors"
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-primary/10 cursor-pointer transition-colors"
                                     >
                                       <div className="text-sm font-medium">
                                         <div>{rx.name}</div>
@@ -462,7 +462,7 @@ export function AppShell({
                                         setSearchQuery("");
                                         navigate({ to: rep.rolePath as any });
                                       }}
-                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-violet-50 cursor-pointer transition-colors"
+                                      className="flex items-center justify-between p-2 rounded-xl hover:bg-primary/10 cursor-pointer transition-colors"
                                     >
                                       <div className="text-sm font-medium">
                                         <div>{rep.name}</div>
@@ -519,7 +519,7 @@ export function AppShell({
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-white/95 backdrop-blur-xl border-border/70 shadow-elevated">
+              <DropdownMenuContent align="end" className="w-80 bg-popover/98 backdrop-blur-xl border-border/70 shadow-elevated">
                 <DropdownMenuLabel className="flex items-center justify-between">
                   <span>Notifications</span>
                   <span className="text-xs text-muted-foreground">{unread} unread</span>
@@ -567,7 +567,7 @@ export function AppShell({
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-xl border-border/70 shadow-elevated">
+              <DropdownMenuContent align="end" className="w-56 bg-popover/98 backdrop-blur-xl border-border/70 shadow-elevated">
                 <DropdownMenuLabel className="font-normal">
                   <div className="font-semibold">{user?.name}</div>
                   <div className="text-xs text-muted-foreground">{user?.email}</div>
