@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Search, ChevronRight } from "lucide-react";
+import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Search, ChevronRight, Sun, Moon } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { clearUser, ensureUserForRole, type Role, type MockUser } from "@/lib/auth";
 import { MediLogo } from "./MediLogo";
@@ -51,6 +51,24 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [userNotifs, setUserNotifs] = useState<any[]>([]);
+
+  // Theme state: Default Light Mode for all users
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("medicore_theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("medicore_theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("medicore_theme", "light");
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -468,6 +486,17 @@ export function AppShell({
           </div>
 
           <div className="flex items-center gap-1.5">
+            {/* Light / Dark Mode Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDarkMode(!darkMode)}
+              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="relative hover:bg-primary/10 transition-colors"
+            >
+              {darkMode ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5 text-slate-700" />}
+            </Button>
+
             {/* Notifications dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getUser } from "@/lib/auth";
+import { submitFeeIncreaseRequest } from "@/lib/leaveStore";
 import {
   Settings, Save, BellRing, Eye, Moon, Sun, Volume2, Globe, Shield,
   Stethoscope, Clock, Mail, Phone, Calendar, Smartphone, Monitor, Palette,
@@ -230,6 +231,67 @@ function DoctorSettingsScreen() {
                       <SelectItem value="Diagnostic">Diagnostic Result Review</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Consultation Fee & Admin Revision Request */}
+                <div className="pt-3 border-t border-border space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="font-bold text-xs text-foreground">Consultation Fee (PKR)</Label>
+                      <p className="text-[11px] text-muted-foreground">Self-adjustment limit: PKR 3,000. Higher fees require Admin Approval.</p>
+                    </div>
+                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                      Current: PKR {settings.consultationFee || 2500}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={settings.consultationFee || 2500}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value || "2500", 10);
+                        if (val > 3000) {
+                          toast.warning("Fee exceeds self-adjustment limit (PKR 3,000)", {
+                            description: "Please use the 'Request Fee Increase' button below to submit request to Super Admin."
+                          });
+                          updateField("consultationFee", 3000);
+                        } else {
+                          updateField("consultationFee", val);
+                        }
+                      }}
+                      className="w-36 font-mono font-bold"
+                    />
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const requestedStr = prompt("Enter requested consultation fee (PKR):", "3500");
+                        if (!requestedStr) return;
+                        const requestedFee = parseInt(requestedStr, 10);
+                        if (isNaN(requestedFee) || requestedFee <= 3000) {
+                          return toast.info("Entered fee is within standard limit.");
+                        }
+                        const reason = prompt("Enter justification for fee increase:", "Specialist sub-specialty certification & extended consult length") || "Specialist experience revision";
+
+                        submitFeeIncreaseRequest({
+                          doctorName: doctorName,
+                          doctorEmail: doctorEmail,
+                          currentFee: settings.consultationFee || 2500,
+                          requestedFee: requestedFee,
+                          reason: reason
+                        });
+
+                        toast.success("Fee Increase Request submitted to Super Admin!", {
+                          description: `Requested PKR ${requestedFee}. Email notification sent to admin@medicore.app.`
+                        });
+                      }}
+                      className="bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 text-xs"
+                    >
+                      💳 Request Fee Increase from Admin
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

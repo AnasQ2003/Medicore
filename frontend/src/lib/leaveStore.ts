@@ -208,6 +208,48 @@ export function saveLeaveRequests(requests: LeaveRequest[]) {
   }
 }
 
+export function submitFeeIncreaseRequest(data: {
+  doctorName: string;
+  doctorEmail: string;
+  currentFee: number;
+  requestedFee: number;
+  reason: string;
+}): LeaveRequest {
+  const request: LeaveRequest = {
+    id: `REQ-FEE-${Date.now()}`,
+    applicantName: data.doctorName,
+    applicantEmail: data.doctorEmail,
+    applicantRole: "doctor",
+    department: "Clinical Consultation",
+    category: "Billing & Clearance",
+    requestType: `Consultation Fee Revision (PKR ${data.currentFee} ➔ PKR ${data.requestedFee})`,
+    priority: "Normal",
+    totalDays: 0,
+    reason: `Requested consultation fee increase from PKR ${data.currentFee} to PKR ${data.requestedFee}. Reason: ${data.reason}`,
+    annualQuota: 12,
+    usedDaysBefore: 0,
+    remainingDaysBefore: 12,
+    exceededDays: 0,
+    estimatedDeduction: 0,
+    applyDeduction: false,
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+  };
+
+  const requests = getLeaveRequests();
+  requests.unshift(request);
+  saveLeaveRequests(requests);
+
+  // Email notifications
+  dispatchEmailNotification(
+    "admin@medicore.app",
+    `💰 Fee Revision Request: ${data.doctorName}`,
+    `${data.doctorName} requested consultation fee increase to PKR ${data.requestedFee}. Status: PENDING Admin Approval.`
+  );
+
+  return request;
+}
+
 export function calculateUserQuota(userEmail: string, role: Role) {
   const all = getLeaveRequests();
   const userApproved = all.filter(

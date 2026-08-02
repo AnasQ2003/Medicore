@@ -17,6 +17,7 @@ import { getUser } from "@/lib/auth";
 import { Slideshow } from "@/components/Slideshow";
 import { receptionistSlides } from "@/lib/mockData";
 import { RoleRequestModal } from "@/components/RoleRequestModal";
+import { ReceptionistFloorMatrix } from "@/components/ReceptionistFloorMatrix";
 
 export const Route = createFileRoute("/receptionist/")({
   head: () => ({ meta: [{ title: "Receptionist — MediCore" }] }),
@@ -139,6 +140,11 @@ function ReceptionistScreen() {
             ))}
           </div>
         </motion.div>
+      </div>
+
+      {/* Multi-Floor Room Directory & Reception Queue Analytics */}
+      <div className="mt-6">
+        <ReceptionistFloorMatrix />
       </div>
 
       {/* Role Request Modal for Receptionist Front Desk Override */}

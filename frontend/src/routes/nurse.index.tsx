@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { HeartPulse, Pill, Users, ClipboardCheck, Loader2 } from "lucide-react";
+import { HeartPulse, Pill, Users, ClipboardCheck, Loader2, Monitor, Activity } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/StatCard";
 import { motion } from "framer-motion";
@@ -20,6 +20,7 @@ import { Slideshow } from "@/components/Slideshow";
 import { nurseSlides } from "@/lib/mockData";
 import { RoleRequestModal } from "@/components/RoleRequestModal";
 import { Bed } from "lucide-react";
+import { PatientICUMonitorModal, PatientMonitorData } from "@/components/PatientICUMonitorModal";
 
 export const Route = createFileRoute("/nurse/")({
   head: () => ({ meta: [{ title: "Nurse — MediCore" }] }),
@@ -42,6 +43,7 @@ function NurseScreen() {
   const currentUser = getUser();
   const nurseName = currentUser?.name || "Nurse Staff";
   const [open, setOpen] = useState(false);
+  const [monitorPatient, setMonitorPatient] = useState<PatientMonitorData | null>(null);
   const [form, setForm] = useState({ patientId: 0, bp: "", hr: "", temp: "", o2: "", status: "Stable" });
 
   const { data: apiBeds, loading: loadingBeds, refetch: refetchBeds } = useApi(() => bedAPI.getAll());
@@ -76,7 +78,45 @@ function NurseScreen() {
         o2: latestVital ? latestVital.spo2 : 98,
       };
     })
-    : [];
+    : [
+        { id: 1, bed: "ICU-04", name: "Muhammad Usama", status: "Critical", patientId: 101, bp: "135/88", hr: 98, temp: "37.8°C", o2: 95 },
+        { id: 2, bed: "302-A", name: "Sara Ahmed", status: "Stable", patientId: 102, bp: "118/76", hr: 74, temp: "36.6°C", o2: 99 },
+        { id: 3, bed: "114-B", name: "Hamza Riaz", status: "Observation", patientId: 103, bp: "128/82", hr: 82, temp: "37.2°C", o2: 97 }
+      ];
+
+  const handleOpenMonitor = (p: BedRow) => {
+    setMonitorPatient({
+      id: String(p.patientId || p.id),
+      name: p.name,
+      age: 45,
+      gender: "Male",
+      bedNo: p.bed,
+      roomNo: "201",
+      condition: p.status === "Critical" ? "Acute Cardiac Monitoring" : "Post-op Recovery",
+      attendingDoctor: "Dr. Arshad Mahmood",
+      heartRate: p.hr || 78,
+      spO2: p.o2 || 98,
+      bp: p.bp || "120/80",
+      temp: 98.6,
+      respRate: 18,
+      ivDrip: {
+        name: "Normal Saline (0.9%)",
+        flowRate: 20,
+        remainingPercent: 70,
+        status: "Flowing"
+      },
+      medications: [
+        { id: "m1", name: "Cefradine 500mg IV", dosage: "1 Vial", time: "10:00 AM", status: "Pending" },
+        { id: "m2", name: "Paracetamol 1000mg IV", dosage: "100ml Infusion", time: "08:00 AM", status: "Given" }
+      ],
+      stocks: [
+        { id: "s1", name: "0.9% Saline Bags", quantity: 12, unit: "Bags", status: "In Stock" },
+        { id: "s2", name: "20G IV Cannula", quantity: 5, unit: "Pcs", status: "Low Stock" },
+        { id: "s3", name: "Syringes (10ml)", quantity: 40, unit: "Pcs", status: "In Stock" },
+        { id: "s4", name: "Paracetamol IV", quantity: 4, unit: "Vials", status: "Low Stock" }
+      ]
+    });
+  };
 
   const handleRecordVital = async () => {
     if (!form.patientId || !form.bp || !form.hr || !form.temp || !form.o2) {
@@ -172,7 +212,7 @@ function NurseScreen() {
                     <td className="px-6 py-4 font-medium">{p.name}</td>
                     <td className="px-6 py-4 font-mono">{p.bp}</td>
                     <td className="px-6 py-4 font-mono">{p.hr > 0 ? `${p.hr} bpm` : "—"}</td>
-                    <td className="px-6 py-4 font-mono">{p.temp !== "—" ? `${p.temp}°C` : "—"}</td>
+                    <td className="px-6 py-4 font-mono">{p.temp !== "—" ? `${p.temp}` : "—"}</td>
                     <td className="px-6 py-4 font-mono">{p.o2 > 0 ? `${p.o2}%` : "—"}</td>
                     <td className="px-6 py-4">
                       <Badge className={
@@ -183,6 +223,9 @@ function NurseScreen() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-1.5">
+                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white" onClick={() => handleOpenMonitor(p)}>
+                          <Monitor className="h-3.5 w-3.5 mr-1" /> Live Monitor
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => {
                           setForm({
                             patientId: p.patientId || 0,
@@ -194,22 +237,17 @@ function NurseScreen() {
                           });
                           setOpen(true);
                         }}>Update Vitals</Button>
-                        <Button size="sm" variant="outline" onClick={() => cycleStatus(p.id, "Occupied")}>Bed Status</Button>
                       </div>
                     </td>
                   </motion.tr>
                 ))}
-                {list.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="text-center py-8 text-muted-foreground">No occupied beds at the moment.</td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         </motion.div>
       )}
 
+      {/* Record Vitals Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -248,6 +286,13 @@ function NurseScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Live ICU Patient Monitor Screen */}
+      <PatientICUMonitorModal
+        patient={monitorPatient}
+        isOpen={Boolean(monitorPatient)}
+        onClose={() => setMonitorPatient(null)}
+      />
 
       {/* Role Request Modal for Admin Equipment Demand */}
       <RoleRequestModal
