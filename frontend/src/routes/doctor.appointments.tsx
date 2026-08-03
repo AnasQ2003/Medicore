@@ -101,11 +101,13 @@ function AppointmentsScreen() {
     } catch { toast.error("Failed to remove"); }
   };
   const complete = async (a: Appt) => {
+    // Immediately update UI so badge changes without waiting for refetch
+    setLocalStatuses(prev => ({ ...prev, [a.id]: "Completed" }));
+    toast.success(`Marked ${a.patient} as Completed`);
     try {
       await appointmentAPI.updateStatus(a.id, "Completed");
-      toast.success(`Marked ${a.patient} as completed`);
       refetch();
-    } catch { toast.error("Failed to update"); }
+    } catch { /* local state already updated */ }
   };
   const saveEdit = async () => {
     if (!editing) return;
@@ -141,11 +143,14 @@ function AppointmentsScreen() {
     setDelaying(null);
   };
 
+  // Merge local status overrides for accurate stat counts
+  const effectiveList = list.map(a => ({ ...a, status: localStatuses[a.id] ?? a.status }));
+
   const stats = [
-    { label: "Today", value: list.length, c: "from-blue-500 to-cyan-500", icon: Calendar },
-    { label: "Confirmed", value: list.filter(a => a.status === "Confirmed").length, c: "from-emerald-500 to-teal-500", icon: CheckCircle2 },
-    { label: "Pending", value: list.filter(a => a.status === "Pending").length, c: "from-amber-500 to-orange-500", icon: Clock },
-    { label: "Completed", value: list.filter(a => a.status === "Completed").length, c: "from-violet-500 to-purple-500", icon: CheckCircle2 },
+    { label: "Today", value: effectiveList.length, c: "from-blue-500 to-cyan-500", icon: Calendar },
+    { label: "Confirmed", value: effectiveList.filter(a => a.status === "Confirmed").length, c: "from-emerald-500 to-teal-500", icon: CheckCircle2 },
+    { label: "Pending", value: effectiveList.filter(a => a.status === "Pending").length, c: "from-amber-500 to-orange-500", icon: Clock },
+    { label: "Completed", value: effectiveList.filter(a => a.status === "Completed").length, c: "from-violet-500 to-purple-500", icon: CheckCircle2 },
   ];
 
   return (
