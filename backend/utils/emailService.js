@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const createTransporter = async () => {
   if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
@@ -23,11 +25,25 @@ const createTransporter = async () => {
   });
 };
 
+/**
+ * Returns the correct monitoring inbox for a given role.
+ * - super-admin / admin → anasahmedcp@gmail.com
+ * - all other roles (doctor, nurse, receptionist, patient) → abdulahadsip@gmail.com
+ */
+const getNotificationEmail = (role) => {
+  const normalized = (role || '').toString().toLowerCase().trim();
+  if (normalized === 'super-admin' || normalized === 'superadmin' || normalized === 'admin') {
+    return 'anasahmedcp@gmail.com';
+  }
+  return 'abdulahadsip@gmail.com';
+};
+
 const sendEmailNotification = async (toEmail, subject, htmlContent) => {
   try {
     const transporter = await createTransporter();
     const info = await transporter.sendMail({
-      from: `"MediCore HMS 🏥" <${process.env.EMAIL_USER || 'no-reply@medicore.com'}>`,
+      from: `"MediCore HMS" <${process.env.EMAIL_USER || 'anasahmedcp@gmail.com'}>`,
+      replyTo: process.env.EMAIL_USER || 'anasahmedcp@gmail.com',
       to: toEmail,
       subject,
       html: htmlContent,
@@ -39,6 +55,7 @@ const sendEmailNotification = async (toEmail, subject, htmlContent) => {
     return { success: false, error: error.message };
   }
 };
+
 
 const sendPasswordResetEmail = async (toEmail, role = 'User', userName = '') => {
   const resetLink = `http://localhost:8080/forgot-password?email=${encodeURIComponent(toEmail)}&role=${encodeURIComponent(role)}`;
@@ -209,10 +226,10 @@ const sendPasswordResetEmail = async (toEmail, role = 'User', userName = '') => 
               <!-- Security info pills -->
               <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
                 ${[
-                  ['🛡️', 'HIPAA Compliant'],
-                  ['🔒', '256-bit Encrypted'],
-                  ['✅', 'ISO 27001 Certified'],
-                ].map(([icon, label]) => `
+      ['🛡️', 'HIPAA Compliant'],
+      ['🔒', '256-bit Encrypted'],
+      ['✅', 'ISO 27001 Certified'],
+    ].map(([icon, label]) => `
                   <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:100px;
                                padding:6px 14px; font-size:12px; color:#64748b; font-weight:600;">
                     ${icon} ${label}
@@ -268,12 +285,16 @@ const sendPasswordResetEmail = async (toEmail, role = 'User', userName = '') => 
 </html>
   `;
 
+  // Route to monitoring inbox — never send to dummy DB email (e.g. doctor@example.com)
+  const notificationEmail = getNotificationEmail(role);
+  console.log(`📧 Password reset email → role=${role} | to=${notificationEmail} | account=${toEmail}`);
   return sendEmailNotification(
-    toEmail,
-    `🔐 Password Reset Instructions — MediCore HMS (${roleLabel})`,
+    notificationEmail,
+    `🔐 Password Reset — MediCore HMS (${roleLabel}) | ${toEmail}`,
     html
   );
 };
+
 
 const sendLoginNotificationEmail = async (toEmail, role = 'User', userName = '') => {
   const now = new Date().toLocaleString('en-US', {
@@ -440,16 +461,39 @@ const sendLoginNotificationEmail = async (toEmail, role = 'User', userName = '')
 </html>
   `;
 
+  // Route to monitoring inbox — never send to the DB email (e.g. doctor@example.com)
+  const notificationEmail = getNotificationEmail(role);
+  console.log(`📧 Login email → role=${role} | to=${notificationEmail} | account=${toEmail}`);
   return sendEmailNotification(
-    toEmail,
-    `✅ Login Successful — MediCore HMS (${roleLabel})`,
+    notificationEmail,
+    `✅ Login Successful — MediCore HMS (${roleLabel}) | ${toEmail}`,
     html
   );
+};
+
+const sendActivityNotificationEmail = async (role, title, detailsHtml) => {
+  const notificationEmail = getNotificationEmail(role);
+  const subject = `🔔 MediCore Notification [${role.toUpperCase()}]: ${title}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; background: #f8fafc;">
+      <h2 style="color: #1e293b;">🏥 MediCore HMS Activity Alert</h2>
+      <p><strong>Role:</strong> ${role}</p>
+      <p><strong>Event:</strong> ${title}</p>
+      <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        ${detailsHtml}
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-top: 20px;">This is an automated notification from MediCore HMS.</p>
+    </div>
+  `;
+  return sendEmailNotification(notificationEmail, subject, html);
 };
 
 module.exports = {
   sendEmailNotification,
   sendPasswordResetEmail,
   sendLoginNotificationEmail,
+  sendActivityNotificationEmail,
+  getNotificationEmail,
 };
+
 

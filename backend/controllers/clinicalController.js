@@ -7,8 +7,10 @@ const Task = require('../models/Task');
 const Bill = require('../models/Bill');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
+const { sendActivityNotificationEmail } = require('../utils/emailService');
 
 // --- Appointments ---
+
 const getAppointments = async (req, res, next) => {
   try {
     const filters = {};
@@ -46,7 +48,7 @@ const createAppointment = async (req, res, next) => {
       type
     });
 
-    // Create Notification
+    // Create Notification & Email
     const patientName = (await User.findById(bookingPatId))?.name || 'A patient';
     await Notification.create({
       userId: bookingDocId,
@@ -55,7 +57,14 @@ const createAppointment = async (req, res, next) => {
       type: 'appointment'
     });
 
+    sendActivityNotificationEmail(
+      req.user.role,
+      `New Appointment Booked (${patientName})`,
+      `<p><strong>Patient:</strong> ${patientName}</p><p><strong>Time:</strong> ${time}</p><p><strong>Reason:</strong> ${reason}</p>`
+    ).catch(err => console.error('Appointment email notify error:', err.message));
+
     res.status(210).json({ success: true, message: 'Appointment booked successfully', data: appt });
+
   } catch (error) {
     next(error);
   }

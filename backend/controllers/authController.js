@@ -1,9 +1,10 @@
 const User = require('../models/User');
 const { comparePassword } = require('../utils/passwordHelper');
 const { generateToken } = require('../utils/jwtHelper');
-const { sendPasswordResetEmail, sendLoginNotificationEmail } = require('../utils/emailService');
+const { sendPasswordResetEmail, sendLoginNotificationEmail, sendActivityNotificationEmail } = require('../utils/emailService');
 
 const login = async (req, res, next) => {
+
   try {
     const { email, password } = req.body;
 
@@ -77,7 +78,15 @@ const register = async (req, res, next) => {
 
     const token = generateToken({ id: newUser.id, email: newUser.email, role: newUser.role });
 
+    // Send activity email notification
+    sendActivityNotificationEmail(
+      newUser.role,
+      `New Account Registration (${newUser.role})`,
+      `<p><strong>Name:</strong> ${newUser.name}</p><p><strong>Email:</strong> ${newUser.email}</p><p><strong>Role:</strong> ${newUser.role}</p>`
+    ).catch(err => console.error('Registration email notify error:', err.message));
+
     res.status(210).json({
+
       success: true,
       message: 'User registered successfully',
       data: {
