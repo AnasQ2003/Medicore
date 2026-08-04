@@ -119,15 +119,15 @@ function NurseProfileScreen() {
           <div className="flex gap-2">
             {editing ? (
               <>
-                <Button onClick={cancelEditing} className="bg-white/20 text-white hover:bg-white/30 border border-white/30">
+                <Button onClick={cancelEditing} className="bg-white/20 text-white hover:bg-white/30 hover:text-white border border-white/30">
                   <X className="h-4 w-4 mr-2"/>Cancel
                 </Button>
-                <Button onClick={saveProfile} className="bg-white text-rose-700 hover:bg-white/90 font-semibold">
+                <Button onClick={saveProfile} className="bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800 font-semibold shadow-md">
                   <Save className="h-4 w-4 mr-2"/>Save Profile
                 </Button>
               </>
             ) : (
-              <Button onClick={startEditing} className="bg-white text-rose-700 hover:bg-white/90 font-semibold">
+              <Button onClick={startEditing} className="bg-white text-rose-700 hover:bg-rose-50 hover:text-rose-800 font-semibold shadow-md">
                 <Edit3 className="h-4 w-4 mr-2"/>Edit Profile
               </Button>
             )}

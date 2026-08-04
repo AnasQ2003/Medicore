@@ -31,17 +31,17 @@ export const superAdminNav: RoleNavItem[] = [
 ];
 
 export const nurseNav: RoleNavItem[] = [
-  { label: "Nurse Dashboard", to: "/nurse", icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: "Nurse Patients", to: "/nurse/patients", icon: <Users className="h-4 w-4" /> },
-  { label: "Nurse Vitals", to: "/nurse/vitals", icon: <HeartPulse className="h-4 w-4" /> },
-  { label: "Nurse Medications", to: "/nurse/medications", icon: <Pill className="h-4 w-4" /> },
-  { label: "Nurse Tasks", to: "/nurse/tasks", icon: <ClipboardCheck className="h-4 w-4" /> },
-  { label: "Nurse Beds", to: "/nurse/beds", icon: <Bed className="h-4 w-4" /> },
-  { label: "Nurse Injections", to: "/nurse/injections", icon: <Syringe className="h-4 w-4" /> },
-  { label: "Schedule", to: "/nurse/schedule", icon: <CalendarClock className="h-4 w-4" /> },
-  { label: "Nurse Notifications", to: "/nurse/notifications", icon: <Bell className="h-4 w-4" /> },
-  { label: "My Profile", to: "/nurse/profile", icon: <UserCircle className="h-4 w-4" /> },
-  { label: "Settings", to: "/nurse/settings", icon: <Settings className="h-4 w-4" /> },
+  { label: "Dashboard",     to: "/nurse",               icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: "Patients",      to: "/nurse/patients",      icon: <Users className="h-4 w-4" /> },
+  { label: "Vitals",        to: "/nurse/vitals",        icon: <HeartPulse className="h-4 w-4" /> },
+  { label: "Medications",   to: "/nurse/medications",   icon: <Pill className="h-4 w-4" /> },
+  { label: "Tasks",         to: "/nurse/tasks",         icon: <ClipboardCheck className="h-4 w-4" /> },
+  { label: "Beds",          to: "/nurse/beds",          icon: <Bed className="h-4 w-4" /> },
+  { label: "Injections",    to: "/nurse/injections",    icon: <Syringe className="h-4 w-4" /> },
+  { label: "Schedule",      to: "/nurse/schedule",      icon: <CalendarClock className="h-4 w-4" /> },
+  { label: "Notifications", to: "/nurse/notifications", icon: <Bell className="h-4 w-4" /> },
+  { label: "My Profile",    to: "/nurse/profile",       icon: <UserCircle className="h-4 w-4" /> },
+  { label: "Settings",      to: "/nurse/settings",      icon: <Settings className="h-4 w-4" /> },
 ];
 
 export const receptionistNav: RoleNavItem[] = [
