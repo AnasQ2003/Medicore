@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, Bell, User, Settings, ChevronDown, Menu, X, PanelLeftClose, PanelLeftOpen, Command, Search, ChevronRight, Sun, Moon } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import { clearUser, ensureUserForRole, type Role, type MockUser } from "@/lib/auth";
 import { MediLogo } from "./MediLogo";
 import { Footer } from "./Footer";
@@ -56,14 +56,28 @@ export function AppShell({
   const [pageLoading, setPageLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Loading MediCore Module…");
 
-  // Show loader on current screen, then navigate — correct order
+  // Ref to track pathname changes and trigger 2s ambulance loader on any screen transition
+  const prevPathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      setPageLoading(true);
+      const timer = setTimeout(() => {
+        setPageLoading(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname]);
+
+  // Show 2s ambulance loader on current screen, then navigate
   const handleNavClick = (to: string) => {
     if (pathname === to) return; // already on this page
     setPageLoading(true);
     setTimeout(() => {
       setPageLoading(false);
       navigate({ to: to as any });
-    }, 2800);
+    }, 2000);
   };
 
   // Theme state: Default Light Mode for all users
@@ -114,7 +128,7 @@ export function AppShell({
     setTimeout(() => {
       clearUser();
       navigate({ to: "/login", search: { role } as any });
-    }, 2800);
+    }, 2000);
   };
 
   useEffect(() => {

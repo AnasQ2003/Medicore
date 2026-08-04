@@ -191,36 +191,36 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
         ))}
       </div>
 
-      {/* Calendar card */}
-      <div className="rounded-2xl border bg-gradient-card shadow-card p-5">
+      {/* Calendar card — compact & professional design */}
+      <div className="rounded-2xl border bg-gradient-card shadow-card p-5 max-w-xl mx-auto w-full">
         {/* Month/Year Nav */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`h-9 w-9 rounded-xl ${accentClass} flex items-center justify-center`}>
+            <div className={`h-9 w-9 rounded-xl ${accentClass} flex items-center justify-center shadow-md`}>
               <Calendar className="h-4.5 w-4.5 text-white" />
             </div>
             <div>
-              <div className="font-bold text-lg">{MONTHS[viewMonth]} {viewYear}</div>
-              {isCurrentMonth && <div className="text-xs text-primary font-medium">Current Month</div>}
+              <div className="font-bold text-base md:text-lg">{MONTHS[viewMonth]} {viewYear}</div>
+              {isCurrentMonth && <div className="text-[11px] text-primary font-semibold">Current Month</div>}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="icon" variant="outline" onClick={prevMonth} className="h-8 w-8 rounded-xl">
-              <ChevronLeft className="h-4 w-4" />
+          <div className="flex items-center gap-1.5">
+            <Button size="icon" variant="outline" onClick={prevMonth} className="h-7 w-7 rounded-lg">
+              <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
             <Button
               size="icon" variant="outline"
               onClick={nextMonth}
               disabled={isCurrentMonth}
-              className="h-8 w-8 rounded-xl disabled:opacity-40"
+              className="h-7 w-7 rounded-lg disabled:opacity-40"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); }}
-              className="rounded-xl text-xs"
+              className="rounded-lg text-xs h-7 px-2.5"
             >
               Today
             </Button>
@@ -228,26 +228,26 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
         </div>
 
         {isFutureMonth ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-            <Clock className="h-10 w-10 opacity-30" />
+          <div className="flex flex-col items-center justify-center py-10 gap-2 text-muted-foreground">
+            <Clock className="h-8 w-8 opacity-30" />
             <div className="text-center">
-              <div className="font-semibold">Future Schedule Unavailable</div>
-              <div className="text-sm mt-1">Only current and past month data can be viewed.</div>
+              <div className="font-semibold text-sm">Future Schedule Unavailable</div>
+              <div className="text-xs mt-0.5">Only current and past month data can be viewed.</div>
             </div>
           </div>
         ) : (
           <>
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-2">
+            <div className="grid grid-cols-7 mb-1 text-center">
               {DAY_NAMES.map(d => (
-                <div key={d} className="text-center text-xs font-bold text-muted-foreground py-2">{d}</div>
+                <div key={d} className="text-[11px] font-bold text-muted-foreground py-1 uppercase tracking-wider">{d}</div>
               ))}
             </div>
 
-            {/* Calendar grid */}
+            {/* Calendar grid — compact & responsive */}
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: firstDay }).map((_, i) => (
-                <div key={`blank-${i}`} />
+                <div key={`blank-${i}`} className="h-9 md:h-10" />
               ))}
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
@@ -260,33 +260,37 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
                 return (
                   <motion.div
                     key={day}
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.008 }}
-                    className={`relative aspect-square flex flex-col items-center justify-center rounded-xl border text-xs font-semibold transition-all cursor-default
-                      ${isToday ? "ring-2 ring-primary ring-offset-1" : ""}
+                    transition={{ delay: i * 0.005 }}
+                    className={`relative h-9 md:h-10 flex flex-col items-center justify-center rounded-lg border text-xs font-medium transition-all cursor-default select-none
+                      ${isToday ? "ring-2 ring-primary ring-offset-1 font-bold z-10" : ""}
                       ${isFuture ? "opacity-30" : ""}
-                      ${cfg ? `${cfg.bg} ${cfg.text}` : "bg-gray-50 text-gray-400 border-gray-100"}
+                      ${cfg ? `${cfg.bg} ${cfg.text}` : "bg-muted/30 text-muted-foreground border-transparent"}
                     `}
                     title={rec ? `${dateStr}: ${rec.status}` : dateStr}
                   >
-                    <span className="text-[11px] font-bold">{day}</span>
-                    {cfg && <span className="text-[8px] font-bold opacity-70 leading-none">{cfg.label}</span>}
+                    <span className="text-[11px] font-bold leading-none">{day}</span>
+                    {cfg && (
+                      <span className="text-[8px] font-extrabold opacity-80 leading-none mt-0.5 uppercase">
+                        {cfg.label}
+                      </span>
+                    )}
                   </motion.div>
                 );
               })}
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-border/50">
+            <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-border/40">
               {[
-                { color: "bg-emerald-200", label: "Present" },
-                { color: "bg-rose-200", label: "Absent" },
-                { color: "bg-amber-200", label: "Leave" },
-                { color: "bg-slate-200", label: "Off Day" },
+                { color: "bg-emerald-500", label: "Present" },
+                { color: "bg-rose-500", label: "Absent" },
+                { color: "bg-amber-500", label: "Leave" },
+                { color: "bg-slate-400", label: "Off Day" },
               ].map(({ color, label }) => (
-                <div key={label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className={`h-3 w-3 rounded-sm ${color}`} />
+                <div key={label} className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                  <div className={`h-2.5 w-2.5 rounded-full ${color}`} />
                   {label}
                 </div>
               ))}

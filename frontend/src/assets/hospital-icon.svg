@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <!-- Left Wing Top Roof Cap -->
+  <rect x="18" y="62" width="70" height="16" rx="8" fill="#EF4444" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" />
+  
+  <!-- Right Wing Top Roof Cap -->
+  <rect x="168" y="62" width="70" height="16" rx="8" fill="#EF4444" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" />
+
+  <!-- Main Center Top Roof Cap -->
+  <rect x="76" y="16" width="104" height="20" rx="10" fill="#EF4444" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" />
+
+  <!-- Left Wing Body -->
+  <rect x="24" y="70" width="58" height="166" rx="6" fill="#C5C6E7" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" />
+
+  <!-- Right Wing Body -->
+  <rect x="174" y="70" width="58" height="166" rx="6" fill="#C5C6E7" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" />
+
+  <!-- Center Main Building -->
+  <rect x="82" y="28" width="92" height="208" rx="8" fill="#FFFFFF" stroke="#0F172A" stroke-width="7" stroke-linejoin="round" />
+
+  <!-- RED CROSS (Center Top) -->
+  <path d="M114 56h28v40h-28z" fill="#EF4444" stroke="#0F172A" stroke-width="6" stroke-linejoin="round" />
+  <path d="M102 68h52v16h-52z" fill="#EF4444" stroke="#0F172A" stroke-width="6" stroke-linejoin="round" />
+
+  <!-- Two Small Horizontal Lines Below Cross -->
+  <line x1="112" y1="108" x2="144" y2="108" stroke="#0F172A" stroke-width="6" stroke-linecap="round" />
+  <line x1="112" y1="122" x2="144" y2="122" stroke="#0F172A" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Left Wing Windows -->
+  <rect x="36" y="92" width="34" height="24" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="6" />
+  <rect x="36" y="134" width="34" height="24" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="6" />
+  <rect x="36" y="176" width="34" height="24" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="6" />
+
+  <!-- Right Wing Windows -->
+  <rect x="186" y="92" width="34" height="24" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="6" />
+  <rect x="186" y="134" width="34" height="24" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="6" />
+  <rect x="186" y="176" width="34" height="24" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="6" />
+
+  <!-- Main Entrance Double Door -->
+  <rect x="104" y="170" width="48" height="66" rx="4" fill="#7DD3FC" stroke="#0F172A" stroke-width="7" />
+  <line x1="128" y1="170" x2="128" y2="236" stroke="#0F172A" stroke-width="5" />
+</svg>

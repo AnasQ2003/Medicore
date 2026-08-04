@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import hospitalIconUrl from "../assets/hospital-icon.svg?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -88,6 +89,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@MediCoreHMS" },
     ],
     links: [
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: hospitalIconUrl,
+      },
+      {
+        rel: "shortcut icon",
+        href: hospitalIconUrl,
+      },
+      {
+        rel: "apple-touch-icon",
+        href: hospitalIconUrl,
+      },
       {
         rel: "stylesheet",
         href: appCss,

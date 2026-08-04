@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const { comparePassword } = require('../utils/passwordHelper');
 const { generateToken } = require('../utils/jwtHelper');
-const { sendPasswordResetEmail } = require('../utils/emailService');
+const { sendPasswordResetEmail, sendLoginNotificationEmail } = require('../utils/emailService');
 
 const login = async (req, res, next) => {
   try {
@@ -18,6 +18,11 @@ const login = async (req, res, next) => {
       await User.updateLastLogin(user.id);
       
       const token = generateToken({ id: user.id, email: user.email, role: user.role });
+
+      // Asynchronously send login email notification to the user's email
+      sendLoginNotificationEmail(user.email, user.role, user.name).catch((err) => {
+        console.error('⚠️ Login notification email error:', err.message);
+      });
 
       return res.status(200).json({
         success: true,
