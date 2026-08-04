@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import useApi from "@/hooks/useApi";
-import { nurseAPI } from "@/lib/api/client";
+import { taskAPI } from "@/lib/api/client";
 
 export const Route = createFileRoute("/nurse/tasks")({
   head: () => ({ meta: [{ title: "Tasks — Nurse" }] }),
@@ -115,7 +115,7 @@ const priorityConfig: Record<TaskPriority, string> = {
 };
 
 function NurseTasksScreen() {
-  const { data: _api, loading: _loading, error: _error, refetch } = useApi(() => nurseAPI.getTasks?.() ?? Promise.resolve([]));
+  const { data: _api, loading: _loading, error: _error, refetch } = useApi(() => taskAPI.getAll?.() ?? Promise.resolve([]));
 
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
