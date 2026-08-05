@@ -123,8 +123,11 @@ function AppointmentsScreen() {
     const newTotal = toMins(delaying.time) + delayMin;
     const newTime = fromMins(newTotal);
 
-    // Enforce 10-minute buffer: check no other appointment is within 10 mins of new time
-    const conflict = list.find(a =>
+    // Only check conflict against active (non-completed, non-cancelled) appointments
+    const activeList = effectiveList.filter(a =>
+      a.status !== "Completed" && a.status !== "Cancelled"
+    );
+    const conflict = activeList.find(a =>
       a.id !== delaying.id &&
       Math.abs(toMins(a.time) - newTotal) < 10
     );
@@ -135,6 +138,7 @@ function AppointmentsScreen() {
       return;
     }
 
+    setLocalStatuses(prev => ({ ...prev, [delaying.id]: "Delayed" }));
     try {
       await appointmentAPI.updateStatus(delaying.id, "Delayed", newTime);
       toast.success(`Delayed by ${delayMin} min`, { description: `${delaying.patient} → ${newTime}` });
@@ -146,8 +150,24 @@ function AppointmentsScreen() {
   // Merge local status overrides for accurate stat counts
   const effectiveList = list.map(a => ({ ...a, status: localStatuses[a.id] ?? a.status }));
 
+  // Today: all appts, completed sorted to bottom
+  const todayList = [
+    ...filtered.filter(a => getStatus(a) !== "Completed" && getStatus(a) !== "Cancelled"),
+    ...filtered.filter(a => getStatus(a) === "Completed" || getStatus(a) === "Cancelled"),
+  ];
+
+  // Past: completed or cancelled
+  const pastList = effectiveList.filter(a =>
+    a.status === "Completed" || a.status === "Cancelled"
+  ).sort((a, b) => b.time.localeCompare(a.time));
+
+  // Upcoming: confirmed or pending (not completed/cancelled/delayed/in consultation)
+  const upcomingList = effectiveList.filter(a =>
+    a.status === "Confirmed" || a.status === "Pending"
+  ).sort((a, b) => a.time.localeCompare(b.time));
+
   const stats = [
-    { label: "Today", value: effectiveList.length, c: "from-blue-500 to-cyan-500", icon: Calendar },
+    { label: "Today", value: effectiveList.filter(a => a.status !== "Completed" && a.status !== "Cancelled").length, c: "from-blue-500 to-cyan-500", icon: Calendar },
     { label: "Confirmed", value: effectiveList.filter(a => a.status === "Confirmed").length, c: "from-emerald-500 to-teal-500", icon: CheckCircle2 },
     { label: "Pending", value: effectiveList.filter(a => a.status === "Pending").length, c: "from-amber-500 to-orange-500", icon: Clock },
     { label: "Completed", value: effectiveList.filter(a => a.status === "Completed").length, c: "from-violet-500 to-purple-500", icon: CheckCircle2 },
@@ -193,7 +213,7 @@ function AppointmentsScreen() {
           </div>
 
           <TabsContent value="today" className="space-y-3">
-          {filtered.map((a, i) => {
+          {todayList.map((a, i) => {
               const p = patients.find((x) => x.id === a.patientId);
               const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-blue-500 to-cyan-500";
               const effectiveStatus = getStatus(a);
@@ -274,8 +294,58 @@ function AppointmentsScreen() {
             })}
             {filtered.length === 0 && <div className="text-center py-12 text-muted-foreground">No appointments match your search.</div>}
           </TabsContent>
-          <TabsContent value="upcoming"><div className="text-center py-12 text-muted-foreground">Upcoming appointments will sync here when a slot is &gt; 24h away.</div></TabsContent>
-          <TabsContent value="past"><div className="text-center py-12 text-muted-foreground">Completed visits archive here.</div></TabsContent>
+
+          <TabsContent value="upcoming" className="space-y-3">
+            {upcomingList.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">No upcoming confirmed appointments.</div>
+            ) : upcomingList.map((a, i) => {
+              const effectiveStatus = getStatus(a);
+              const p = patients.find((x) => x.id === a.patientId);
+              const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-blue-500 to-cyan-500";
+              return (
+                <motion.div key={a.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/70 backdrop-blur-md hover:shadow-md transition-all">
+                  <div className="text-center sm:w-20">
+                    <div className="text-2xl font-bold text-primary">{a.time}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
+                  </div>
+                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold shadow-glow shrink-0`}>{a.patient[0]}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold">{a.patient}</div>
+                    <div className="text-sm text-muted-foreground">{a.reason}</div>
+                    {p && <div className="text-xs text-muted-foreground mt-1">{p.age}y {p.gender}</div>}
+                  </div>
+                  <Badge className={effectiveStatus === "Confirmed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>{effectiveStatus}</Badge>
+                </motion.div>
+              );
+            })}
+          </TabsContent>
+
+          <TabsContent value="past" className="space-y-3">
+            {pastList.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">No completed or cancelled appointments yet.</div>
+            ) : pastList.map((a, i) => {
+              const effectiveStatus = getStatus(a);
+              const p = patients.find((x) => x.id === a.patientId);
+              const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-slate-400 to-slate-600";
+              return (
+                <motion.div key={a.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/50 backdrop-blur-md opacity-80">
+                  <div className="text-center sm:w-20">
+                    <div className="text-2xl font-bold text-muted-foreground">{a.time}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
+                  </div>
+                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold shrink-0`}>{a.patient[0]}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-muted-foreground">{a.patient}</div>
+                    <div className="text-sm text-muted-foreground">{a.reason}</div>
+                    {p && <div className="text-xs text-muted-foreground mt-1">{p.age}y {p.gender}</div>}
+                  </div>
+                  <Badge className={effectiveStatus === "Completed" ? "bg-blue-100 text-blue-700" : "bg-rose-100 text-rose-700"}>{effectiveStatus}</Badge>
+                </motion.div>
+              );
+            })}
+          </TabsContent>
         </Tabs>
       </div>
 

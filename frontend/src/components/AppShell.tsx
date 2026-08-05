@@ -238,12 +238,13 @@ export function AppShell({
             >
               <button
                 type="button"
+                data-active={active ? "true" : "false"}
                 title={collapsed ? item.label : undefined}
                 onClick={() => handleNavClick(item.to)}
-                className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`group flex items-center ${collapsed ? "justify-center" : "gap-3"} w-full px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   active
-                    ? "bg-white/18 text-white shadow-inner backdrop-blur-sm border border-white/15"
-                    : "text-sidebar-foreground hover:bg-white/18 hover:text-white hover:translate-x-1"
+                    ? "bg-white/20 text-white shadow-inner border border-white/20"
+                    : "text-white/85 hover:bg-white/18 hover:text-white hover:translate-x-1"
                 }`}
               >
                 <span className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors duration-200 ${

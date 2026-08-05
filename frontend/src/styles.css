@@ -134,33 +134,60 @@
 
 
 /* ================= SIDEBAR NAV ITEMS (dark background) ================= */
-/* Always keep WHITE text on dark sidebar — never fade */
+/* Always keep WHITE text on dark sidebar — never fade or turn dark in light or dark mode */
 .glass-sidebar a,
+.glass-sidebar button,
 .glass-sidebar [role="menuitem"],
 .sidebar-nav a,
-.sidebar-nav [role="menuitem"] {
-  color: #f1f5f9 !important;
+.sidebar-nav button,
+.sidebar-nav [role="menuitem"],
+aside nav a,
+aside nav button {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
+
 .glass-sidebar a:hover,
 .glass-sidebar a:focus,
+.glass-sidebar button:hover,
+.glass-sidebar button:focus,
+.glass-sidebar button[data-active="true"],
 .glass-sidebar [role="menuitem"]:hover,
 .glass-sidebar [role="menuitem"]:focus,
 .sidebar-nav a:hover,
-.sidebar-nav a:focus {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+.sidebar-nav a:focus,
+.sidebar-nav button:hover,
+.sidebar-nav button:focus,
+.sidebar-nav button[data-active="true"],
+aside nav a:hover,
+aside nav button:hover,
+aside nav button[data-active="true"] {
+  background-color: rgba(255, 255, 255, 0.26) !important;
   color: #ffffff !important;
+  font-weight: 600 !important;
 }
+
 .glass-sidebar a:hover *,
 .glass-sidebar a:focus *,
+.glass-sidebar button:hover *,
+.glass-sidebar button:focus *,
+.glass-sidebar button[data-active="true"] *,
 .glass-sidebar [role="menuitem"]:hover *,
 .glass-sidebar [role="menuitem"]:focus *,
 .sidebar-nav a:hover *,
 .sidebar-nav a:focus *,
+.sidebar-nav button:hover *,
+.sidebar-nav button:focus *,
+.sidebar-nav button[data-active="true"] *,
 .glass-sidebar a *,
+.glass-sidebar button *,
 .glass-sidebar [role="menuitem"] *,
-.sidebar-nav a * {
-  color: inherit !important;
+.sidebar-nav a *,
+.sidebar-nav button *,
+aside nav a *,
+aside nav button * {
+  color: #ffffff !important;
 }
+
 
 
 :root {

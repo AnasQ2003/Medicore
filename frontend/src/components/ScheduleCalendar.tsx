@@ -43,6 +43,17 @@ function toDateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+// Deterministic pseudo-random using date string as seed — same date always gets same status
+function seededRand(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash % 1000) / 1000;
+}
+
 function generateMockRecords(year: number, month: number): DayRecord[] {
   const today = new Date();
   const days = getDaysInMonth(year, month);
@@ -50,13 +61,13 @@ function generateMockRecords(year: number, month: number): DayRecord[] {
   for (let d = 1; d <= days; d++) {
     const date = toDateStr(year, month, d);
     const dateObj = new Date(year, month, d);
-    // Don't generate future dates beyond today
     if (dateObj > today) continue;
     const dow = dateObj.getDay();
     if (dow === 0 || dow === 6) {
       records.push({ date, status: "off" });
     } else {
-      const rand = Math.random();
+      // Deterministic: same date always produces same status
+      const rand = seededRand(date);
       if (rand < 0.75) records.push({ date, status: "present" });
       else if (rand < 0.87) records.push({ date, status: "absent" });
       else records.push({ date, status: "leave" });
