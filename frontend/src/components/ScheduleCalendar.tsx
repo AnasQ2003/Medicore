@@ -1,11 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar, TrendingDown, Clock, CheckCircle2, XCircle, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getUser, type Role } from "@/lib/auth";
 import { getLeaveRequests, type LeaveRequest } from "@/lib/leaveStore";
@@ -19,16 +16,8 @@ const MONTHS = [
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 interface DayRecord {
-  date: string; // YYYY-MM-DD
+  date: string;
   status: "present" | "absent" | "leave" | "off";
-}
-
-interface LeaveApplication {
-  id: string;
-  from: string;
-  to: string;
-  reason: string;
-  status: "pending" | "approved" | "rejected";
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -43,7 +32,7 @@ function toDateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-// Deterministic pseudo-random using date string as seed — same date always gets same status
+// Deterministic pseudo-random using date string as seed
 function seededRand(seed: string): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
@@ -66,7 +55,6 @@ function generateMockRecords(year: number, month: number): DayRecord[] {
     if (dow === 0 || dow === 6) {
       records.push({ date, status: "off" });
     } else {
-      // Deterministic: same date always produces same status
       const rand = seededRand(date);
       if (rand < 0.75) records.push({ date, status: "present" });
       else if (rand < 0.87) records.push({ date, status: "absent" });
@@ -81,37 +69,36 @@ interface ScheduleCalendarProps {
   accentClass?: string;
 }
 
-export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-primary" }: ScheduleCalendarProps) {
+export function ScheduleCalendar({ role = "doctor", accentClass = "bg-gradient-primary" }: ScheduleCalendarProps) {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [leaveOpen, setLeaveOpen] = useState(false);
   const user = getUser();
-  const currentRole: Role = (role as Role) || user?.role || "nurse";
+  const currentRole: Role = (role as Role) || user?.role || "doctor";
+  const userEmail = user?.email || "doctor@medicore.app";
 
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [leaveFrom, setLeaveFrom] = useState("");
-  const [leaveTo, setLeaveTo] = useState("");
-  const [leaveReason, setLeaveReason] = useState("");
-  const [leaveType, setLeaveType] = useState("Annual Leave");
-  const [applications, setApplications] = useState<LeaveApplication[]>([]);
 
-  const loadRequests = () => {
-    const all = getLeaveRequests();
-    const filtered = all.filter(
-      (r) => r.applicantEmail === user?.email || r.applicantRole === currentRole
-    );
-    setLeaveRequests(filtered);
-  };
+  const loadRequests = useCallback(() => {
+    try {
+      const all = getLeaveRequests();
+      const filtered = all.filter(
+        (r) => r.applicantEmail === userEmail || r.applicantRole === currentRole
+      );
+      setLeaveRequests(filtered);
+    } catch (e) {
+      console.error("Error loading leave requests:", e);
+    }
+  }, [userEmail, currentRole]);
 
   useEffect(() => {
     loadRequests();
     const handleUpdate = () => loadRequests();
     window.addEventListener("medicore_leave_requests_updated", handleUpdate);
     return () => window.removeEventListener("medicore_leave_requests_updated", handleUpdate);
-  }, [user, currentRole]);
+  }, [loadRequests]);
 
-  // Is the selected month/year in the future (beyond current month)?
   const isFutureMonth = viewYear > today.getFullYear() ||
     (viewYear === today.getFullYear() && viewMonth > today.getMonth());
 
@@ -125,7 +112,7 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
   const leaveDays = records.filter(r => r.status === "leave").length;
   const totalWorkdays = records.filter(r => r.status !== "off").length;
   const approvedCount = leaveRequests.filter(a => a.status === "Approved").reduce((sum, r) => sum + r.totalDays, 0);
-  const remainingLeave = Math.max(0, 18 - approvedCount);
+  const remainingLeave = Math.max(0, 21 - approvedCount);
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
@@ -148,27 +135,11 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
 
   const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
 
-  const applyLeave = () => {
-    if (!leaveFrom || !leaveTo) return toast.error("Please select from and to dates");
-    if (leaveFrom > leaveTo) return toast.error("From date must be before to date");
-    const newApp: LeaveApplication = {
-      id: `LV-${String(Date.now()).slice(-4)}`,
-      from: leaveFrom,
-      to: leaveTo,
-      reason: leaveReason || leaveType,
-      status: "pending",
-    };
-    setApplications(prev => [newApp, ...prev]);
-    toast.success("Leave application submitted successfully!");
-    setLeaveOpen(false);
-    setLeaveFrom(""); setLeaveTo(""); setLeaveReason("");
-  };
-
   const statusConfig: Record<string, { bg: string; text: string; label: string }> = {
-    present: { bg: "bg-emerald-100 border-emerald-200", text: "text-emerald-700", label: "P" },
-    absent: { bg: "bg-rose-100 border-rose-200", text: "text-rose-700", label: "A" },
-    leave: { bg: "bg-amber-100 border-amber-200", text: "text-amber-700", label: "L" },
-    off: { bg: "bg-slate-100 border-slate-200", text: "text-slate-400", label: "—" },
+    present: { bg: "bg-emerald-100 border-emerald-200 dark:bg-emerald-950 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-300", label: "P" },
+    absent: { bg: "bg-rose-100 border-rose-200 dark:bg-rose-950 dark:border-rose-800", text: "text-rose-700 dark:text-rose-300", label: "A" },
+    leave: { bg: "bg-amber-100 border-amber-200 dark:bg-amber-950 dark:border-amber-800", text: "text-amber-700 dark:text-amber-300", label: "L" },
+    off: { bg: "bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700", text: "text-slate-400", label: "—" },
   };
 
   const recordMap: Record<string, DayRecord> = {};
@@ -202,7 +173,7 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
         ))}
       </div>
 
-      {/* Calendar card — compact & professional design */}
+      {/* Calendar card */}
       <div className="rounded-2xl border bg-gradient-card shadow-card p-5 max-w-xl mx-auto w-full">
         {/* Month/Year Nav */}
         <div className="flex items-center justify-between mb-4">
@@ -255,7 +226,7 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
               ))}
             </div>
 
-            {/* Calendar grid — compact & responsive */}
+            {/* Calendar grid */}
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: firstDay }).map((_, i) => (
                 <div key={`blank-${i}`} className="h-9 md:h-10" />
@@ -311,7 +282,7 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
       </div>
 
       {/* Leave Applications */}
-      <div className="rounded-2xl border bg-white shadow-card p-5">
+      <div className="rounded-2xl border bg-card shadow-card p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-base flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
@@ -331,8 +302,8 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
             <div key={app.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border bg-background hover:bg-muted/30 transition-colors">
               <div className="flex items-center gap-3">
                 <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold
-                  ${app.status === "Approved" ? "bg-emerald-100 text-emerald-700" :
-                    app.status === "Rejected" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"}
+                  ${app.status === "Approved" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" :
+                    app.status === "Rejected" ? "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300" : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"}
                 `}>
                   {app.id.slice(-3)}
                 </div>
@@ -342,9 +313,9 @@ export function ScheduleCalendar({ role = "staff", accentClass = "bg-gradient-pr
                 </div>
               </div>
               <Badge className={
-                app.status === "Approved" ? "bg-emerald-100 text-emerald-700 border-emerald-200" :
-                app.status === "Rejected" ? "bg-rose-100 text-rose-700 border-rose-200" :
-                "bg-amber-100 text-amber-700 border-amber-200"
+                app.status === "Approved" ? "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300" :
+                app.status === "Rejected" ? "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300" :
+                "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300"
               }>
                 {app.status === "Pending" ? "⏳ Pending Admin Action" : app.status}
               </Badge>

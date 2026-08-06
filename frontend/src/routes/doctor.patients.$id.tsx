@@ -15,6 +15,7 @@ import { patientAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { toast } from "sonner";
 import { generateGenericPDF } from "@/lib/pdfGenerator";
+import { getUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/doctor/patients/$id")({
   head: () => ({ meta: [{ title: "Patient EMR — Doctor" }] }),
@@ -23,29 +24,35 @@ export const Route = createFileRoute("/doctor/patients/$id")({
 
 interface Vital { id?: number; date: string; bp: string; pulse: number; temp: number; spo2: number; nurse?: string; }
 
+const defaultRichData = {
+  vitals: [
+    { date: "2026-06-12", bp: "138/92", pulse: 82, temp: 36.8, spo2: 97, nurse: "Nursing Staff" },
+    { date: "2026-05-28", bp: "142/94", pulse: 84, temp: 36.7, spo2: 98, nurse: "Nursing Staff" },
+    { date: "2026-04-15", bp: "135/88", pulse: 78, temp: 36.6, spo2: 98, nurse: "Nursing Staff" },
+  ],
+  allergies: ["Penicillin", "Peanuts"],
+  chronic: ["Hypertension (since 2019)", "Hyperlipidemia"],
+  currentMeds: ["Amlodipine 5mg OD", "Atorvastatin 10mg HS", "Aspirin 75mg OD"],
+  history: [
+    { date: "2026-06-12", doctor: "Dr. Sarah Ali", diagnosis: "Routine Consultation & BP Follow-up", notes: "BP 138/92. Advised low sodium diet. Continue current medication regimen." },
+    { date: "2026-04-15", doctor: "Dr. Sarah Ali", diagnosis: "Annual Health Assessment", notes: "ECG normal sinus rhythm. Lipid panel ordered. Patient educated on diet." },
+  ],
+  reports: [
+    { id: "R-501", name: "Lipid Profile Panel Report", type: "Lab", date: "2026-06-12", summary: "Total Cholesterol 240 mg/dL (high), LDL 162 mg/dL, HDL 38 mg/dL, TG 210 mg/dL." },
+    { id: "R-506", name: "Standard 12-Lead ECG", type: "Cardio", date: "2026-06-07", summary: "Normal sinus rhythm 78 bpm. Normal axis, no ischemic changes." },
+  ],
+  prescriptions: [
+    { id: "RX-101", items: "Amlodipine 5mg OD, Atorvastatin 10mg HS", date: "2026-06-12", status: "Active" },
+    { id: "RX-088", items: "Aspirin 75mg OD after breakfast", date: "2026-04-15", status: "Completed" },
+  ]
+};
+
 const patientDatabase: Record<string, any> = {
   "1042": {
     id: 1042, patientCode: "P-1042", name: "Ahmed Ali", age: 54, gender: "Male", bloodGroup: "B+",
     phone: "+92 300 1234567", email: "ahmed.ali@example.com", address: "House 14, St 5, F-7/2 Islamabad",
     condition: "Hypertension, Mild Dyslipidemia",
-    allergies: ["Penicillin", "Peanuts"], chronic: ["Hypertension (since 2019)", "Hyperlipidemia"],
-    currentMeds: ["Amlodipine 5mg OD", "Atorvastatin 10mg HS", "Aspirin 75mg OD"],
-    vitals: [
-      { date: "2026-06-12", bp: "138/92", pulse: 82, temp: 36.8, spo2: 97 },
-      { date: "2026-05-28", bp: "142/94", pulse: 84, temp: 36.7, spo2: 98 },
-      { date: "2026-04-15", bp: "135/88", pulse: 78, temp: 36.6, spo2: 98 },
-    ],
-    history: [
-      { date: "2026-06-12", doctor: "Dr. Sarah Khan", diagnosis: "Hypertension Routine Follow-up", notes: "BP 138/92, advised low sodium diet, titrate statin if LDL remains > 160." },
-      { date: "2026-03-12", doctor: "Dr. Sarah Khan", diagnosis: "Occasional Palpitations", notes: "24h Holter requested. Normal sinus rhythm confirmed." },
-    ],
-    reports: [
-      { id: "R-501", name: "Lipid Profile Report", type: "Lab", date: "2026-06-12", summary: "Total Cholesterol 240 mg/dL (high), LDL 162, HDL 38, TG 210." },
-      { id: "R-506", name: "Standard 12-Lead ECG", type: "Cardio", date: "2026-06-07", summary: "Normal sinus rhythm 78 bpm. Normal axis." },
-    ],
-    prescriptions: [
-      { id: "RX-101", items: "Amlodipine 5mg OD, Atorvastatin 10mg HS", date: "2026-06-12", status: "Active" },
-    ]
+    ...defaultRichData,
   },
   "1043": {
     id: 1043, patientCode: "P-1043", name: "Fatima Noor", age: 28, gender: "Female", bloodGroup: "A+",
@@ -58,7 +65,7 @@ const patientDatabase: Record<string, any> = {
       { date: "2026-05-10", bp: "112/72", pulse: 88, temp: 36.5, spo2: 99 },
     ],
     history: [
-      { date: "2026-06-11", doctor: "Dr. Sarah Khan", diagnosis: "Asthma Follow-up", notes: "Chest clear, peak flow 420 L/min. Continue inhaler PRN." },
+      { date: "2026-06-11", doctor: "Dr. Sarah Ali", diagnosis: "Asthma Follow-up", notes: "Chest clear, peak flow 420 L/min. Continue inhaler PRN." },
     ],
     reports: [
       { id: "R-502", name: "24h Holter ECG Monitor", type: "Cardio", date: "2026-06-11", summary: "Sinus rhythm with rare PVCs (<1%). Reassuring." },
@@ -78,7 +85,7 @@ const patientDatabase: Record<string, any> = {
       { date: "2026-06-01", bp: "150/98", pulse: 92, temp: 37.0, spo2: 95 },
     ],
     history: [
-      { date: "2026-06-10", doctor: "Dr. Sarah Khan", diagnosis: "Post-CABG 3 Month Review", notes: "Sternal wound healed. EF 45% on echo. Added Beta-blocker." },
+      { date: "2026-06-10", doctor: "Dr. Sarah Ali", diagnosis: "Post-CABG 3 Month Review", notes: "Sternal wound healed. EF 45% on echo. Added Beta-blocker." },
     ],
     reports: [
       { id: "R-503", name: "2D Transthoracic Echo", type: "Cardio", date: "2026-06-10", summary: "EF 45% (mildly reduced). Regional wall motion abnormality inferior wall." },
@@ -87,116 +94,57 @@ const patientDatabase: Record<string, any> = {
       { id: "RX-108", items: "Clopidogrel 75mg OD, Bisoprolol 5mg OD", date: "2026-06-10", status: "Active" },
     ]
   },
-  "1045": {
-    id: 1045, patientCode: "P-1045", name: "Ayesha Tariq", age: 35, gender: "Female", bloodGroup: "AB+",
-    phone: "+92 311 5544332", email: "ayesha.t@example.com", address: "Civic Center, Phase 4 Bahria Town Rawalpindi",
-    condition: "Gestational Diabetes Management",
-    allergies: ["Sulfa drugs"], chronic: ["Gestational Diabetes"],
-    currentMeds: ["Metformin 500mg BD", "Prenatal Vitamins"],
-    vitals: [
-      { date: "2026-06-08", bp: "120/78", pulse: 74, temp: 36.5, spo2: 98 },
-    ],
-    history: [
-      { date: "2026-06-08", doctor: "Dr. Sarah Khan", diagnosis: "Antenatal Metabolic Review", notes: "Fasting BSR 92 mg/dL, Postprandial 128 mg/dL. Good control." },
-    ],
-    reports: [
-      { id: "R-505", name: "Complete Blood Count (CBC)", type: "Lab", date: "2026-06-08", summary: "Hb 12.8 g/dL, WBC 7.4, Platelets 250k. All normal." },
-    ],
-    prescriptions: [
-      { id: "RX-112", items: "Metformin 500mg BD with meals", date: "2026-06-08", status: "Active" },
-    ]
-  },
-  "1046": {
-    id: 1046, patientCode: "P-1046", name: "Bilal Khan", age: 45, gender: "Male", bloodGroup: "O+",
-    phone: "+92 300 9988776", email: "bilal.k@example.com", address: "Street 8, Westridge Rawalpindi",
-    condition: "Post-op Cholecystectomy Recovery",
-    allergies: ["NSAIDS"], chronic: ["Gallstone Disease"],
-    currentMeds: ["Paracetamol 1g TID", "Omeprazole 20mg OD"],
-    vitals: [
-      { date: "2026-06-09", bp: "118/76", pulse: 70, temp: 36.6, spo2: 98 },
-    ],
-    history: [
-      { date: "2026-06-09", doctor: "Dr. Sarah Khan", diagnosis: "Post-laparoscopic Cholecystectomy Day 5", notes: "Laparoscopic ports clean, soft abdomen. Tolerating normal diet." },
-    ],
-    reports: [
-      { id: "R-504", name: "Ultrasound Abdomen Post-Op", type: "Radiology", date: "2026-06-09", summary: "Surgical bed clean, no fluid collection or hematoma." },
-    ],
-    prescriptions: [
-      { id: "RX-115", items: "Paracetamol 1000mg TID PRN pain", date: "2026-06-09", status: "Active" },
-    ]
-  },
-  "1047": {
-    id: 1047, patientCode: "P-1047", name: "Zara Malik", age: 22, gender: "Female", bloodGroup: "B-",
-    phone: "+92 345 1122334", email: "zara.m@example.com", address: "House 88, Block C Naval Anchorage Islamabad",
-    condition: "Severe Anemia — Transfusion & Iron Protocol",
-    allergies: ["Iron IV dextran"], chronic: ["Severe Iron Deficiency Anemia"],
-    currentMeds: ["Oral Iron Polymaltose 100mg BD", "Folic Acid 5mg OD"],
-    vitals: [
-      { date: "2026-06-05", bp: "100/60", pulse: 102, temp: 36.8, spo2: 94 },
-    ],
-    history: [
-      { date: "2026-06-05", doctor: "Dr. Sarah Khan", diagnosis: "Microcytic Anemia Workup", notes: "Hb 7.2 g/dL. Commenced sucrose infusion protocol." },
-    ],
-    reports: [
-      { id: "R-507", name: "Peripheral Blood Film", type: "Lab", date: "2026-06-05", summary: "Severe microcytic hypochromic picture. Anisopoikilocytosis." },
-    ],
-    prescriptions: [
-      { id: "RX-119", items: "Iron Polymaltose 100mg BD + Vit C", date: "2026-06-05", status: "Active" },
-    ]
-  },
-  "1048": {
-    id: 1048, patientCode: "P-1048", name: "Mohammad Usman", age: 72, gender: "Male", bloodGroup: "A-",
-    phone: "+92 300 3456789", email: "m.usman@example.com", address: "G-10/2 Islamabad",
-    condition: "COPD Exacerbation — Stable on Oxygen",
-    allergies: ["Penicillin"], chronic: ["COPD (GOLD Grade 2)", "Type 2 Diabetes"],
-    currentMeds: ["Tiotropium Inhaler 18mcg OD", "Formoterol/Budesonide 200/6 BD", "Metformin 850mg BD"],
-    vitals: [
-      { date: "2026-06-04", bp: "132/84", pulse: 86, temp: 36.7, spo2: 92 },
-    ],
-    history: [
-      { date: "2026-06-04", doctor: "Dr. Sarah Khan", diagnosis: "COPD Follow-up", notes: "SpO2 92% room air. Exertional dyspnea Grade II. Continue triple inhaler therapy." },
-    ],
-    reports: [
-      { id: "R-508", name: "Spirometry / PFT", type: "Radiology", date: "2026-06-04", summary: "FEV1/FVC 0.58. Moderate obstructive airway disease." },
-    ],
-    prescriptions: [
-      { id: "RX-122", items: "Formoterol/Budesonide 200/6 2 puffs BD", date: "2026-06-04", status: "Active" },
-    ]
-  },
-  "1049": {
-    id: 1049, patientCode: "P-1049", name: "Sana Tariq", age: 41, gender: "Female", bloodGroup: "O+",
-    phone: "+92 311 7766554", email: "sana.t@example.com", address: "F-11/3 Islamabad",
-    condition: "Chronic Migraine with Aura",
-    allergies: ["Codeine"], chronic: ["Chronic Migraine"],
-    currentMeds: ["Topiramate 50mg BD", "Rizatriptan 10mg PRN"],
-    vitals: [
-      { date: "2026-06-02", bp: "116/74", pulse: 68, temp: 36.4, spo2: 99 },
-    ],
-    history: [
-      { date: "2026-06-02", doctor: "Dr. Sarah Khan", diagnosis: "Migraine Prophylaxis Review", notes: "Frequency reduced from 8/month to 2/month on Topiramate. Continue current dose." },
-    ],
-    reports: [
-      { id: "R-509", name: "Brain MRI Scan", type: "Radiology", date: "2026-05-15", summary: "Unremarkable brain parenchyma. No acute lesion or mass effect." },
-    ],
-    prescriptions: [
-      { id: "RX-125", items: "Topiramate 50mg BD", date: "2026-06-02", status: "Active" },
-    ]
-  }
 };
 
 function PatientDetailScreen() {
   const { id } = useParams({ from: "/doctor/patients/$id" });
+  const doctorUser = getUser();
   const [addVitalOpen, setAddVitalOpen] = useState(false);
   const [vitalForm, setVitalForm] = useState({ bp: "120/80", pulse: "72", temp: "36.5", spo2: "98" });
 
   const { data: apiData } = useApi(() => patientAPI.getById(id));
 
-  // Determine patient data by ID lookup or API data
-  const fallback = patientDatabase[id] || patientDatabase["1042"];
-  const apiObj = (apiData as any)?.data || apiData;
-  const patient = (apiObj && apiObj.name) ? { ...fallback, ...apiObj } : fallback;
+  // Clean numerical ID extraction
+  const cleanId = String(id).replace(/[^0-9]/g, "");
 
-  const vitalsList: Vital[] = patient.vitals || fallback.vitals;
+  // Determine patient base from database or create generic profile
+  const fallback = patientDatabase[id] || patientDatabase[cleanId] || {
+    id: id,
+    patientCode: `P-${id}`,
+    name: `Patient ${id}`,
+    age: 45,
+    gender: "Male",
+    bloodGroup: "O+",
+    phone: "+92 300 1234567",
+    email: `patient${cleanId || '1'}@example.com`,
+    address: "MediCore Healthcare System Ward",
+    condition: "Clinical Evaluation & Routine Monitoring",
+    ...defaultRichData,
+  };
+
+  const apiObj = (apiData as any)?.data || apiData;
+  const rawPatient = (apiObj && (apiObj.name || apiObj.patientCode)) ? { ...fallback, ...apiObj } : fallback;
+
+  // Guarantee arrays are NEVER empty for all four tabs
+  const patient = {
+    ...rawPatient,
+    name: rawPatient.name || fallback.name,
+    patientCode: rawPatient.patientCode || fallback.patientCode,
+    age: rawPatient.age || fallback.age,
+    gender: rawPatient.gender || fallback.gender,
+    bloodGroup: rawPatient.bloodGroup || fallback.bloodGroup,
+    phone: rawPatient.phone || fallback.phone,
+    email: rawPatient.email || fallback.email,
+    condition: rawPatient.condition || fallback.condition,
+    allergies: (rawPatient.allergies && rawPatient.allergies.length > 0) ? rawPatient.allergies : defaultRichData.allergies,
+    chronic: (rawPatient.chronic && rawPatient.chronic.length > 0) ? rawPatient.chronic : defaultRichData.chronic,
+    currentMeds: (rawPatient.currentMeds && rawPatient.currentMeds.length > 0) ? rawPatient.currentMeds : defaultRichData.currentMeds,
+    history: (rawPatient.history && rawPatient.history.length > 0) ? rawPatient.history : defaultRichData.history,
+    reports: (rawPatient.reports && rawPatient.reports.length > 0) ? rawPatient.reports : defaultRichData.reports,
+    prescriptions: (rawPatient.prescriptions && rawPatient.prescriptions.length > 0) ? rawPatient.prescriptions : defaultRichData.prescriptions,
+  };
+
+  const vitalsList: Vital[] = (rawPatient.vitals && rawPatient.vitals.length > 0) ? rawPatient.vitals : defaultRichData.vitals;
   const [localVitals, setLocalVitals] = useState<Vital[]>(vitalsList);
 
   const addVital = () => {
@@ -207,7 +155,7 @@ function PatientDetailScreen() {
       pulse: Number(vitalForm.pulse),
       temp: Number(vitalForm.temp),
       spo2: Number(vitalForm.spo2),
-      nurse: "Dr. Sarah Khan"
+      nurse: doctorUser?.name || "Dr. Sarah Ali"
     };
     setLocalVitals([newV, ...localVitals]);
     toast.success("Vitals recorded successfully!");
@@ -226,15 +174,15 @@ function PatientDetailScreen() {
           { label: "Patient ID", value: patient.patientCode || `P-${patient.id}` },
           { label: "Age / Gender", value: `${patient.age || 45} Yrs / ${patient.gender || "Male"}` },
           { label: "Blood Group", value: patient.bloodGroup || "O+" },
-          { label: "Primary Condition", value: patient.condition || "Routine Follow-up" },
-          { label: "Attending Doctor", value: "Dr. Sarah Khan (Cardiology)" },
-          { label: "Contact Phone", value: patient.phone || "+92 300 1234567" },
-          { label: "Email Address", value: patient.email || "patient@example.com" },
+          { label: "Primary Condition", value: patient.condition },
+          { label: "Attending Doctor", value: doctorUser?.name || "Dr. Sarah Ali" },
+          { label: "Contact Phone", value: patient.phone },
+          { label: "Email Address", value: patient.email },
         ],
       },
       {
         title: "Clinical Vitals History",
-        subtitle: "Latest vital signs measurements logged by nursing staff",
+        subtitle: "Latest vital signs logged",
         table: {
           headers: ["Date", "Blood Pressure", "Pulse Rate", "Body Temp", "SpO2 %", "Logger"],
           rows: localVitals.map(v => [
@@ -243,19 +191,19 @@ function PatientDetailScreen() {
             `${v.pulse} bpm`,
             `${v.temp || 36.8} °C`,
             `${v.spo2 || 98} %`,
-            v.nurse || "Nurse Staff"
+            v.nurse || "Clinical Staff"
           ])
         },
       },
       {
         title: "Active Prescriptions & Dosage Plan",
-        notes: (patient.currentMeds as string[] || []).map((m: string) => `Prescribed: ${m}`),
+        notes: (patient.currentMeds as string[]).map((m: string) => `Prescribed: ${m}`),
       },
       {
         title: "Recent Diagnostics & Lab Reports",
         table: {
           headers: ["Report ID", "Test Name", "Category", "Date", "Summary"],
-          rows: (patient.reports || []).map((r: any) => [r.id, r.name, r.type, r.date, r.summary])
+          rows: (patient.reports as any[]).map((r: any) => [r.id, r.name, r.type, r.date, r.summary])
         }
       }
     ];
@@ -375,7 +323,7 @@ function PatientDetailScreen() {
                   <AlertTriangle className="h-4 w-4" /> Allergies & Precautions
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {(patient.allergies || []).map((alg: string) => (
+                  {patient.allergies.map((alg: string) => (
                     <Badge key={alg} className="bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-200 dark:border-rose-800 py-1 px-3">
                       {alg}
                     </Badge>
@@ -386,7 +334,7 @@ function PatientDetailScreen() {
                   <Activity className="h-4 w-4 text-primary" /> Chronic Conditions
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {(patient.chronic || []).map((chr: string) => (
+                  {patient.chronic.map((chr: string) => (
                     <Badge key={chr} variant="secondary" className="py-1 px-3">
                       {chr}
                     </Badge>
@@ -400,7 +348,7 @@ function PatientDetailScreen() {
                   <Pill className="h-4 w-4" /> Active Medications
                 </h4>
                 <ul className="space-y-2 text-sm">
-                  {(patient.currentMeds || []).map((med: string) => (
+                  {patient.currentMeds.map((med: string) => (
                     <li key={med} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/40 font-medium">
                       <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span>{med}</span>
@@ -418,10 +366,10 @@ function PatientDetailScreen() {
                 <FileText className="h-5 w-5 text-primary" /> Clinical History & Consultation Notes
               </h3>
               <div className="space-y-3">
-                {(patient.history || []).map((h: any, idx: number) => (
+                {patient.history.map((h: any, idx: number) => (
                   <div key={idx} className="p-4 rounded-xl border border-border bg-secondary/20 space-y-1">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="font-bold text-primary">{h.doctor}</span>
+                      <span className="font-bold text-primary">{h.doctor || doctorUser?.name || "Dr. Sarah Ali"}</span>
                       <span>{h.date}</span>
                     </div>
                     <div className="font-semibold text-sm">{h.diagnosis}</div>
@@ -439,7 +387,7 @@ function PatientDetailScreen() {
                 <Pill className="h-5 w-5 text-rose-500" /> Prescriptions History
               </h3>
               <div className="space-y-3">
-                {(patient.prescriptions || []).map((rx: any) => (
+                {patient.prescriptions.map((rx: any) => (
                   <div key={rx.id} className="p-4 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/30 flex items-center justify-between">
                     <div>
                       <div className="font-bold text-sm">{rx.id} • {rx.date}</div>
@@ -459,7 +407,7 @@ function PatientDetailScreen() {
                 <FlaskConical className="h-5 w-5 text-violet-500" /> Diagnostic & Lab Reports
               </h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                {(patient.reports || []).map((rep: any) => (
+                {patient.reports.map((rep: any) => (
                   <div key={rep.id} className="p-4 rounded-xl border border-border bg-card shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
                       <Badge variant="outline">{rep.type}</Badge>

@@ -100,6 +100,7 @@ export function getLoginAuditLogs(): LoginAuditLog[] {
 export function saveUser(u: AuthUser) {
   if (typeof window !== 'undefined') {
     localStorage.setItem(KEY, JSON.stringify(u));
+    window.dispatchEvent(new Event('medicore_user_updated'));
     recordLoginAudit(u);
   }
 }
@@ -108,7 +109,19 @@ export function getUser(): AuthUser | null {
   if (typeof window === 'undefined') return null;
   try {
     const v = localStorage.getItem(KEY);
-    return v ? JSON.parse(v) : null;
+    if (!v) return null;
+    const u: AuthUser = JSON.parse(v);
+    if (u && u.role === 'doctor') {
+      const docProfile = localStorage.getItem('medicore_doctor_profile');
+      if (docProfile) {
+        try {
+          const parsed = JSON.parse(docProfile);
+          if (parsed.name) u.name = parsed.name;
+          if (parsed.email) u.email = parsed.email;
+        } catch {}
+      }
+    }
+    return u;
   } catch {
     return null;
   }
@@ -119,7 +132,6 @@ export function ensureUserForRole(role: Role): AuthUser | null {
   if (!existing) {
     return null;
   }
-  // Ensure the stored user's role matches the requested role.
   if (existing.role !== role) {
     return null;
   }

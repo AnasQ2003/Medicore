@@ -143,13 +143,19 @@ export function AppShell({
   }, []);
 
   useEffect(() => {
-    const resolved = ensureUserForRole(role);
-    // Redirect to login if user is not authenticated or role doesn't match
-    if (!resolved) {
-      navigate({ to: "/login", search: { role } as any });
-      return;
-    }
-    setUser(resolved);
+    const reloadUser = () => {
+      const resolved = ensureUserForRole(role);
+      if (!resolved) {
+        navigate({ to: "/login", search: { role } as any });
+        return;
+      }
+      setUser(resolved);
+    };
+
+    reloadUser();
+    window.addEventListener("medicore_user_updated", reloadUser);
+    window.addEventListener("storage", reloadUser);
+
     if (typeof document !== "undefined") {
       // Radix portals render outside [data-role], so mirror role vars onto :root
       // so dropdowns, popovers, toasts follow the current role's theme.
@@ -171,6 +177,8 @@ export function AppShell({
       }
     }
     return () => {
+      window.removeEventListener("medicore_user_updated", reloadUser);
+      window.removeEventListener("storage", reloadUser);
       if (typeof document !== "undefined") {
         document.documentElement.style.removeProperty("--primary");
         document.documentElement.style.removeProperty("--ring");

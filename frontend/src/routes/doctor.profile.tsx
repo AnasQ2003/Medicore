@@ -24,7 +24,6 @@ const PROFILE_KEY = "medicore_doctor_profile";
 
 function ProfileScreen() {
   const user = getUser();
-
   const [editing, setEditing] = useState(false);
 
   // Load profile from localStorage (persists edits across sessions)
@@ -36,8 +35,8 @@ function ProfileScreen() {
       }
     }
     return {
-      name: user?.name ?? "Dr. Sarah Khan",
-      email: user?.email ?? "sarah.khan@medicore.com",
+      name: user?.name ?? "Dr. Sarah Ali",
+      email: user?.email ?? "doctor@example.com",
       phone: "+92 300 1234567",
       specialty: "Cardiology",
       qualification: "MBBS, FCPS (Cardiology), Fellowship UK",
@@ -69,18 +68,22 @@ function ProfileScreen() {
     if (!draft.name.trim()) return toast.error("Name cannot be empty");
     if (!draft.email.trim()) return toast.error("Email cannot be empty");
 
-    // Persist to localStorage
+    // Persist to localStorage profile key
     localStorage.setItem(PROFILE_KEY, JSON.stringify(draft));
     setForm({ ...draft });
 
-    // Update auth user store so name shows in navbar
-    if (user) {
-      saveUser({ ...user, name: draft.name, email: draft.email });
-    }
+    // Update auth user store so topbar name & emails update globally
+    saveUser({
+      id: user?.id ?? 1,
+      name: draft.name,
+      email: draft.email,
+      role: "doctor",
+      token: user?.token,
+    });
 
     setEditing(false);
     toast.success("Profile updated successfully!", {
-      description: "Your information has been saved.",
+      description: "Header name and profile details have been synchronized.",
     });
   };
 
@@ -239,7 +242,7 @@ function ProfileScreen() {
             const off = d === "Sun";
             return (
               <motion.div key={d} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                className={`rounded-xl p-4 border text-center ${off ? "bg-muted text-muted-foreground" : "bg-white"}`}>
+                className={`rounded-xl p-4 border text-center ${off ? "bg-muted text-muted-foreground" : "bg-white dark:bg-slate-900"}`}>
                 <div className="font-bold text-sm">{d}</div>
                 <div className="text-xs mt-1 text-muted-foreground">{off ? "Day Off" : "09:00–17:00"}</div>
                 {!off && (
@@ -258,7 +261,7 @@ function ProfileScreen() {
       {editing && (
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white border shadow-elevated rounded-2xl px-6 py-3"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white dark:bg-slate-900 border shadow-elevated rounded-2xl px-6 py-3"
         >
           <span className="text-sm font-medium text-muted-foreground">Unsaved changes</span>
           <Button size="sm" variant="ghost" onClick={cancelEditing}>Cancel</Button>

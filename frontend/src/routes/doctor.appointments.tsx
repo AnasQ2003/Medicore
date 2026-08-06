@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
 import { doctorNav } from "@/lib/roleNav";
 import { appointments as seed, patients } from "@/lib/mockData";
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar, Search, Plus, Video, MapPin, Phone, CheckCircle2, Clock, MoreHorizontal, XCircle, Pencil, Clock4, Trash2, Stethoscope, RotateCcw } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -24,37 +24,53 @@ export const Route = createFileRoute("/doctor/appointments")({
 
 type Appt = (typeof seed)[number];
 
+const APPT_OVERRIDES_KEY = "medicore_doctor_appointments_overrides";
+
 function AppointmentsScreen() {
   const [q, setQ] = useState("");
-  const [dialog, setDialog] = useState(false);
   const [editing, setEditing] = useState<Appt | null>(null);
   const [delaying, setDelaying] = useState<Appt | null>(null);
   const [delayMin, setDelayMin] = useState(15);
   const [callPatient, setCallPatient] = useState<Appt | null>(null);
-  const [localStatuses, setLocalStatuses] = useState<Record<string, string>>({});
-  const [form, setForm] = useState({ patientId: patients[0].id, time: "10:00", reason: "", type: "In-person" });
 
-  // Live data from backend; merge with seed data so list never disappears
-  const { data: apiAppts, loading, refetch } = useApi(() => appointmentAPI.getAll());
+  // Persistent overrides for statuses and delayed times across navigations
+  const [overrides, setOverrides] = useState<Record<string, { status?: string; time?: string }>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(APPT_OVERRIDES_KEY);
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return {};
+  });
+
+  const updateOverride = (id: string, update: { status?: string; time?: string }) => {
+    setOverrides((prev) => {
+      const next = { ...prev, [id]: { ...prev[id], ...update } };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(APPT_OVERRIDES_KEY, JSON.stringify(next));
+      }
+      return next;
+    });
+  };
+
+  const { data: apiAppts, refetch } = useApi(() => appointmentAPI.getAll());
   const { data: apiPatients } = useApi(() => patientAPI.getAll());
   const fetchedList: Appt[] = (apiAppts as unknown as Appt[]) ?? [];
-  const list: Appt[] = fetchedList.length > 0 ? fetchedList : seed;
+  const rawList: Appt[] = fetchedList.length > 0 ? fetchedList : seed;
   const patientList = (apiPatients as unknown as typeof patients) ?? patients;
 
-  const filtered = list.filter(a => a.patient.toLowerCase().includes(q.toLowerCase()) || a.reason.toLowerCase().includes(q.toLowerCase()));
+  // Apply persistent overrides (status and time) to raw list
+  const list: Appt[] = rawList.map(a => {
+    const ov = overrides[a.id];
+    return {
+      ...a,
+      status: ov?.status ?? a.status,
+      time: ov?.time ?? a.time,
+    };
+  });
 
-  const create = async () => {
-    const p = patientList.find((x) => String(x.id) === String(form.patientId)) ?? patients.find((x) => x.id === form.patientId);
-    if (!p) return;
-    if (!form.reason) return toast.error("Add a reason");
-    try {
-      await appointmentAPI.book({ patientId: Number(p.id), time: form.time, reason: form.reason, type: form.type });
-      toast.success(`Booked ${p.name} at ${form.time}`);
-      refetch();
-    } catch { toast.error("Failed to book appointment"); }
-    setDialog(false);
-    setForm({ patientId: patients[0].id, time: "10:00", reason: "", type: "In-person" });
-  };
+  const filtered = list.filter(a => a.patient.toLowerCase().includes(q.toLowerCase()) || a.reason.toLowerCase().includes(q.toLowerCase()));
 
   // Helper: parse "HH:MM" → minutes since midnight
   const toMins = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
@@ -64,72 +80,47 @@ function AppointmentsScreen() {
     return `${h}:${m}`;
   };
 
-  // Get effective status for a given appointment (local override or from data)
-  const getStatus = (a: Appt) => localStatuses[a.id] ?? a.status;
-
   const startConsultation = async (a: Appt) => {
-    try {
-      await appointmentAPI.updateStatus(a.id, "In Consultation");
-    } catch { /* fallback to local */ }
-    setLocalStatuses(prev => ({ ...prev, [a.id]: "In Consultation" }));
-    toast.success(`Started consultation with ${a.patient}`, { description: "Status updated to In Consultation" });
+    updateOverride(a.id, { status: "In Consultation" });
+    try { await appointmentAPI.updateStatus(a.id, "In Consultation"); } catch {}
+    toast.success(`Started consultation with ${a.patient}`, { description: "Status set to In Consultation." });
   };
 
   const undelay = async (a: Appt) => {
-    try {
-      await appointmentAPI.updateStatus(a.id, "Confirmed");
-    } catch { /* fallback */ }
-    setLocalStatuses(prev => ({ ...prev, [a.id]: "Confirmed" }));
+    updateOverride(a.id, { status: "Confirmed" });
+    try { await appointmentAPI.updateStatus(a.id, "Confirmed"); } catch {}
     toast.success(`${a.patient}'s appointment restored to Confirmed`);
   };
 
   const cancel = async (a: Appt) => {
-    setLocalStatuses(prev => ({ ...prev, [a.id]: "Cancelled" }));
-    try {
-      await appointmentAPI.updateStatus(a.id, "Cancelled");
-      toast.success(`Cancelled ${a.patient}'s appointment`, { description: "Status updated to Cancelled." });
-      refetch();
-    } catch {
-      toast.success(`Cancelled ${a.patient}'s appointment`, { description: "Status set to Cancelled." });
-    }
+    updateOverride(a.id, { status: "Cancelled" });
+    try { await appointmentAPI.updateStatus(a.id, "Cancelled"); } catch {}
+    toast.success(`Cancelled ${a.patient}'s appointment`);
   };
-  const remove = async (a: Appt) => {
-    try {
-      await appointmentAPI.delete(a.id);
-      toast.success("Appointment removed");
-      refetch();
-    } catch { toast.error("Failed to remove"); }
-  };
+
   const complete = async (a: Appt) => {
-    // Immediately update UI so badge changes without waiting for refetch
-    setLocalStatuses(prev => ({ ...prev, [a.id]: "Completed" }));
+    updateOverride(a.id, { status: "Completed" });
+    try { await appointmentAPI.updateStatus(a.id, "Completed"); } catch {}
     toast.success(`Marked ${a.patient} as Completed`);
-    try {
-      await appointmentAPI.updateStatus(a.id, "Completed");
-      refetch();
-    } catch { /* local state already updated */ }
   };
+
   const saveEdit = async () => {
     if (!editing) return;
-    try {
-      await appointmentAPI.updateStatus(editing.id, editing.status);
-      toast.success("Appointment updated");
-      refetch();
-    } catch { toast.error("Failed to update"); }
+    updateOverride(editing.id, { status: editing.status, time: editing.time });
+    try { await appointmentAPI.updateStatus(editing.id, editing.status); } catch {}
+    toast.success("Appointment updated");
     setEditing(null);
   };
+
   const applyDelay = async () => {
     if (!delaying) return;
     const newTotal = toMins(delaying.time) + delayMin;
     const newTime = fromMins(newTotal);
 
-    // Only check conflict against active (non-completed, non-cancelled) appointments
-    const activeList = effectiveList.filter(a =>
-      a.status !== "Completed" && a.status !== "Cancelled"
-    );
+    // Conflict check against active appointments
+    const activeList = list.filter(a => a.status !== "Completed" && a.status !== "Cancelled");
     const conflict = activeList.find(a =>
-      a.id !== delaying.id &&
-      Math.abs(toMins(a.time) - newTotal) < 10
+      a.id !== delaying.id && Math.abs(toMins(a.time) - newTotal) < 10
     );
     if (conflict) {
       toast.error(`Time conflict with ${conflict.patient} at ${conflict.time}`, {
@@ -138,39 +129,26 @@ function AppointmentsScreen() {
       return;
     }
 
-    setLocalStatuses(prev => ({ ...prev, [delaying.id]: "Delayed" }));
-    try {
-      await appointmentAPI.updateStatus(delaying.id, "Delayed", newTime);
-      toast.success(`Delayed by ${delayMin} min`, { description: `${delaying.patient} → ${newTime}` });
-      refetch();
-    } catch { toast.error("Failed to delay"); }
+    updateOverride(delaying.id, { status: "Delayed", time: newTime });
+    try { await appointmentAPI.updateStatus(delaying.id, "Delayed", newTime); } catch {}
+    toast.success(`Delayed by ${delayMin} min`, { description: `${delaying.patient} → ${newTime} (Saved)` });
     setDelaying(null);
   };
 
-  // Merge local status overrides for accurate stat counts
-  const effectiveList = list.map(a => ({ ...a, status: localStatuses[a.id] ?? a.status }));
-
-  // Today: all appts, completed sorted to bottom
+  // Lists for tabs
   const todayList = [
-    ...filtered.filter(a => getStatus(a) !== "Completed" && getStatus(a) !== "Cancelled"),
-    ...filtered.filter(a => getStatus(a) === "Completed" || getStatus(a) === "Cancelled"),
+    ...filtered.filter(a => a.status !== "Completed" && a.status !== "Cancelled"),
+    ...filtered.filter(a => a.status === "Completed" || a.status === "Cancelled"),
   ];
 
-  // Past: completed or cancelled
-  const pastList = effectiveList.filter(a =>
-    a.status === "Completed" || a.status === "Cancelled"
-  ).sort((a, b) => b.time.localeCompare(a.time));
-
-  // Upcoming: confirmed or pending (not completed/cancelled/delayed/in consultation)
-  const upcomingList = effectiveList.filter(a =>
-    a.status === "Confirmed" || a.status === "Pending"
-  ).sort((a, b) => a.time.localeCompare(b.time));
+  const pastList = list.filter(a => a.status === "Completed" || a.status === "Cancelled").sort((a, b) => b.time.localeCompare(a.time));
+  const upcomingList = list.filter(a => a.status === "Confirmed" || a.status === "Pending").sort((a, b) => a.time.localeCompare(b.time));
 
   const stats = [
-    { label: "Today", value: effectiveList.filter(a => a.status !== "Completed" && a.status !== "Cancelled").length, c: "from-blue-500 to-cyan-500", icon: Calendar },
-    { label: "Confirmed", value: effectiveList.filter(a => a.status === "Confirmed").length, c: "from-emerald-500 to-teal-500", icon: CheckCircle2 },
-    { label: "Pending", value: effectiveList.filter(a => a.status === "Pending").length, c: "from-amber-500 to-orange-500", icon: Clock },
-    { label: "Completed", value: effectiveList.filter(a => a.status === "Completed").length, c: "from-violet-500 to-purple-500", icon: CheckCircle2 },
+    { label: "Today", value: list.filter(a => a.status !== "Completed" && a.status !== "Cancelled").length, c: "from-blue-500 to-cyan-500", icon: Calendar },
+    { label: "Confirmed", value: list.filter(a => a.status === "Confirmed").length, c: "from-emerald-500 to-teal-500", icon: CheckCircle2 },
+    { label: "Pending", value: list.filter(a => a.status === "Pending").length, c: "from-amber-500 to-orange-500", icon: Clock },
+    { label: "Completed", value: list.filter(a => a.status === "Completed").length, c: "from-violet-500 to-purple-500", icon: CheckCircle2 },
   ];
 
   return (
@@ -178,7 +156,7 @@ function AppointmentsScreen() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
-          <p className="text-muted-foreground">Manage your clinic queue — view, complete, delay or manage consultations.</p>
+          <p className="text-muted-foreground">Manage clinic queue — delay times and status updates are saved permanently.</p>
         </div>
         <Button asChild className="bg-gradient-primary text-white shadow-glow font-semibold shrink-0">
           <Link to="/doctor/schedule"><Clock className="h-4 w-4 mr-2"/>Set Availability & Schedule</Link>
@@ -213,10 +191,10 @@ function AppointmentsScreen() {
           </div>
 
           <TabsContent value="today" className="space-y-3">
-          {todayList.map((a, i) => {
-              const p = patients.find((x) => x.id === a.patientId);
+            {todayList.map((a, i) => {
+              const p = patientList.find((x) => String(x.id) === String(a.patientId));
               const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-blue-500 to-cyan-500";
-              const effectiveStatus = getStatus(a);
+              const effectiveStatus = a.status;
               const cancelled = effectiveStatus === "Cancelled";
               const isDelayed = effectiveStatus === "Delayed";
               const isInConsult = effectiveStatus === "In Consultation";
@@ -224,14 +202,14 @@ function AppointmentsScreen() {
               return (
                 <motion.div key={a.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
                   whileHover={{x: 4}}
-                  className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/70 backdrop-blur-md hover:shadow-md hover:bg-white/90 transition-all ${cancelled ? "opacity-60" : ""}`}>
-                  <div className="text-center sm:w-20">
+                  className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-card/80 backdrop-blur-md hover:shadow-md transition-all ${cancelled ? "opacity-60" : ""}`}>
+                  <div className="text-center sm:w-24">
                     <div className="text-2xl font-bold text-primary">{a.time}</div>
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
                   </div>
                   <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold shadow-glow shrink-0`}>{a.patient[0]}</div>
                   <div className="flex-1 min-w-0">
-                    <Link to="/doctor/patients/$id" params={{id:a.patientId}} className="font-semibold hover:text-primary no-underline">{a.patient}</Link>
+                    <Link to="/doctor/patients/$id" params={{id: String(a.patientId)}} className="font-semibold hover:text-primary no-underline text-foreground">{a.patient}</Link>
                     <div className="text-sm text-muted-foreground">{a.reason}</div>
                     <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3">
                       <span className="flex items-center gap-1">{a.type === "Tele-consult" ? <Video className="h-3 w-3"/> : <MapPin className="h-3 w-3"/>}{a.type}</span>
@@ -240,33 +218,25 @@ function AppointmentsScreen() {
                     </div>
                   </div>
                   <Badge className={
-                    effectiveStatus === "Confirmed" ? "bg-emerald-100 text-emerald-700" :
-                    effectiveStatus === "Completed" ? "bg-blue-100 text-blue-700" :
-                    effectiveStatus === "Cancelled" ? "bg-rose-100 text-rose-700" :
-                    effectiveStatus === "Delayed" ? "bg-orange-100 text-orange-700" :
-                    effectiveStatus === "In Consultation" ? "bg-violet-100 text-violet-700" :
-                    "bg-amber-100 text-amber-700"
+                    effectiveStatus === "Confirmed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" :
+                    effectiveStatus === "Completed" ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300" :
+                    effectiveStatus === "Cancelled" ? "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300" :
+                    effectiveStatus === "Delayed" ? "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 font-bold animate-pulse" :
+                    effectiveStatus === "In Consultation" ? "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300 font-bold" :
+                    "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
                   }>{effectiveStatus}</Badge>
+
                   <div className="flex gap-1.5">
-                    {/* Phone icon → Call Patient dialog */}
-                    <Button
-                      size="sm" variant="outline" title="Call Patient"
-                      onClick={() => setCallPatient(a)}
-                    >
+                    <Button size="sm" variant="outline" title="Call Patient" onClick={() => setCallPatient(a)}>
                       <Phone className="h-3.5 w-3.5"/>
                     </Button>
-                    {/* Start / In Consultation button */}
                     {!isCompleted && !cancelled && (
                       isInConsult ? (
                         <Button size="sm" className="bg-violet-600 text-white" onClick={() => complete(a)}>
                           <Stethoscope className="h-3.5 w-3.5 mr-1"/> End
                         </Button>
                       ) : (
-                        <Button
-                          size="sm"
-                          className="bg-gradient-primary text-white"
-                          onClick={() => startConsultation(a)}
-                        >
+                        <Button size="sm" className="bg-gradient-primary text-white" onClick={() => startConsultation(a)}>
                           Start
                         </Button>
                       )
@@ -285,7 +255,6 @@ function AppointmentsScreen() {
                         <DropdownMenuItem onClick={() => complete(a)}><CheckCircle2 className="h-3.5 w-3.5 mr-2"/>Mark completed</DropdownMenuItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem onClick={() => cancel(a)} className="text-amber-600 focus:text-amber-700"><XCircle className="h-3.5 w-3.5 mr-2"/>Cancel</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => remove(a)} className="text-destructive focus:text-destructive"><Trash2 className="h-3.5 w-3.5 mr-2"/>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -298,53 +267,31 @@ function AppointmentsScreen() {
           <TabsContent value="upcoming" className="space-y-3">
             {upcomingList.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">No upcoming confirmed appointments.</div>
-            ) : upcomingList.map((a, i) => {
-              const effectiveStatus = getStatus(a);
-              const p = patients.find((x) => x.id === a.patientId);
-              const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-blue-500 to-cyan-500";
-              return (
-                <motion.div key={a.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/70 backdrop-blur-md hover:shadow-md transition-all">
-                  <div className="text-center sm:w-20">
-                    <div className="text-2xl font-bold text-primary">{a.time}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
-                  </div>
-                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold shadow-glow shrink-0`}>{a.patient[0]}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold">{a.patient}</div>
-                    <div className="text-sm text-muted-foreground">{a.reason}</div>
-                    {p && <div className="text-xs text-muted-foreground mt-1">{p.age}y {p.gender}</div>}
-                  </div>
-                  <Badge className={effectiveStatus === "Confirmed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>{effectiveStatus}</Badge>
-                </motion.div>
-              );
-            })}
+            ) : upcomingList.map((a, i) => (
+              <div key={a.id} className="flex items-center justify-between p-4 rounded-xl border bg-card">
+                <div>
+                  <span className="font-bold text-primary mr-3">{a.time}</span>
+                  <span className="font-semibold text-foreground">{a.patient}</span>
+                  <span className="text-xs text-muted-foreground ml-3">{a.reason}</span>
+                </div>
+                <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">{a.status}</Badge>
+              </div>
+            ))}
           </TabsContent>
 
           <TabsContent value="past" className="space-y-3">
             {pastList.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">No completed or cancelled appointments yet.</div>
-            ) : pastList.map((a, i) => {
-              const effectiveStatus = getStatus(a);
-              const p = patients.find((x) => x.id === a.patientId);
-              const gradient = p?.gender === "Female" ? "from-pink-500 to-rose-600" : "from-slate-400 to-slate-600";
-              return (
-                <motion.div key={a.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-xl border bg-white/50 backdrop-blur-md opacity-80">
-                  <div className="text-center sm:w-20">
-                    <div className="text-2xl font-bold text-muted-foreground">{a.time}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
-                  </div>
-                  <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center font-bold shrink-0`}>{a.patient[0]}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-muted-foreground">{a.patient}</div>
-                    <div className="text-sm text-muted-foreground">{a.reason}</div>
-                    {p && <div className="text-xs text-muted-foreground mt-1">{p.age}y {p.gender}</div>}
-                  </div>
-                  <Badge className={effectiveStatus === "Completed" ? "bg-blue-100 text-blue-700" : "bg-rose-100 text-rose-700"}>{effectiveStatus}</Badge>
-                </motion.div>
-              );
-            })}
+            ) : pastList.map((a, i) => (
+              <div key={a.id} className="flex items-center justify-between p-4 rounded-xl border bg-card/60">
+                <div>
+                  <span className="font-bold text-muted-foreground mr-3">{a.time}</span>
+                  <span className="font-semibold text-foreground">{a.patient}</span>
+                  <span className="text-xs text-muted-foreground ml-3">{a.reason}</span>
+                </div>
+                <Badge variant="outline">{a.status}</Badge>
+              </div>
+            ))}
           </TabsContent>
         </Tabs>
       </div>
@@ -354,7 +301,7 @@ function AppointmentsScreen() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit appointment</DialogTitle>
-            <DialogDescription>Update time, mode, or reason. Patient will be re-notified.</DialogDescription>
+            <DialogDescription>Update time, mode, or reason.</DialogDescription>
           </DialogHeader>
           {editing && (
             <div className="space-y-3">
@@ -379,15 +326,6 @@ function AppointmentsScreen() {
                 <Label>Reason</Label>
                 <Input value={editing.reason} onChange={(e) => setEditing({ ...editing, reason: e.target.value })} className="mt-1.5"/>
               </div>
-              <div>
-                <Label>Status</Label>
-                <Select value={editing.status} onValueChange={(v) => setEditing({ ...editing, status: v })}>
-                  <SelectTrigger className="mt-1.5"><SelectValue/></SelectTrigger>
-                  <SelectContent>
-                    {["Confirmed","Pending","Completed","Delayed","Cancelled"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           )}
           <DialogFooter>
@@ -402,7 +340,7 @@ function AppointmentsScreen() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Delay appointment</DialogTitle>
-            <DialogDescription>Push the slot forward. Minimum 10-minute gap between appointments is enforced.</DialogDescription>
+            <DialogDescription>Push slot forward and save updated time permanently.</DialogDescription>
           </DialogHeader>
           {delaying && (
             <div className="space-y-3">
@@ -416,14 +354,14 @@ function AppointmentsScreen() {
                 <Label>Custom minutes (min 10)</Label>
                 <Input type="number" min={10} value={delayMin} onChange={(e) => setDelayMin(Math.max(10, parseInt(e.target.value) || 10))} className="mt-1.5"/>
               </div>
-              <div className="text-xs text-muted-foreground bg-amber-50 border border-amber-200 rounded-lg p-2">
-                New time: <b>{fromMins(toMins(delaying.time) + delayMin)}</b>
+              <div className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg p-2.5 font-medium">
+                New scheduled time: <b className="text-amber-900 dark:text-amber-200">{fromMins(toMins(delaying.time) + delayMin)}</b>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDelaying(null)}>Cancel</Button>
-            <Button onClick={applyDelay} className="bg-gradient-primary text-white"><Clock4 className="h-4 w-4 mr-2"/>Apply Delay</Button>
+            <Button onClick={applyDelay} className="bg-gradient-primary text-white"><Clock4 className="h-4 w-4 mr-2"/>Apply & Save Delay</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
