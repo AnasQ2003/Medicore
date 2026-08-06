@@ -10,7 +10,7 @@ import { patientNav } from "@/lib/roleNav";
 import { appointmentAPI, prescriptionAPI, billAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { getUser } from "@/lib/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Slideshow } from "@/components/Slideshow";
 import { patientSlides } from "@/lib/mockData";
 import { RoleRequestModal } from "@/components/RoleRequestModal";
@@ -84,6 +84,34 @@ function PatientScreen() {
   const totalOwed = unpaidBills.reduce((sum, b) => sum + (b.amount ?? 0), 0);
   const nextAppt = upcoming[0] ?? null;
   const [requestModalOpen, setRequestModalOpen] = useState(false);
+
+  // Doctor-sent reminders from localStorage (updated in real-time)
+  const [doctorReminders, setDoctorReminders] = useState<{ id: string; title: string; body: string; time: string; urgent: boolean }[]>([]);
+
+  const loadDoctorReminders = () => {
+    const email = currentUser?.email || "patient@medicore.app";
+    const notifKey = `medicore_user_notifications_${email}`;
+    try {
+      const raw = localStorage.getItem(notifKey);
+      if (raw) {
+        const all = JSON.parse(raw);
+        const reminders = all.filter((n: any) => n.type === "reminder");
+        setDoctorReminders(reminders);
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    loadDoctorReminders();
+    const handleStorage = () => loadDoctorReminders();
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("medicore_user_updated", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("medicore_user_updated", handleStorage);
+    };
+  }, [currentUser?.email]);
+
 
   return (
     <AppShell role="patient" title="Patient Portal" nav={patientNav}>
@@ -281,13 +309,28 @@ function PatientScreen() {
             </div>
           </motion.div>
 
-          {/* Upcoming Reminders */}
+          {/* Health Reminders — includes doctor-sent reminders */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
             className="bg-gradient-card border border-border rounded-2xl p-6 shadow-card">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" /> Health Reminders
+              {doctorReminders.length > 0 && (
+                <span className="ml-auto text-xs bg-rose-500 text-white rounded-full px-2 py-0.5 font-bold">{doctorReminders.length} new</span>
+              )}
             </h3>
             <div className="space-y-3">
+              {/* Doctor-sent reminders appear first */}
+              {doctorReminders.map((r, i) => (
+                <div key={r.id} className="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 flex gap-3">
+                  <div className="h-2 w-2 rounded-full mt-1.5 flex-shrink-0 bg-rose-500 animate-pulse" />
+                  <div>
+                    <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">{r.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{r.body}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1"><Clock className="h-3 w-3" />{r.time}</p>
+                  </div>
+                </div>
+              ))}
+              {/* Static reminders */}
               {MOCK_REMINDERS.map((r, i) => (
                 <div key={i} className={`p-3 rounded-xl border flex gap-3 ${r.urgent ? "border-amber-500/30 bg-amber-500/10" : "border-border/50 bg-secondary/30"}`}>
                   <div className={`h-2 w-2 rounded-full mt-1.5 flex-shrink-0 ${r.urgent ? "bg-amber-500 animate-pulse" : "bg-primary"}`} />

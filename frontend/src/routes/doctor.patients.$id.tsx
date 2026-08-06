@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
 import { doctorNav } from "@/lib/roleNav";
 import { motion } from "framer-motion";
@@ -102,6 +102,8 @@ function PatientDetailScreen() {
   const [addVitalOpen, setAddVitalOpen] = useState(false);
   const [vitalForm, setVitalForm] = useState({ bp: "120/80", pulse: "72", temp: "36.5", spo2: "98" });
 
+  const VITALS_KEY = `medicore_patient_vitals_${id}`;
+
   const { data: apiData } = useApi(() => patientAPI.getById(id));
 
   // Clean numerical ID extraction
@@ -145,7 +147,22 @@ function PatientDetailScreen() {
   };
 
   const vitalsList: Vital[] = (rawPatient.vitals && rawPatient.vitals.length > 0) ? rawPatient.vitals : defaultRichData.vitals;
-  const [localVitals, setLocalVitals] = useState<Vital[]>(vitalsList);
+
+  // Load persisted vitals from localStorage; fall back to the source data
+  const [localVitals, setLocalVitals] = useState<Vital[]>(() => {
+    try {
+      const saved = localStorage.getItem(`medicore_patient_vitals_${id}`);
+      if (saved) return JSON.parse(saved) as Vital[];
+    } catch {}
+    return vitalsList;
+  });
+
+  // Persist whenever vitals change
+  useEffect(() => {
+    try {
+      localStorage.setItem(`medicore_patient_vitals_${id}`, JSON.stringify(localVitals));
+    } catch {}
+  }, [localVitals, id]);
 
   const addVital = () => {
     if (!vitalForm.bp || !vitalForm.pulse) return toast.error("Enter BP and Pulse");
@@ -157,13 +174,18 @@ function PatientDetailScreen() {
       spo2: Number(vitalForm.spo2),
       nurse: doctorUser?.name || "Dr. Sarah Ali"
     };
-    setLocalVitals([newV, ...localVitals]);
-    toast.success("Vitals recorded successfully!");
+    const updated = [newV, ...localVitals];
+    setLocalVitals(updated);
+    try { localStorage.setItem(`medicore_patient_vitals_${id}`, JSON.stringify(updated)); } catch {}
+    toast.success("Vitals recorded and saved!", { description: `BP: ${newV.bp} | Pulse: ${newV.pulse} bpm | Temp: ${newV.temp}°C | SpO2: ${newV.spo2}%` });
+    setVitalForm({ bp: "120/80", pulse: "72", temp: "36.5", spo2: "98" });
     setAddVitalOpen(false);
   };
 
   const downloadEMR = () => {
     toast.success(`Generating detailed EMR PDF for ${patient.name}...`);
+
+    const shortText = (s: string, max = 60) => s && s.length > max ? s.slice(0, max) + "..." : (s || "");
 
     const sections = [
       {
@@ -174,38 +196,71 @@ function PatientDetailScreen() {
           { label: "Patient ID", value: patient.patientCode || `P-${patient.id}` },
           { label: "Age / Gender", value: `${patient.age || 45} Yrs / ${patient.gender || "Male"}` },
           { label: "Blood Group", value: patient.bloodGroup || "O+" },
-          { label: "Primary Condition", value: patient.condition },
+          { label: "Contact Phone", value: patient.phone || "N/A" },
+          { label: "Email Address", value: patient.email || "N/A" },
+          { label: "Primary Condition", value: shortText(patient.condition, 70) },
           { label: "Attending Doctor", value: doctorUser?.name || "Dr. Sarah Ali" },
-          { label: "Contact Phone", value: patient.phone },
-          { label: "Email Address", value: patient.email },
+          { label: "Report Date", value: new Date().toLocaleDateString("en-PK") },
+          { label: "Address", value: shortText(patient.address || "MediCore Healthcare", 60) },
         ],
       },
       {
+        title: "Allergies & Chronic Conditions",
+        notes: [
+          ...(patient.allergies as string[]).map((a: string) => `Allergy: ${a}`),
+          ...(patient.chronic as string[]).map((c: string) => `Chronic: ${c}`),
+        ],
+      },
+      {
+        title: "Active Medications & Treatment Plan",
+        notes: (patient.currentMeds as string[]).map((m: string) => `Prescribed: ${m}`),
+      },
+      {
         title: "Clinical Vitals History",
-        subtitle: "Latest vital signs logged",
+        subtitle: `Total ${localVitals.length} records on file`,
         table: {
-          headers: ["Date", "Blood Pressure", "Pulse Rate", "Body Temp", "SpO2 %", "Logger"],
+          headers: ["Date", "Blood Pressure", "Pulse", "Temp (°C)", "SpO2 %", "Logged By"],
           rows: localVitals.map(v => [
             v.date,
             v.bp,
             `${v.pulse} bpm`,
-            `${v.temp || 36.8} °C`,
-            `${v.spo2 || 98} %`,
-            v.nurse || "Clinical Staff"
+            `${v.temp || 36.8}°C`,
+            `${v.spo2 || 98}%`,
+            shortText(v.nurse || "Clinical Staff", 20)
           ])
         },
       },
       {
-        title: "Active Prescriptions & Dosage Plan",
-        notes: (patient.currentMeds as string[]).map((m: string) => `Prescribed: ${m}`),
+        title: "Prescription History",
+        table: {
+          headers: ["Rx ID", "Medications", "Date Issued", "Status"],
+          rows: (patient.prescriptions as any[]).map((rx: any) => [
+            rx.id,
+            shortText(rx.items, 55),
+            rx.date,
+            rx.status
+          ])
+        }
       },
       {
-        title: "Recent Diagnostics & Lab Reports",
+        title: "Diagnostic Reports & Lab Results",
         table: {
           headers: ["Report ID", "Test Name", "Category", "Date", "Summary"],
-          rows: (patient.reports as any[]).map((r: any) => [r.id, r.name, r.type, r.date, r.summary])
+          rows: (patient.reports as any[]).map((r: any) => [
+            r.id,
+            shortText(r.name, 28),
+            r.type,
+            r.date,
+            shortText(r.summary, 45)
+          ])
         }
-      }
+      },
+      {
+        title: "Consultation History & Clinical Notes",
+        notes: (patient.history as any[]).map((h: any) =>
+          `${h.date} — ${h.doctor}: ${h.diagnosis}. ${shortText(h.notes, 80)}`
+        ),
+      },
     ];
 
     generateGenericPDF(

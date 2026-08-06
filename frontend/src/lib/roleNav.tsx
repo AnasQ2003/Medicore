@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, Users, Stethoscope, FileText, BarChart3, Settings, Bell, HeartPulse, Pill, ClipboardCheck, Bed, Syringe, CalendarClock, CalendarOff, UserCircle, UserPlus, Calendar, Receipt, CreditCard, FlaskConical, Download, User, Globe } from "lucide-react";
+import { LayoutDashboard, Building2, Users, Stethoscope, FileText, BarChart3, Settings, Bell, HeartPulse, Pill, ClipboardCheck, Bed, Syringe, CalendarClock, CalendarOff, UserCircle, UserPlus, Calendar, Receipt, CreditCard, FlaskConical, Download, User, Globe, Banknote } from "lucide-react";
 import type { ReactNode } from "react";
 
 export interface RoleNavItem { label: string; to: string; icon: ReactNode }
@@ -11,6 +11,7 @@ export const doctorNav: RoleNavItem[] = [
   { label: "Reports",        to: "/doctor/reports",        icon: <FileText className="h-4 w-4" /> },
   { label: "Schedule",       to: "/doctor/schedule",       icon: <CalendarClock className="h-4 w-4" /> },
   { label: "Leave",          to: "/doctor/leave",          icon: <CalendarOff className="h-4 w-4" /> },
+  { label: "Charges",        to: "/doctor/charges",        icon: <Banknote className="h-4 w-4" /> },
   { label: "Notifications",  to: "/doctor/notifications",  icon: <Bell className="h-4 w-4" /> },
   { label: "My Profile",     to: "/doctor/profile",        icon: <User className="h-4 w-4" /> },
   { label: "Settings",       to: "/doctor/settings",       icon: <Settings className="h-4 w-4" /> },

@@ -70,6 +70,7 @@ import { Route as DoctorPrescriptionsRouteImport } from './routes/doctor.prescri
 import { Route as DoctorPatientsRouteImport } from './routes/doctor.patients'
 import { Route as DoctorNotificationsRouteImport } from './routes/doctor.notifications'
 import { Route as DoctorLeaveRouteImport } from './routes/doctor.leave'
+import { Route as DoctorChargesRouteImport } from './routes/doctor.charges'
 import { Route as DoctorAppointmentsRouteImport } from './routes/doctor.appointments'
 import { Route as DoctorPatientsIndexRouteImport } from './routes/doctor.patients.index'
 import { Route as DoctorPatientsIdRouteImport } from './routes/doctor.patients.$id'
@@ -381,6 +382,11 @@ const DoctorLeaveRoute = DoctorLeaveRouteImport.update({
   path: '/leave',
   getParentRoute: () => DoctorRoute,
 } as any)
+const DoctorChargesRoute = DoctorChargesRouteImport.update({
+  id: '/charges',
+  path: '/charges',
+  getParentRoute: () => DoctorRoute,
+} as any)
 const DoctorAppointmentsRoute = DoctorAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -407,6 +413,7 @@ export interface FileRoutesByFullPath {
   '/receptionist': typeof ReceptionistRouteWithChildren
   '/super-admin': typeof SuperAdminRouteWithChildren
   '/doctor/appointments': typeof DoctorAppointmentsRoute
+  '/doctor/charges': typeof DoctorChargesRoute
   '/doctor/leave': typeof DoctorLeaveRoute
   '/doctor/notifications': typeof DoctorNotificationsRoute
   '/doctor/patients': typeof DoctorPatientsRouteWithChildren
@@ -468,6 +475,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/doctor/appointments': typeof DoctorAppointmentsRoute
+  '/doctor/charges': typeof DoctorChargesRoute
   '/doctor/leave': typeof DoctorLeaveRoute
   '/doctor/notifications': typeof DoctorNotificationsRoute
   '/doctor/prescriptions': typeof DoctorPrescriptionsRoute
@@ -534,6 +542,7 @@ export interface FileRoutesById {
   '/receptionist': typeof ReceptionistRouteWithChildren
   '/super-admin': typeof SuperAdminRouteWithChildren
   '/doctor/appointments': typeof DoctorAppointmentsRoute
+  '/doctor/charges': typeof DoctorChargesRoute
   '/doctor/leave': typeof DoctorLeaveRoute
   '/doctor/notifications': typeof DoctorNotificationsRoute
   '/doctor/patients': typeof DoctorPatientsRouteWithChildren
@@ -602,6 +611,7 @@ export interface FileRouteTypes {
     | '/receptionist'
     | '/super-admin'
     | '/doctor/appointments'
+    | '/doctor/charges'
     | '/doctor/leave'
     | '/doctor/notifications'
     | '/doctor/patients'
@@ -663,6 +673,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/doctor/appointments'
+    | '/doctor/charges'
     | '/doctor/leave'
     | '/doctor/notifications'
     | '/doctor/prescriptions'
@@ -728,6 +739,7 @@ export interface FileRouteTypes {
     | '/receptionist'
     | '/super-admin'
     | '/doctor/appointments'
+    | '/doctor/charges'
     | '/doctor/leave'
     | '/doctor/notifications'
     | '/doctor/patients'
@@ -1225,6 +1237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorLeaveRouteImport
       parentRoute: typeof DoctorRoute
     }
+    '/doctor/charges': {
+      id: '/doctor/charges'
+      path: '/charges'
+      fullPath: '/doctor/charges'
+      preLoaderRoute: typeof DoctorChargesRouteImport
+      parentRoute: typeof DoctorRoute
+    }
     '/doctor/appointments': {
       id: '/doctor/appointments'
       path: '/appointments'
@@ -1265,6 +1284,7 @@ const DoctorPatientsRouteWithChildren = DoctorPatientsRoute._addFileChildren(
 
 interface DoctorRouteChildren {
   DoctorAppointmentsRoute: typeof DoctorAppointmentsRoute
+  DoctorChargesRoute: typeof DoctorChargesRoute
   DoctorLeaveRoute: typeof DoctorLeaveRoute
   DoctorNotificationsRoute: typeof DoctorNotificationsRoute
   DoctorPatientsRoute: typeof DoctorPatientsRouteWithChildren
@@ -1278,6 +1298,7 @@ interface DoctorRouteChildren {
 
 const DoctorRouteChildren: DoctorRouteChildren = {
   DoctorAppointmentsRoute: DoctorAppointmentsRoute,
+  DoctorChargesRoute: DoctorChargesRoute,
   DoctorLeaveRoute: DoctorLeaveRoute,
   DoctorNotificationsRoute: DoctorNotificationsRoute,
   DoctorPatientsRoute: DoctorPatientsRouteWithChildren,

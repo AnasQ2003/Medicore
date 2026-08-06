@@ -100,6 +100,15 @@ export function getLoginAuditLogs(): LoginAuditLog[] {
 export function saveUser(u: AuthUser) {
   if (typeof window !== 'undefined') {
     localStorage.setItem(KEY, JSON.stringify(u));
+
+    // Keep medicore_doctor_profile in sync so login alerts & emails always use the latest name
+    if (u.role === 'doctor') {
+      try {
+        const existing = JSON.parse(localStorage.getItem('medicore_doctor_profile') || '{}');
+        localStorage.setItem('medicore_doctor_profile', JSON.stringify({ ...existing, name: u.name, email: u.email }));
+      } catch {}
+    }
+
     window.dispatchEvent(new Event('medicore_user_updated'));
     recordLoginAudit(u);
   }

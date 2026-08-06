@@ -25,6 +25,7 @@ export const Route = createFileRoute("/doctor/appointments")({
 type Appt = (typeof seed)[number];
 
 const APPT_OVERRIDES_KEY = "medicore_doctor_appointments_overrides";
+const APPT_REMOVED_KEY = "medicore_doctor_appointments_removed";
 
 function AppointmentsScreen() {
   const [q, setQ] = useState("");
@@ -32,6 +33,17 @@ function AppointmentsScreen() {
   const [delaying, setDelaying] = useState<Appt | null>(null);
   const [delayMin, setDelayMin] = useState(15);
   const [callPatient, setCallPatient] = useState<Appt | null>(null);
+
+  // Removed appointment IDs (persisted)
+  const [removedIds, setRemovedIds] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(APPT_REMOVED_KEY);
+        if (saved) return new Set(JSON.parse(saved) as string[]);
+      } catch {}
+    }
+    return new Set();
+  });
 
   // Persistent overrides for statuses and delayed times across navigations
   const [overrides, setOverrides] = useState<Record<string, { status?: string; time?: string }>>(() => {
@@ -49,6 +61,7 @@ function AppointmentsScreen() {
       const next = { ...prev, [id]: { ...prev[id], ...update } };
       if (typeof window !== "undefined") {
         localStorage.setItem(APPT_OVERRIDES_KEY, JSON.stringify(next));
+        window.dispatchEvent(new Event("medicore_appt_updated"));
       }
       return next;
     });
@@ -60,17 +73,23 @@ function AppointmentsScreen() {
   const rawList: Appt[] = fetchedList.length > 0 ? fetchedList : seed;
   const patientList = (apiPatients as unknown as typeof patients) ?? patients;
 
-  // Apply persistent overrides (status and time) to raw list
-  const list: Appt[] = rawList.map(a => {
-    const ov = overrides[a.id];
-    return {
-      ...a,
-      status: ov?.status ?? a.status,
-      time: ov?.time ?? a.time,
-    };
-  });
+  // Apply persistent overrides (status and time) to raw list, exclude removed
+  const list: Appt[] = rawList
+    .filter(a => !removedIds.has(String(a.id)))
+    .map(a => {
+      const ov = overrides[a.id];
+      return {
+        ...a,
+        status: ov?.status ?? a.status,
+        time: ov?.time ?? a.time,
+      };
+    });
 
-  const filtered = list.filter(a => a.patient.toLowerCase().includes(q.toLowerCase()) || a.reason.toLowerCase().includes(q.toLowerCase()));
+  const filtered = list.filter(a =>
+    a.patient.toLowerCase().includes(q.toLowerCase()) ||
+    a.reason.toLowerCase().includes(q.toLowerCase()) ||
+    a.id.toLowerCase().includes(q.toLowerCase())
+  );
 
   // Helper: parse "HH:MM" → minutes since midnight
   const toMins = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
@@ -135,14 +154,50 @@ function AppointmentsScreen() {
     setDelaying(null);
   };
 
-  // Lists for tabs
-  const todayList = [
-    ...filtered.filter(a => a.status !== "Completed" && a.status !== "Cancelled"),
-    ...filtered.filter(a => a.status === "Completed" || a.status === "Cancelled"),
-  ];
+  // Remove patient — strikes from local list and cascades time shifts to later slots
+  const removePatient = (target: Appt) => {
+    // Sort active queue by time
+    const active = list
+      .filter(a => a.status !== "Completed" && a.status !== "Cancelled")
+      .sort((a, b) => toMins(a.time) - toMins(b.time));
+    const targetIdx = active.findIndex(a => a.id === target.id);
 
-  const pastList = list.filter(a => a.status === "Completed" || a.status === "Cancelled").sort((a, b) => b.time.localeCompare(a.time));
-  const upcomingList = list.filter(a => a.status === "Confirmed" || a.status === "Pending").sort((a, b) => a.time.localeCompare(b.time));
+    // Cascade: shift every later appointment back by the freed slot gap (30 min default)
+    if (targetIdx !== -1) {
+      for (let i = targetIdx + 1; i < active.length; i++) {
+        const shifted = fromMins(toMins(active[i].time) - 30);
+        updateOverride(active[i].id, { time: shifted });
+      }
+    }
+
+    // Mark as removed
+    const next = new Set(removedIds);
+    next.add(String(target.id));
+    setRemovedIds(next);
+    localStorage.setItem(APPT_REMOVED_KEY, JSON.stringify([...next]));
+    window.dispatchEvent(new Event("medicore_appt_updated"));
+    toast.success(`${target.patient} removed from queue`, {
+      description: "Subsequent appointment times have been shifted up by 30 minutes.",
+    });
+  };
+
+  // Today: active (non-completed, non-cancelled) sorted by time, then cancelled at the end
+  const activeToday = filtered
+    .filter(a => a.status !== "Completed" && a.status !== "Cancelled")
+    .sort((a, b) => toMins(a.time) - toMins(b.time));
+  const cancelledToday = filtered.filter(a => a.status === "Cancelled");
+  const completedToday = filtered.filter(a => a.status === "Completed");
+  const todayList = [...activeToday, ...completedToday, ...cancelledToday];
+
+  // Past: ALL completed or cancelled, sorted newest first by time
+  const pastList = filtered
+    .filter(a => a.status === "Completed" || a.status === "Cancelled")
+    .sort((a, b) => toMins(b.time) - toMins(a.time));
+
+  // Upcoming: Confirmed or Pending, sorted by time ascending
+  const upcomingList = filtered
+    .filter(a => a.status === "Confirmed" || a.status === "Pending" || a.status === "Delayed")
+    .sort((a, b) => toMins(a.time) - toMins(b.time));
 
   const stats = [
     { label: "Today", value: list.filter(a => a.status !== "Completed" && a.status !== "Cancelled").length, c: "from-blue-500 to-cyan-500", icon: Calendar },
@@ -255,6 +310,7 @@ function AppointmentsScreen() {
                         <DropdownMenuItem onClick={() => complete(a)}><CheckCircle2 className="h-3.5 w-3.5 mr-2"/>Mark completed</DropdownMenuItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem onClick={() => cancel(a)} className="text-amber-600 focus:text-amber-700"><XCircle className="h-3.5 w-3.5 mr-2"/>Cancel</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => removePatient(a)} className="text-rose-600 focus:text-rose-700"><Trash2 className="h-3.5 w-3.5 mr-2"/>Remove from queue</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -266,31 +322,52 @@ function AppointmentsScreen() {
 
           <TabsContent value="upcoming" className="space-y-3">
             {upcomingList.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">No upcoming confirmed appointments.</div>
+              <div className="text-center py-12 text-muted-foreground">No upcoming appointments. Active consultations appear in the Today tab.</div>
             ) : upcomingList.map((a, i) => (
-              <div key={a.id} className="flex items-center justify-between p-4 rounded-xl border bg-card">
-                <div>
-                  <span className="font-bold text-primary mr-3">{a.time}</span>
-                  <span className="font-semibold text-foreground">{a.patient}</span>
-                  <span className="text-xs text-muted-foreground ml-3">{a.reason}</span>
+              <motion.div key={a.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.04}}
+                className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border bg-card/80 hover:shadow-md transition-all">
+                <div className="text-center sm:w-24">
+                  <div className="text-2xl font-bold text-primary">{a.time}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{a.type === "Tele-consult" ? "Video" : "In-person"}</div>
                 </div>
-                <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">{a.status}</Badge>
-              </div>
+                <div className="h-10 w-10 rounded-xl bg-gradient-primary text-white flex items-center justify-center font-bold shadow-glow shrink-0">{a.patient[0]}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold">{a.patient}</div>
+                  <div className="text-sm text-muted-foreground">{a.reason}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{a.type} · {a.id}</div>
+                </div>
+                <Badge className={
+                  a.status === "Confirmed" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" :
+                  a.status === "Delayed" ? "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 font-bold animate-pulse" :
+                  "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                }>{a.status}</Badge>
+                <div className="flex gap-1.5">
+                  <Button size="sm" className="bg-gradient-primary text-white" onClick={() => startConsultation(a)}>Start</Button>
+                  <Button size="sm" variant="outline" onClick={() => { setDelaying(a); setDelayMin(15); }}><Clock4 className="h-3.5 w-3.5"/></Button>
+                  <Button size="sm" variant="outline" className="text-rose-600" onClick={() => removePatient(a)}><Trash2 className="h-3.5 w-3.5"/></Button>
+                </div>
+              </motion.div>
             ))}
           </TabsContent>
 
           <TabsContent value="past" className="space-y-3">
             {pastList.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">No completed or cancelled appointments yet.</div>
+              <div className="text-center py-12 text-muted-foreground">No completed or cancelled appointments yet. Mark patients as completed from the Today tab.</div>
             ) : pastList.map((a, i) => (
-              <div key={a.id} className="flex items-center justify-between p-4 rounded-xl border bg-card/60">
-                <div>
-                  <span className="font-bold text-muted-foreground mr-3">{a.time}</span>
-                  <span className="font-semibold text-foreground">{a.patient}</span>
-                  <span className="text-xs text-muted-foreground ml-3">{a.reason}</span>
+              <motion.div key={a.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:i*0.03}}
+                className="flex items-center justify-between p-4 rounded-xl border bg-card/60 hover:bg-card transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-secondary text-foreground/60 flex items-center justify-center font-bold text-sm shrink-0">{a.patient[0]}</div>
+                  <div>
+                    <div className="font-semibold text-sm">{a.patient}</div>
+                    <div className="text-xs text-muted-foreground">{a.reason} · <span className="font-mono">{a.time}</span></div>
+                  </div>
                 </div>
-                <Badge variant="outline">{a.status}</Badge>
-              </div>
+                <Badge className={
+                  a.status === "Completed" ? "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300" :
+                  "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300"
+                }>{a.status}</Badge>
+              </motion.div>
             ))}
           </TabsContent>
         </Tabs>

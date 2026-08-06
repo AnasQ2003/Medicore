@@ -5,11 +5,13 @@ import { doctorNav } from "@/lib/roleNav";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Phone, Mail, AlertTriangle, Loader2, Stethoscope, Activity, Heart, BedDouble, UserCheck } from "lucide-react";
+import { Search, Phone, Mail, AlertTriangle, Loader2, Stethoscope, Activity, Heart, BedDouble, UserCheck, Bell } from "lucide-react";
 import { patientAPI } from "@/lib/api/client";
 import useApi from "@/hooks/useApi";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { getUser } from "@/lib/auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/doctor/patients/")({
   head: () => ({ meta: [{ title: "Patients — Doctor" }] }),
@@ -83,22 +85,68 @@ const fallbackPatients: ApiPatient[] = [
     vitals: [{ bp: "132/84", pulse: 86, spo2: 92 }]
   },
   {
+    id: 1047, patientCode: "P-1047", name: "Zara Malik", age: 22, gender: "Female", bloodGroup: "B-",
+    phone: "+92 345 1122334", email: "zara.m@example.com",
+    condition: "Severe anemia — transfusion monitoring", category: "Critical",
+    allergies: ["Iron IV"], chronic: ["Iron Deficiency Anemia"],
+    vitals: [{ bp: "100/60", pulse: 102, spo2: 94 }]
+  },
+  {
+    id: 1048, patientCode: "P-1048", name: "Mohammad Usman", age: 72, gender: "Male", bloodGroup: "A-",
+    phone: "+92 300 3456789", email: "m.usman@example.com",
+    condition: "COPD exacerbation — stable on O2 therapy", category: "Inpatient",
+    allergies: ["Penicillin"], chronic: ["COPD", "Type 2 Diabetes"],
+    vitals: [{ bp: "132/84", pulse: 86, spo2: 92 }]
+  },
+  {
     id: 1049, patientCode: "P-1049", name: "Sana Tariq", age: 41, gender: "Female", bloodGroup: "O+",
     phone: "+92 311 7766554", email: "sana.t@example.com",
     condition: "Migraine with aura, preventive therapy review", category: "Outpatient",
     allergies: [], chronic: ["Chronic Migraine"],
     vitals: [{ bp: "116/74", pulse: 68, spo2: 99 }]
   },
+  // --- Queue patients from today's appointments (Sara Malik slot 11:00)
+  {
+    id: 1050, patientCode: "P-1050", name: "Sara Malik", age: 38, gender: "Female", bloodGroup: "A+",
+    phone: "+92 311 9900112", email: "sara.malik@example.com",
+    condition: "General Wellness Check — Annual Physical Exam", category: "Outpatient",
+    allergies: ["None known"], chronic: [],
+    vitals: [{ bp: "118/75", pulse: 71, spo2: 99 }]
+  },
 ];
 
 function PatientsIndexScreen() {
   const navigate = useNavigate();
+  const doctorUser = getUser();
   const [q, setQ] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const { data: rawPatients, loading } = useApi(() => patientAPI.getAll());
 
   const fetched: ApiPatient[] = (rawPatients as unknown as ApiPatient[]) ?? [];
   const patients = fetched.length > 0 ? fetched : fallbackPatients;
+
+  // Send a reminder notification to a patient's dashboard
+  const sendReminder = (p: ApiPatient, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const doctorName = doctorUser?.name || "Dr. Sarah Ali";
+    const patientEmail = p.email || `patient_${p.id}@medicore.app`;
+    const notifKey = `medicore_user_notifications_${patientEmail}`;
+    const existing = JSON.parse(localStorage.getItem(notifKey) || "[]");
+    const notif = {
+      id: `reminder-${Date.now()}`,
+      type: "reminder",
+      title: `Appointment Reminder from ${doctorName}`,
+      body: `${doctorName} has sent you a consultation reminder. Please ensure you are on time for your scheduled appointment. Bring your latest reports and medication list.`,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      unread: true,
+      urgent: false,
+    };
+    localStorage.setItem(notifKey, JSON.stringify([notif, ...existing]));
+    window.dispatchEvent(new StorageEvent("storage", { key: notifKey }));
+    toast.success(`Reminder sent to ${p.name}`, {
+      description: "Patient will see the notification on their dashboard.",
+    });
+  };
 
   const allergyList = (p: ApiPatient) => {
     if (!p.allergies) return [];
@@ -239,6 +287,10 @@ function PatientsIndexScreen() {
             }}
           >
             Open Full EMR
+          </Button>
+          <Button size="icon" variant="outline" title="Send Reminder"
+            onClick={(e) => sendReminder(p, e)}>
+            <Bell className="h-3.5 w-3.5" />
           </Button>
           <Button size="icon" variant="outline" title="Call"
             onClick={(e) => { e.stopPropagation(); if (p.phone) window.location.href = `tel:${p.phone}`; }}>
