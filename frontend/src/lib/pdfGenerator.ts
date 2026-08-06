@@ -1,12 +1,25 @@
 import { jsPDF } from "jspdf";
 
+export interface PDFChartBar {
+  label: string;
+  value: number;
+  max?: number;
+  unit?: string;
+  color?: number[];
+}
+
+export interface PDFChart {
+  title: string;
+  bars: PDFChartBar[];
+}
+
 export interface PDFSection {
   title?: string;
   subtitle?: string;
   items?: { label: string; value: string }[];
   table?: { headers: string[]; rows: string[][] };
   notes?: string[];
-  charts?: { title: string; bars: { label: string; value: number; max?: number }[] }[];
+  charts?: PDFChart[];
 }
 
 export function generateGenericPDF(
@@ -190,22 +203,24 @@ export function generateGenericPDF(
           doc.text(b.label, 16, y + 3);
 
           const barMax = b.max || 100;
-          const barWidthMax = 100; // mm
+          const barWidthMax = 95; // mm
           const currentBarWidth = Math.min(barWidthMax, (b.value / barMax) * barWidthMax);
 
           // Track background
           doc.setFillColor(226, 232, 240);
-          doc.roundedRect(60, y, barWidthMax, 4, 1, 1, "F");
+          doc.roundedRect(65, y, barWidthMax, 4, 1, 1, "F");
 
-          // Bar fill
-          doc.setFillColor(14, 165, 233); // sky-500
+          // Bar fill with custom or default color
+          const [r, g, bl] = b.color || [14, 165, 233];
+          doc.setFillColor(r, g, bl);
           if (currentBarWidth > 0) {
-            doc.roundedRect(60, y, currentBarWidth, 4, 1, 1, "F");
+            doc.roundedRect(65, y, currentBarWidth, 4, 1, 1, "F");
           }
 
           doc.setTextColor(15, 23, 42);
           doc.setFont("helvetica", "bold");
-          doc.text(`${b.value}`, 65 + barWidthMax, y + 3);
+          const valDisplay = b.unit ? `${b.value} ${b.unit}` : `${b.value}`;
+          doc.text(valDisplay, 68 + barWidthMax, y + 3);
 
           y += 7;
         });

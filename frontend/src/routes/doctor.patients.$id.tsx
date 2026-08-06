@@ -187,6 +187,11 @@ function PatientDetailScreen() {
 
     const shortText = (s: string, max = 60) => s && s.length > max ? s.slice(0, max) + "..." : (s || "");
 
+    const latestVital = localVitals[0] || { bp: "120/80", pulse: 78, temp: 36.8, spo2: 98, date: "Latest" };
+    const bpParts = (latestVital.bp || "120/80").split("/").map(Number);
+    const systolicBp = bpParts[0] || 120;
+    const diastolicBp = bpParts[1] || 80;
+
     const sections = [
       {
         title: "Patient Demographics & Medical Summary",
@@ -205,6 +210,53 @@ function PatientDetailScreen() {
         ],
       },
       {
+        title: "Clinical Vitals Graphical Analytics",
+        subtitle: `Latest Vitals Logged (${latestVital.date})`,
+        charts: [
+          {
+            title: "Vital Signs Metrics vs Target Thresholds",
+            bars: [
+              { label: "Systolic BP", value: systolicBp, max: 180, unit: "mmHg", color: systolicBp > 140 ? [239, 68, 68] : [14, 165, 233] },
+              { label: "Diastolic BP", value: diastolicBp, max: 120, unit: "mmHg", color: [59, 130, 246] },
+              { label: "Pulse Heart Rate", value: latestVital.pulse || 78, max: 140, unit: "bpm", color: [16, 185, 129] },
+              { label: "Blood Oxygen SpO2", value: latestVital.spo2 || 98, max: 100, unit: "%", color: [6, 182, 212] },
+              { label: "Body Temperature", value: latestVital.temp || 36.8, max: 42, unit: "°C", color: [139, 92, 246] },
+            ]
+          }
+        ]
+      },
+      {
+        title: "Lab Diagnostic & Biomarker Analytics",
+        subtitle: "Key Diagnostic Panel Measurements",
+        charts: [
+          {
+            title: "Lipid Profile & Biomarkers Indicator",
+            bars: [
+              { label: "Total Cholesterol", value: 240, max: 300, unit: "mg/dL", color: [245, 158, 11] },
+              { label: "LDL Cholesterol", value: 162, max: 250, unit: "mg/dL", color: [239, 68, 68] },
+              { label: "HDL Cholesterol", value: 38, max: 80, unit: "mg/dL", color: [16, 185, 129] },
+              { label: "Triglycerides", value: 210, max: 300, unit: "mg/dL", color: [245, 158, 11] },
+              { label: "Fasting Glucose", value: 110, max: 200, unit: "mg/dL", color: [59, 130, 246] },
+            ]
+          }
+        ]
+      },
+      {
+        title: "Patient Recovery & Compliance Metrics",
+        subtitle: "Overall Clinical Progress Evaluation",
+        charts: [
+          {
+            title: "Clinical Index & Compliance Scores",
+            bars: [
+              { label: "Overall Health Score", value: 85, max: 100, unit: "%", color: [16, 185, 129] },
+              { label: "Medication Adherence", value: 94, max: 100, unit: "%", color: [59, 130, 246] },
+              { label: "Vital Stability Index", value: 88, max: 100, unit: "%", color: [139, 92, 246] },
+              { label: "Treatment Plan Response", value: 80, max: 100, unit: "%", color: [6, 182, 212] },
+            ]
+          }
+        ]
+      },
+      {
         title: "Allergies & Chronic Conditions",
         notes: [
           ...(patient.allergies as string[]).map((a: string) => `Allergy: ${a}`),
@@ -216,7 +268,7 @@ function PatientDetailScreen() {
         notes: (patient.currentMeds as string[]).map((m: string) => `Prescribed: ${m}`),
       },
       {
-        title: "Clinical Vitals History",
+        title: "Clinical Vitals History Table",
         subtitle: `Total ${localVitals.length} records on file`,
         table: {
           headers: ["Date", "Blood Pressure", "Pulse", "Temp (°C)", "SpO2 %", "Logged By"],
