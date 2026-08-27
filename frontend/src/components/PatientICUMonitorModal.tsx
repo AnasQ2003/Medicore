@@ -104,8 +104,6 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  if (!patient) return null;
-
   const handleAdministerMed = (medId: string) => {
     setMeds((prev) =>
       prev.map((m) =>
@@ -124,7 +122,8 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl bg-slate-950 text-white border-emerald-500/40 p-0 overflow-hidden shadow-2xl rounded-2xl">
-        
+        {patient && (
+          <>
         {/* Futuristic Monitor Header */}
         <div className="bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 border-b border-emerald-500/30 p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -388,6 +387,8 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
 
         </div>
 
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   HeartPulse, Pill, Users, ClipboardCheck, Loader2, Monitor, Activity,
-  Bed, AlertTriangle, Syringe, Clock, CheckCircle2, BedDouble, RefreshCw
+  Bed, AlertTriangle, Syringe, Clock, CheckCircle2, BedDouble, RefreshCw, ArrowRight
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard } from "@/components/StatCard";
@@ -175,12 +175,9 @@ function NurseScreen() {
           <p className="text-muted-foreground">Inpatient Ward Roster & Clinical Vitals Overview</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => { refetchBeds(); refetchPatients(); }}>
-            <RefreshCw className="h-4 w-4 mr-2" />Refresh
-          </Button>
           <Button
             onClick={() => setRequestModalOpen(true)}
-            className="bg-gradient-red text-white shadow-glow-red font-semibold"
+            className="bg-gradient-red text-white shadow-glow-red font-semibold cursor-pointer"
           >
             <Bed className="h-4 w-4 mr-2" /> Request Beds / Equipment
           </Button>
@@ -195,26 +192,137 @@ function NurseScreen() {
       {/* Critical Alert Banner if critical cases present */}
       {criticalCount > 0 && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="h-6 w-6 text-rose-600 animate-pulse flex-shrink-0" />
-            <div>
-              <div className="font-bold text-rose-800 dark:text-rose-300">{criticalCount} Critical Patient{criticalCount > 1 ? "s" : ""} Under ICU Watch</div>
-              <div className="text-xs text-rose-600 dark:text-rose-400">SpO₂ below 94% or HR elevated — immediate nursing intervention recommended.</div>
-            </div>
+          className="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center gap-4 shadow-sm">
+          <AlertTriangle className="h-6 w-6 text-rose-600 animate-pulse flex-shrink-0" />
+          <div>
+            <div className="font-bold text-rose-800 dark:text-rose-300">{criticalCount} Critical Patient{criticalCount > 1 ? "s" : ""} Under ICU Watch</div>
+            <div className="text-xs text-rose-600 dark:text-rose-400">SpO₂ below 94% or HR elevated — immediate nursing intervention recommended. Use <strong>Record Vitals</strong> in the table below.</div>
           </div>
-          <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shrink-0" onClick={() => setOpen(true)}>
-            Record Vitals
-          </Button>
         </motion.div>
       )}
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Admitted Patients" value={String(list.length)} icon={Users} delay={0} />
-        <StatCard label="Active Injections" value="8 Scheduled" icon={Syringe} delay={0.05} />
-        <StatCard label="Critical ICU Watch" value={String(criticalCount)} icon={AlertTriangle} delay={0.1} />
-        <StatCard label="Observation Status" value={String(observationCount)} icon={Activity} delay={0.15} />
+
+      {/* Rich Detailed Stat Cards with Direct Screen Navigation */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Card 1: Admitted Patients -> /nurse/patients */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0 }}
+          whileHover={{ y: -4 }}
+          className="group relative overflow-hidden rounded-2xl border border-rose-100 dark:border-rose-900/40 bg-card p-5 shadow-card hover:shadow-xl transition-all duration-300 cursor-pointer"
+        >
+          <Link to="/nurse/patients" className="absolute inset-0 z-10" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admitted Patients</span>
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
+              <Users className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold tracking-tight text-card-foreground">{list.length}</span>
+            <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 text-[11px] font-medium">
+              Ward 88% Full
+            </Badge>
+          </div>
+          <div className="mt-2.5 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+            <span>{list.filter(p => p.ward === "ICU").length} ICU · {list.filter(p => p.ward !== "ICU").length} General Beds</span>
+            <span className="text-rose-600 dark:text-rose-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+              Patients <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+          <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-rose-500/10 blur-2xl group-hover:bg-rose-500/20 transition-colors" />
+        </motion.div>
+
+        {/* Card 2: Active Injections -> /nurse/injections */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          whileHover={{ y: -4 }}
+          className="group relative overflow-hidden rounded-2xl border border-blue-100 dark:border-blue-900/40 bg-card p-5 shadow-card hover:shadow-xl transition-all duration-300 cursor-pointer"
+        >
+          <Link to="/nurse/injections" className="absolute inset-0 z-10" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Injections</span>
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
+              <Syringe className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold tracking-tight text-card-foreground">8</span>
+            <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-[11px] font-medium">
+              2 Due Next Hour
+            </Badge>
+          </div>
+          <div className="mt-2.5 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+            <span>3 IV Drips · 5 Doses Scheduled</span>
+            <span className="text-blue-600 dark:text-blue-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+              Injections <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+          <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl group-hover:bg-blue-500/20 transition-colors" />
+        </motion.div>
+
+        {/* Card 3: Critical ICU Watch -> /nurse/vitals */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          whileHover={{ y: -4 }}
+          className="group relative overflow-hidden rounded-2xl border border-red-200 dark:border-red-900/60 bg-card p-5 shadow-card hover:shadow-xl transition-all duration-300 cursor-pointer"
+        >
+          <Link to="/nurse/vitals" className="absolute inset-0 z-10" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Critical ICU Watch</span>
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400">{criticalCount}</span>
+            <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700 text-[11px] font-semibold animate-pulse">
+              SpO₂ &lt; 94% Alert
+            </Badge>
+          </div>
+          <div className="mt-2.5 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+            <span>Continuous Telemetry ECG</span>
+            <span className="text-rose-600 dark:text-rose-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+              Vitals <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+          <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-rose-500/10 blur-2xl group-hover:bg-rose-500/25 transition-colors" />
+        </motion.div>
+
+        {/* Card 4: Observation Status -> /nurse/beds */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          whileHover={{ y: -4 }}
+          className="group relative overflow-hidden rounded-2xl border border-teal-100 dark:border-teal-900/40 bg-card p-5 shadow-card hover:shadow-xl transition-all duration-300 cursor-pointer"
+        >
+          <Link to="/nurse/beds" className="absolute inset-0 z-10" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Observation Status</span>
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform">
+              <Activity className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold tracking-tight text-card-foreground">{observationCount}</span>
+            <Badge variant="outline" className="bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-800 text-[11px] font-medium">
+              Round q2h
+            </Badge>
+          </div>
+          <div className="mt-2.5 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+            <span>Post-Op & Routine Checks</span>
+            <span className="text-teal-600 dark:text-teal-400 font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+              Beds Map <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+          <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-teal-500/10 blur-2xl group-hover:bg-teal-500/20 transition-colors" />
+        </motion.div>
       </div>
 
       {/* Live Vitals Table */}
@@ -229,7 +337,7 @@ function NurseScreen() {
               <h3 className="font-bold text-lg text-card-foreground">Inpatient Vitals & Bed Monitor</h3>
               <p className="text-xs text-muted-foreground">Showing {list.length} admitted patients across all hospital wings</p>
             </div>
-            <Button onClick={() => setOpen(true)} className="bg-gradient-red text-white shadow-glow-red"><HeartPulse className="h-4 w-4 mr-2" />Record Vitals</Button>
+            <Button onClick={() => setOpen(true)} className="bg-gradient-red hover:opacity-95 text-white shadow-glow-red font-semibold cursor-pointer"><HeartPulse className="h-4 w-4 mr-2" />Record Vitals</Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -272,10 +380,10 @@ function NurseScreen() {
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex gap-1.5">
-                        <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white" onClick={() => handleOpenMonitor(p)}>
+                        <Button size="sm" className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium shadow-sm transition-colors cursor-pointer" onClick={() => handleOpenMonitor(p)}>
                           <Monitor className="h-3 w-3 mr-1" /> Live Monitor
                         </Button>
-                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
+                        <Button size="sm" variant="outline" className="h-7 text-xs hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer" onClick={() => {
                           setForm({
                             patientId: p.patientId || 0,
                             bp: p.bp === "—" ? "" : p.bp,

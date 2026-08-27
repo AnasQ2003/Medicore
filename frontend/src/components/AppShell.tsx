@@ -33,16 +33,58 @@ const roleAccent: Record<Role, string> = {
 // Map a notification type to its destination route under the current role.
 function notifTarget(role: Role, type: string): string {
   const r = `/${role}`;
-  switch (type) {
-    case "appointment": return `${r}/appointments`;
+  const t = type.toLowerCase();
+  switch (t) {
+    case "appointment":
+    case "appointments":
+      return role === "patient" || role === "doctor" || role === "receptionist" ? `${r}/appointments` : `${r}/schedule`;
     case "lab":
-    case "report": return `${r}/reports`;
-    case "rx": return `${r}/prescriptions`;
-    case "patient": return `${r}/patients`;
-    case "leave": return `${r}/leave`;
-    default: return `${r}/notifications`;
+    case "report":
+    case "reports":
+      return role === "super-admin" ? `${r}/reports` : role === "patient" ? `${r}/reports` : role === "doctor" ? `${r}/reports` : `${r}/vitals`;
+    case "rx":
+    case "prescription":
+    case "prescriptions":
+    case "medication":
+    case "meds":
+      return role === "nurse" ? `${r}/medications` : `${r}/prescriptions`;
+    case "injection":
+    case "injections":
+    case "iv":
+      return role === "nurse" ? `${r}/injections` : `${r}/patients`;
+    case "vital":
+    case "vitals":
+    case "critical":
+    case "telemetry":
+    case "icu":
+      return role === "nurse" ? `${r}/vitals` : role === "doctor" ? `${r}/patients` : `${r}/dashboard`;
+    case "task":
+    case "tasks":
+    case "order":
+      return role === "nurse" ? `${r}/tasks` : `${r}/schedule`;
+    case "bed":
+    case "beds":
+    case "ward":
+    case "room":
+      return role === "nurse" ? `${r}/beds` : role === "super-admin" ? `${r}/facilities` : `${r}/patients`;
+    case "patient":
+    case "patients":
+    case "admission":
+      return `${r}/patients`;
+    case "leave":
+    case "attendance":
+    case "schedule":
+    case "shift":
+      return role === "doctor" ? `${r}/schedule` : `${r}/schedule`;
+    case "billing":
+    case "bill":
+    case "invoice":
+      return role === "receptionist" ? `${r}/billing` : role === "patient" ? `${r}/bills` : `${r}/dashboard`;
+    default:
+      return `${r}/notifications`;
   }
 }
+
 
 export function AppShell({
   role, title, nav, children,

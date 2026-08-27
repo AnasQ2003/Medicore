@@ -114,58 +114,132 @@ const priorityConfig: Record<TaskPriority, string> = {
   Critical: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
 };
 
-function NurseTasksScreen() {
-  const { data: _api, loading: _loading, error: _error, refetch } = useApi(() => taskAPI.getAll?.() ?? Promise.resolve([]));
+const TASKS_STORAGE_KEY = "medicore_nurse_tasks";
 
+const STATUS_ORDER: Record<TaskStatus, number> = {
+  "In Progress": 1,
+  "Overdue": 2,
+  "Pending": 3,
+  "Cancelled": 4,
+  "Completed": 5,
+};
+
+const PRIORITY_ORDER: Record<TaskPriority, number> = {
+  "Critical": 1,
+  "Urgent": 2,
+  "Routine": 3,
+};
+
+function NurseTasksScreen() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
-  const [tasks, setTasks] = useState(MOCK_TASKS);
 
-  const filtered = tasks.filter((t) => {
-    const matchQ = t.title.toLowerCase().includes(q.toLowerCase()) ||
-      t.patient.toLowerCase().includes(q.toLowerCase()) ||
-      t.category.toLowerCase().includes(q.toLowerCase());
-    const matchStatus = statusFilter === "All" || t.status === statusFilter;
-    const matchPriority = priorityFilter === "All" || t.priority === priorityFilter;
-    return matchQ && matchStatus && matchPriority;
+  const [tasks, setTasks] = useState<NurseTask[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(TASKS_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load saved tasks", err);
+      }
+    }
+    return MOCK_TASKS;
   });
 
-  const toggleComplete = (id: string) => {
-    setTasks((prev) => prev.map((t) =>
-      t.id === id
-        ? { ...t, status: t.status === "Completed" ? "Pending" : "Completed" as TaskStatus, completedAt: t.status !== "Completed" ? new Date().toLocaleTimeString() : undefined }
-        : t
-    ));
-    toast.success("Task status updated");
+  const saveTasksState = (updated: NurseTask[]) => {
+    setTasks(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(updated));
+    }
   };
+
+  const toggleComplete = (id: string) => {
+    const target = tasks.find((t) => t.id === id);
+    const isCurrentlyDone = target?.status === "Completed";
+    const nextStatus: TaskStatus = isCurrentlyDone ? "Pending" : "Completed";
+
+    const updated = tasks.map((t) =>
+      t.id === id
+        ? {
+            ...t,
+            status: nextStatus,
+            completedAt: !isCurrentlyDone ? new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : undefined,
+          }
+        : t
+    );
+    saveTasksState(updated);
+    if (!isCurrentlyDone) {
+      toast.success(`Task completed!`, {
+        description: `"${target?.title}" marked as finished.`,
+      });
+    } else {
+      toast.info(`Task reopened as Pending`);
+    }
+  };
+
+  const setTaskStatus = (id: string, newStatus: TaskStatus) => {
+    const updated = tasks.map((t) =>
+      t.id === id
+        ? {
+            ...t,
+            status: newStatus,
+            completedAt: newStatus === "Completed" ? new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : undefined,
+          }
+        : t
+    );
+    saveTasksState(updated);
+    toast.info(`Task status changed to ${newStatus}`);
+  };
+
+  // Filter and sort: In Progress on top, Completed at bottom/last
+  const sortedAndFiltered = tasks
+    .filter((t) => {
+      const matchQ =
+        t.title.toLowerCase().includes(q.toLowerCase()) ||
+        t.patient.toLowerCase().includes(q.toLowerCase()) ||
+        t.bed.toLowerCase().includes(q.toLowerCase()) ||
+        t.ward.toLowerCase().includes(q.toLowerCase()) ||
+        t.id.toLowerCase().includes(q.toLowerCase()) ||
+        t.category.toLowerCase().includes(q.toLowerCase());
+      const matchStatus = statusFilter === "All" || t.status === statusFilter;
+      const matchPriority = priorityFilter === "All" || t.priority === priorityFilter;
+      return matchQ && matchStatus && matchPriority;
+    })
+    .sort((a, b) => {
+      // Primary: Status order (In Progress = 1 ... Completed = 5)
+      const statusDiff = (STATUS_ORDER[a.status] || 99) - (STATUS_ORDER[b.status] || 99);
+      if (statusDiff !== 0) return statusDiff;
+      // Secondary: Priority order (Critical = 1, Urgent = 2, Routine = 3)
+      return (PRIORITY_ORDER[a.priority] || 99) - (PRIORITY_ORDER[b.priority] || 99);
+    });
 
   const counts = {
     all: tasks.length,
-    pending: tasks.filter((t) => t.status === "Pending").length,
     inProgress: tasks.filter((t) => t.status === "In Progress").length,
+    pending: tasks.filter((t) => t.status === "Pending").length,
     overdue: tasks.filter((t) => t.status === "Overdue").length,
     done: tasks.filter((t) => t.status === "Completed").length,
   };
 
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task List</h1>
-          <p className="text-muted-foreground">Manage nursing tasks across all wards for this shift</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={refetch} className="shrink-0">
-          <RefreshCw className="h-3.5 w-3.5 mr-2" />Refresh Tasks
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Task List</h1>
+        <p className="text-muted-foreground">Manage nursing tasks across all wards — in-progress items prioritized</p>
       </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
-          { label: "Total", value: counts.all, color: "from-violet-500 to-purple-600" },
+          { label: "Total Tasks", value: counts.all, color: "from-violet-500 to-purple-600" },
+          { label: "In Progress (Top)", value: counts.inProgress, color: "from-blue-500 to-cyan-600" },
           { label: "Pending", value: counts.pending, color: "from-amber-500 to-orange-600" },
-          { label: "In Progress", value: counts.inProgress, color: "from-blue-500 to-cyan-600" },
           { label: "Overdue", value: counts.overdue, color: "from-rose-500 to-red-600" },
           { label: "Completed", value: counts.done, color: "from-emerald-500 to-teal-600" },
         ].map((s, i) => (
@@ -177,49 +251,70 @@ function NurseTasksScreen() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+      {/* Search & Filter Tabs */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search task, patient, category..." className="pl-9" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search task, patient, bed, category..." className="pl-9" />
         </div>
         <div className="flex gap-2 flex-wrap">
-          {["All", "Pending", "In Progress", "Overdue", "Completed"].map((s) => (
+          {["All", "In Progress", "Pending", "Overdue", "Completed"].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                statusFilter === s ? "bg-rose-600 text-white border-rose-600" : "bg-secondary text-muted-foreground border-border hover:border-rose-400"
-              }`}>{s}</button>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border cursor-pointer ${
+                statusFilter === s ? "bg-rose-600 text-white border-rose-600 shadow-sm" : "bg-secondary text-muted-foreground border-border hover:border-rose-400"
+              }`}>{s} {s !== "All" && `(${s === "In Progress" ? counts.inProgress : s === "Pending" ? counts.pending : s === "Overdue" ? counts.overdue : counts.done})`}</button>
           ))}
         </div>
       </div>
 
-      <div className="flex gap-2 mb-5">
-        {["All", "Routine", "Urgent", "Critical"].map((p) => (
+      <div className="flex gap-2 flex-wrap mb-6">
+        <span className="text-xs font-semibold text-muted-foreground self-center mr-1">Priority:</span>
+        {["All", "Critical", "Urgent", "Routine"].map((p) => (
           <button key={p} onClick={() => setPriorityFilter(p)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-              priorityFilter === p ? "bg-violet-600 text-white border-violet-600" : "bg-secondary text-muted-foreground border-border hover:border-violet-400"
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border cursor-pointer ${
+              priorityFilter === p ? "bg-violet-600 text-white border-violet-600 shadow-sm" : "bg-secondary text-muted-foreground border-border hover:border-violet-400"
             }`}>{p}</button>
         ))}
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.length === 0 ? (
+        {sortedAndFiltered.length === 0 ? (
           <div className="col-span-full text-center py-16 text-muted-foreground bg-secondary/20 rounded-2xl border">No tasks found.</div>
         ) : (
-          filtered.map((task, i) => {
+          sortedAndFiltered.map((task, i) => {
             const sc = statusConfig[task.status];
+            const isDone = task.status === "Completed";
+            const isInProgress = task.status === "In Progress";
+            const isOverdue = task.status === "Overdue";
+
             return (
               <motion.div key={task.id}
-                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                layout
+                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
                 whileHover={{ y: -3 }}
                 className={`bg-card border rounded-2xl p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between ${
-                  task.status === "Overdue" ? "border-rose-200 dark:border-rose-900" : "border-border"
+                  isInProgress
+                    ? "border-blue-300 dark:border-blue-800 shadow-blue-500/5 ring-1 ring-blue-400/30"
+                    : isOverdue
+                    ? "border-rose-300 dark:border-rose-900 shadow-rose-500/5"
+                    : isDone
+                    ? "border-emerald-200 dark:border-emerald-950/60 bg-emerald-500/5 opacity-85"
+                    : "border-border"
                 }`}>
                 <div>
                   <div className="flex justify-between items-start gap-2 mb-2">
                     <div className="flex-1">
-                      <h3 className="font-bold text-sm leading-tight text-card-foreground">{task.title}</h3>
-                      <span className="text-[10px] font-mono text-muted-foreground">{task.id} · {task.category}</span>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {isInProgress && (
+                          <span className="inline-flex items-center text-[10px] uppercase font-bold text-blue-600 bg-blue-100 dark:bg-blue-900/40 px-1.5 py-0.5 rounded">
+                            Active Top
+                          </span>
+                        )}
+                        <span className="text-[10px] font-mono text-muted-foreground">{task.id} · {task.category}</span>
+                      </div>
+                      <h3 className={`font-bold text-sm leading-tight text-card-foreground ${isDone ? "line-through opacity-70" : ""}`}>
+                        {task.title}
+                      </h3>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <Badge className={sc?.cls ?? ""}>{sc?.icon} {task.status}</Badge>
@@ -227,20 +322,20 @@ function NurseTasksScreen() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{task.description}</p>
+                  <p className={`text-xs text-muted-foreground mb-3 leading-relaxed ${isDone ? "opacity-75" : ""}`}>{task.description}</p>
 
                   <div className="bg-secondary/50 p-2.5 rounded-xl mb-3 text-xs space-y-1">
                     <div className="font-semibold text-foreground truncate">{task.patient}</div>
                     <div className="flex items-center gap-3 text-muted-foreground">
-                      <span className="flex items-center gap-1"><BedDouble className="h-3 w-3" />{task.bed}</span>
+                      <span className="flex items-center gap-1"><BedDouble className="h-3 w-3 text-rose-500" />{task.bed}</span>
                       <span>{task.ward}</span>
                     </div>
                   </div>
 
                   <div className="text-xs text-muted-foreground space-y-1">
                     <div className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-amber-500" />Due: <span className="font-semibold text-foreground">{task.dueAt}</span></div>
-                    <div className="flex items-center gap-1.5"><ClipboardCheck className="h-3 w-3 text-violet-500" />{task.assignedTo}</div>
-                    {task.completedAt && <div className="flex items-center gap-1.5 text-emerald-600"><CheckCircle2 className="h-3 w-3" />Done at {task.completedAt}</div>}
+                    <div className="flex items-center gap-1.5"><ClipboardCheck className="h-3 w-3 text-violet-500" />Assigned: {task.assignedTo}</div>
+                    {task.completedAt && <div className="flex items-center gap-1.5 text-emerald-600 font-semibold"><CheckCircle2 className="h-3.5 w-3.5" />Completed at {task.completedAt}</div>}
                   </div>
                 </div>
 
@@ -248,16 +343,37 @@ function NurseTasksScreen() {
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />{new Date().toLocaleDateString()}
                   </span>
-                  {task.status !== "Completed" && task.status !== "Cancelled" ? (
-                    <Button size="sm" onClick={() => toggleComplete(task.id)}
-                      className={`h-7 text-xs text-white ${task.status === "Overdue" ? "bg-rose-600 hover:bg-rose-500" : "bg-emerald-600 hover:bg-emerald-500"}`}>
-                      <CheckCircle2 className="h-3 w-3 mr-1" />Complete
-                    </Button>
-                  ) : task.status === "Completed" ? (
-                    <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" />Completed
-                    </span>
-                  ) : null}
+                  {!isDone ? (
+                    <div className="flex items-center gap-1.5">
+                      {!isInProgress && (
+                        <button
+                          onClick={() => setTaskStatus(task.id, "In Progress")}
+                          className="text-[11px] px-2 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 rounded-md font-medium cursor-pointer"
+                        >
+                          Start
+                        </button>
+                      )}
+                      <Button size="sm" onClick={() => toggleComplete(task.id)}
+                        className={`h-7 text-xs text-white font-semibold cursor-pointer ${
+                          task.status === "Overdue" ? "bg-rose-600 hover:bg-rose-700" : "bg-emerald-600 hover:bg-emerald-700"
+                        }`}>
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Complete
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" />Done
+                      </span>
+                      <button
+                        onClick={() => toggleComplete(task.id)}
+                        className="text-[11px] text-muted-foreground hover:text-rose-600 underline cursor-pointer"
+                        title="Reopen Task"
+                      >
+                        Reopen
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );

@@ -98,54 +98,91 @@ const routeConfig = {
   Subcutaneous: "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300",
 };
 
-function NurseMedicationsScreen() {
-  const { data: rawPrescriptions, loading, error, refetch } = useApi(() => prescriptionAPI.getAll());
-  const apiMeds = (rawPrescriptions as unknown as any[]) ?? [];
+const MEDS_STORAGE_KEY = "medicore_nurse_medications";
 
+function NurseMedicationsScreen() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  // Merge API with mock data
-  const meds: MedEntry[] = apiMeds.length > 2
-    ? apiMeds.map((p: any, i: number) => ({
-        ...MOCK_MEDS[i % MOCK_MEDS.length],
-        id: p.id ?? MOCK_MEDS[i % MOCK_MEDS.length].id,
-        patient: p.patient ?? MOCK_MEDS[i % MOCK_MEDS.length].patient,
-        items: p.items ?? MOCK_MEDS[i % MOCK_MEDS.length].items,
-        status: p.status === "Issued" ? "Administered" : "Pending",
-        date: p.date,
-      }))
-    : MOCK_MEDS;
+  const [meds, setMeds] = useState<MedEntry[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(MEDS_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load saved medications", err);
+      }
+    }
+    return MOCK_MEDS;
+  });
+
+  const saveMedsState = (updated: MedEntry[]) => {
+    setMeds(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(MEDS_STORAGE_KEY, JSON.stringify(updated));
+    }
+  };
+
+  const markAdministered = (id: string) => {
+    const target = meds.find((m) => m.id === id);
+    const updated = meds.map((m) =>
+      m.id === id
+        ? {
+            ...m,
+            status: "Administered" as const,
+            nextDose: "Administered (" + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + ")",
+            date: new Date().toLocaleDateString(),
+          }
+        : m
+    );
+    saveMedsState(updated);
+    toast.success(`Marked as administered!`, {
+      description: `${target?.medication ?? "Medication"} given to ${target?.patient ?? "patient"}.`,
+    });
+  };
+
+  const revertStatus = (id: string, newStatus: "Pending" | "Paused" | "Administered") => {
+    const updated = meds.map((m) =>
+      m.id === id
+        ? {
+            ...m,
+            status: newStatus,
+          }
+        : m
+    );
+    saveMedsState(updated);
+    toast.info(`Medication status updated to ${newStatus}`);
+  };
 
   const filtered = meds.filter((m) => {
-    const matchQ = m.patient.toLowerCase().includes(q.toLowerCase()) ||
+    const matchQ =
+      m.patient.toLowerCase().includes(q.toLowerCase()) ||
       m.medication?.toLowerCase().includes(q.toLowerCase()) ||
-      m.bed?.toLowerCase().includes(q.toLowerCase());
+      m.bed?.toLowerCase().includes(q.toLowerCase()) ||
+      m.id.toLowerCase().includes(q.toLowerCase()) ||
+      m.ward.toLowerCase().includes(q.toLowerCase());
     const matchStatus = statusFilter === "All" || m.status === statusFilter;
     return matchQ && matchStatus;
   });
-
-  const markAdministered = (id: string) => {
-    toast.success("Marked as administered!", { description: `Medication ${id} administered.` });
-  };
 
   const counts = {
     all: meds.length,
     pending: meds.filter((m) => m.status === "Pending").length,
     overdue: meds.filter((m) => m.status === "Overdue").length,
     administered: meds.filter((m) => m.status === "Administered").length,
+    paused: meds.filter((m) => m.status === "Paused").length,
   };
 
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Active Medications</h1>
-          <p className="text-muted-foreground">Monitor and administer prescribed drugs for current shift</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={refetch} className="shrink-0">
-          <RefreshCw className="h-3.5 w-3.5 mr-2" />Refresh List
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Active Medications</h1>
+        <p className="text-muted-foreground">Monitor and administer prescribed drugs for current shift</p>
       </div>
 
       {/* Summary stats */}
@@ -170,92 +207,98 @@ function NurseMedicationsScreen() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search patient, medication, bed..." className="pl-9" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {["All", "Pending", "Administered", "Overdue", "Paused"].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                statusFilter === s ? "bg-rose-600 text-white border-rose-600" : "bg-secondary text-muted-foreground border-border hover:border-rose-400"
-              }`}>{s}</button>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border cursor-pointer ${
+                statusFilter === s ? "bg-rose-600 text-white border-rose-600 shadow-sm" : "bg-secondary text-muted-foreground border-border hover:border-rose-400"
+              }`}>{s} {s !== "All" && `(${s === "Pending" ? counts.pending : s === "Administered" ? counts.administered : s === "Overdue" ? counts.overdue : counts.paused})`}</button>
           ))}
         </div>
       </div>
 
-      {loading && <div className="flex items-center justify-center py-24"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
-      {error && <div className="text-center py-16 text-destructive"><AlertCircle className="h-8 w-8 mx-auto mb-3" /><p>{error}</p></div>}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.length === 0 ? (
+          <div className="col-span-full text-center py-16 text-muted-foreground bg-secondary/20 rounded-2xl border">
+            No medications found for selected criteria.
+          </div>
+        ) : (
+          filtered.map((m, i) => (
+            <motion.div key={m.id}
+              initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+              whileHover={{ y: -3 }}
+              className="bg-card border border-border rounded-2xl p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start gap-2 mb-3">
+                  <div>
+                    <h3 className="font-bold text-base leading-tight text-card-foreground">{m.patient}</h3>
+                    <span className="text-[10px] text-muted-foreground font-mono">{m.id}</span>
+                  </div>
+                  <Badge className={statusConfig[m.status]?.cls ?? ""}>
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1.5 ${statusConfig[m.status]?.dot ?? ""}`} />
+                    {m.status}
+                  </Badge>
+                </div>
 
-      {!loading && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.length === 0 ? (
-            <div className="col-span-full text-center py-16 text-muted-foreground bg-secondary/20 rounded-2xl border">
-              No medications found.
-            </div>
-          ) : (
-            filtered.map((m, i) => (
-              <motion.div key={m.id}
-                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                whileHover={{ y: -3 }}
-                className="bg-card border border-border rounded-2xl p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-start gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <BedDouble className="h-3 w-3 text-rose-500" />{m.bed}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Activity className="h-3 w-3 text-blue-500" />{m.ward}
+                  </div>
+                </div>
+
+                <div className="bg-secondary/50 p-3 rounded-xl mb-3">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-bold text-base leading-tight text-card-foreground">{m.patient}</h3>
-                      <span className="text-[10px] text-muted-foreground font-mono">{m.id}</span>
+                      <div className="font-semibold text-sm text-foreground">{m.medication}</div>
+                      <div className="text-xs text-muted-foreground">{m.dosage} · {m.frequency}</div>
                     </div>
-                    <Badge className={statusConfig[m.status]?.cls ?? ""}>
-                      <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1.5 ${statusConfig[m.status]?.dot ?? ""}`} />
-                      {m.status}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <BedDouble className="h-3 w-3" />{m.bed}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Activity className="h-3 w-3" />{m.ward}
-                    </div>
-                  </div>
-
-                  <div className="bg-secondary/50 p-3 rounded-xl mb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="font-semibold text-sm text-foreground">{m.medication}</div>
-                        <div className="text-xs text-muted-foreground">{m.dosage} · {m.frequency}</div>
-                      </div>
-                      <Badge className={routeConfig[m.route] ?? ""}>{m.route}</Badge>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-3 w-3 text-amber-500" />Next dose: <span className="font-semibold text-foreground">{m.nextDose}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Pill className="h-3 w-3 text-violet-500" />By {m.prescribedBy}
-                    </div>
+                    <Badge className={routeConfig[m.route] ?? ""}>{m.route}</Badge>
                   </div>
                 </div>
 
-                <div className="border-t border-border pt-3 mt-4 flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />{m.date ?? new Date().toLocaleDateString()}
-                  </span>
-                  {m.status === "Pending" || m.status === "Overdue" ? (
-                    <Button size="sm" onClick={() => markAdministered(m.id)}
-                      className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />Mark Given
-                    </Button>
-                  ) : (
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3 w-3 text-amber-500" />Next dose: <span className="font-semibold text-foreground">{m.nextDose}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Pill className="h-3 w-3 text-violet-500" />Prescribed by: <span className="text-foreground font-medium">{m.prescribedBy}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-3 mt-4 flex items-center justify-between">
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />{m.date ?? new Date().toLocaleDateString()}
+                </span>
+                {m.status === "Pending" || m.status === "Overdue" ? (
+                  <Button size="sm" onClick={() => markAdministered(m.id)}
+                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold shadow-sm cursor-pointer">
+                    <CheckCircle2 className="h-3.5 w-3.5 mr-1" />Mark Given
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2">
                     <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" />Done
+                      <CheckCircle2 className="h-3.5 w-3.5" />Administered
                     </span>
-                  )}
-                </div>
-              </motion.div>
-            ))
-          )}
-        </div>
-      )}
+                    <button
+                      onClick={() => revertStatus(m.id, "Pending")}
+                      className="text-[11px] text-muted-foreground hover:text-rose-600 underline cursor-pointer"
+                      title="Revert to Pending"
+                    >
+                      Undo
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
     </AppShell>
   );
 }
+
+

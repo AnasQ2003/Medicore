@@ -135,14 +135,9 @@ function NurseInjectionsScreen() {
 
   return (
     <AppShell role="nurse" title="Nurse" nav={nurseNav}>
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Injection Administration</h1>
-          <p className="text-muted-foreground">Monitor and sign off on IV, IM, SC and infusion administrations</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={refetch} className="shrink-0">
-          <RefreshCw className="h-3.5 w-3.5 mr-2" />Refresh
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Injection Administration</h1>
+        <p className="text-muted-foreground">Monitor and sign off on IV, IM, SC and infusion administrations</p>
       </div>
 
       {/* Summary stats */}

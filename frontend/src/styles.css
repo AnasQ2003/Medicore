@@ -724,12 +724,6 @@ a[role="button"]:active {
   transform: translateY(0px) scale(0.98);
 }
 
-/* Subtle lift glow on ghost/icon buttons */
-button:not(:disabled):not([class*="bg-gradient"]):not([class*="bg-primary"]):not([class*="bg-accent"]):not([class*="bg-destructive"]):hover,
-a[role="button"]:not([class*="bg-gradient"]):hover {
-  background-color: color-mix(in oklch, var(--primary) 10%, transparent);
-}
-
 /* Menu / dropdown item hover */
 [role="menuitem"]:hover,
 [role="option"]:hover,
@@ -811,14 +805,9 @@ a.bg-gradient-violet:hover * {
   color: #ffffff !important;
 }
 
-/* Outline button: keep dark foreground on hover — never go invisible */
-button[data-variant="outline"]:hover,
-button[class*="border"]:not([class*="bg-gradient"]):hover {
-  color: var(--foreground) !important;
-}
-button[data-variant="outline"]:hover *,
-button[class*="border"]:not([class*="bg-gradient"]):hover * {
-  color: var(--foreground) !important;
+/* Outline button default hover safety */
+button[data-variant="outline"]:not([class*="text-"]):not([class*="bg-"]):hover {
+  color: var(--foreground);
 }
 
 [data-role="doctor"] {
