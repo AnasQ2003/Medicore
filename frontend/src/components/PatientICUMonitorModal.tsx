@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
   Activity, Heart, Thermometer, ShieldAlert, Droplet, Pill,
-  Clock, CheckCircle2, AlertCircle, Zap, RefreshCw, Package, Plus, Play, Pause
+  Clock, CheckCircle2, Zap, Package, Plus, Play, Pause
 } from "lucide-react";
-import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, Tooltip } from "recharts";
+import { ResponsiveContainer, LineChart, Line, YAxis, XAxis } from "recharts";
 import { toast } from "sonner";
 
 export interface PatientMonitorData {
@@ -121,27 +121,27 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl bg-slate-950 text-white border-emerald-500/40 p-0 overflow-hidden shadow-2xl rounded-2xl">
+      <DialogContent className="max-w-5xl bg-card text-card-foreground border-border dark:border-emerald-500/40 p-0 overflow-hidden shadow-2xl rounded-2xl">
         {patient && (
           <>
-        {/* Futuristic Monitor Header */}
-        <div className="bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 border-b border-emerald-500/30 p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Futuristic Monitor Header (Light theme with Dark mode support) */}
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50/50 dark:from-slate-900 dark:via-emerald-950/60 dark:to-slate-900 border-b border-emerald-200 dark:border-emerald-500/30 p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="h-4 w-4 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
               <div className="h-4 w-4 rounded-full bg-emerald-500 relative flex items-center justify-center">
-                <Activity className="h-2.5 w-2.5 text-slate-950" />
+                <Activity className="h-2.5 w-2.5 text-white" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-black tracking-tight text-white">{patient.name}</h2>
-                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-mono">
+                <h2 className="text-xl font-black tracking-tight text-foreground dark:text-white">{patient.name}</h2>
+                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/40 font-mono">
                   BED {patient.bedNo} • ROOM {patient.roomNo}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-400">
-                {patient.age} yrs • {patient.gender} • Condition: <span className="text-emerald-400 font-semibold">{patient.condition}</span> • Attending: Dr. {patient.attendingDoctor}
+              <p className="text-xs text-muted-foreground dark:text-slate-400">
+                {patient.age} yrs • {patient.gender} • Condition: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{patient.condition}</span> • Attending: Dr. {patient.attendingDoctor}
               </p>
             </div>
           </div>
@@ -154,12 +154,12 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
                 setIsAlarmSilenced(!isAlarmSilenced);
                 toast.info(isAlarmSilenced ? "Monitor alarms reactivated" : "Monitor alarms silenced");
               }}
-              className={isAlarmSilenced ? "bg-amber-500/20 text-amber-400 border-amber-500/40" : "bg-slate-800 border-slate-700 text-slate-300"}
+              className={isAlarmSilenced ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/40" : "bg-background dark:bg-slate-800 border-border dark:border-slate-700 text-foreground dark:text-slate-300 hover:bg-muted dark:hover:bg-slate-700"}
             >
               <ShieldAlert className="h-4 w-4 mr-2" />
               {isAlarmSilenced ? "Alarms Silenced" : "Silence Alarms"}
             </Button>
-            <Badge className="bg-slate-900 border border-emerald-500/30 text-emerald-400 font-mono text-xs px-3 py-1.5">
+            <Badge className="bg-card dark:bg-slate-900 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-mono text-xs px-3 py-1.5 shadow-sm">
               LIVE ICU FEED 🟢
             </Badge>
           </div>
@@ -171,12 +171,12 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* ECG Visualizer (2 Cols) */}
-            <div className="lg:col-span-2 bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden">
+            <div className="lg:col-span-2 bg-slate-50/80 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono font-semibold text-emerald-400 flex items-center gap-1.5">
-                  <Activity className="h-4 w-4 animate-pulse text-emerald-400" /> LEAD II ECG WAVEFORM (1mV/cm)
+                <span className="text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <Activity className="h-4 w-4 animate-pulse text-emerald-600 dark:text-emerald-400" /> LEAD II ECG WAVEFORM (1mV/cm)
                 </span>
-                <span className="text-xs font-mono text-slate-500">SPEED: 25mm/s</span>
+                <span className="text-xs font-mono text-muted-foreground dark:text-slate-500">SPEED: 25mm/s</span>
               </div>
 
               <div className="h-44 w-full">
@@ -187,7 +187,7 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
                     <Line
                       type="monotone"
                       dataKey="ecg"
-                      stroke="#10b981"
+                      stroke="#059669"
                       strokeWidth={2.5}
                       dot={false}
                       isAnimationActive={false}
@@ -196,7 +196,7 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
                 </ResponsiveContainer>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px] text-slate-400 font-mono">
+              <div className="flex items-center justify-between pt-2 border-t border-border/70 dark:border-slate-800 text-[11px] text-muted-foreground dark:text-slate-400 font-mono">
                 <span>ST SEGMENT: +0.02mV</span>
                 <span>QTc: 412ms</span>
                 <span>ARRHYTHMIA FILTER: ACTIVE</span>
@@ -206,51 +206,51 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
             {/* Vital Readouts Grid (1 Col) */}
             <div className="grid grid-cols-2 gap-3">
               {/* Heart Rate */}
-              <div className="bg-slate-900/90 border border-emerald-500/30 p-4 rounded-xl flex flex-col justify-between">
-                <div className="flex items-center justify-between text-rose-400">
+              <div className="bg-rose-50/70 dark:bg-slate-900/90 border border-rose-200 dark:border-rose-500/30 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                <div className="flex items-center justify-between text-rose-600 dark:text-rose-400">
                   <span className="text-xs font-bold font-mono">HR (BPM)</span>
                   <Heart className="h-4 w-4 animate-ping" />
                 </div>
                 <div className="my-1">
-                  <span className="text-3xl font-black text-rose-400 font-mono">{patient.heartRate}</span>
+                  <span className="text-3xl font-black text-rose-600 dark:text-rose-400 font-mono">{patient.heartRate}</span>
                 </div>
-                <span className="text-[10px] text-slate-400">Normal Range: 60-100</span>
+                <span className="text-[10px] text-muted-foreground dark:text-slate-400">Normal Range: 60-100</span>
               </div>
 
               {/* SpO2 */}
-              <div className="bg-slate-900/90 border border-emerald-500/30 p-4 rounded-xl flex flex-col justify-between">
-                <div className="flex items-center justify-between text-cyan-400">
+              <div className="bg-cyan-50/70 dark:bg-slate-900/90 border border-cyan-200 dark:border-cyan-500/30 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                <div className="flex items-center justify-between text-cyan-700 dark:text-cyan-400">
                   <span className="text-xs font-bold font-mono">SpO2 (%)</span>
                   <Activity className="h-4 w-4" />
                 </div>
                 <div className="my-1">
-                  <span className="text-3xl font-black text-cyan-400 font-mono">{patient.spO2}%</span>
+                  <span className="text-3xl font-black text-cyan-700 dark:text-cyan-400 font-mono">{patient.spO2}%</span>
                 </div>
-                <span className="text-[10px] text-slate-400">Target: &gt;95%</span>
+                <span className="text-[10px] text-muted-foreground dark:text-slate-400">Target: &gt;95%</span>
               </div>
 
               {/* BP */}
-              <div className="bg-slate-900/90 border border-emerald-500/30 p-4 rounded-xl flex flex-col justify-between">
-                <div className="flex items-center justify-between text-amber-400">
+              <div className="bg-amber-50/70 dark:bg-slate-900/90 border border-amber-200 dark:border-amber-500/30 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                <div className="flex items-center justify-between text-amber-700 dark:text-amber-400">
                   <span className="text-xs font-bold font-mono">NIBP (mmHg)</span>
                   <Zap className="h-4 w-4" />
                 </div>
                 <div className="my-1">
-                  <span className="text-2xl font-black text-amber-400 font-mono">{patient.bp}</span>
+                  <span className="text-2xl font-black text-amber-700 dark:text-amber-400 font-mono">{patient.bp}</span>
                 </div>
-                <span className="text-[10px] text-slate-400">Mean: 93 mmHg</span>
+                <span className="text-[10px] text-muted-foreground dark:text-slate-400">Mean: 93 mmHg</span>
               </div>
 
               {/* Temp */}
-              <div className="bg-slate-900/90 border border-emerald-500/30 p-4 rounded-xl flex flex-col justify-between">
-                <div className="flex items-center justify-between text-purple-400">
+              <div className="bg-purple-50/70 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 p-4 rounded-xl flex flex-col justify-between shadow-sm">
+                <div className="flex items-center justify-between text-purple-700 dark:text-purple-400">
                   <span className="text-xs font-bold font-mono">TEMP (°F)</span>
                   <Thermometer className="h-4 w-4" />
                 </div>
                 <div className="my-1">
-                  <span className="text-2xl font-black text-purple-400 font-mono">{patient.temp}°F</span>
+                  <span className="text-2xl font-black text-purple-700 dark:text-purple-400 font-mono">{patient.temp}°F</span>
                 </div>
-                <span className="text-[10px] text-slate-400">Normal Range: 97-99</span>
+                <span className="text-[10px] text-muted-foreground dark:text-slate-400">Normal Range: 97-99</span>
               </div>
             </div>
 
@@ -260,34 +260,34 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* IV Drip Monitor */}
-            <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl space-y-4">
+            <div className="bg-card dark:bg-slate-900/90 border border-border dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Droplet className="h-4 w-4 text-cyan-400" />
+                <h4 className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+                  <Droplet className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                   Active IV Drip Infusion Pump
                 </h4>
                 <Badge
                   className={
                     dripState.status === "Flowing"
-                      ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
-                      : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                      ? "bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-400 dark:border-cyan-500/30"
+                      : "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30"
                   }
                 >
                   {dripState.status}
                 </Badge>
               </div>
 
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <div className="bg-muted/40 dark:bg-slate-950 p-4 rounded-xl border border-border/80 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h5 className="text-sm font-bold text-white">{dripState.name}</h5>
-                    <p className="text-xs text-slate-400">Infusion Rate: <strong className="text-cyan-400">{dripState.flowRate} drops/min</strong></p>
+                    <h5 className="text-sm font-bold text-foreground dark:text-white">{dripState.name}</h5>
+                    <p className="text-xs text-muted-foreground dark:text-slate-400">Infusion Rate: <strong className="text-cyan-700 dark:text-cyan-400">{dripState.flowRate} drops/min</strong></p>
                   </div>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={handleToggleDrip}
-                    className="bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800"
+                    className="bg-background dark:bg-slate-900 border-border dark:border-slate-700 text-foreground dark:text-slate-200 hover:bg-muted dark:hover:bg-slate-800"
                   >
                     {dripState.status === "Flowing" ? <Pause className="h-3.5 w-3.5 mr-1" /> : <Play className="h-3.5 w-3.5 mr-1" />}
                     {dripState.status === "Flowing" ? "Pause Drip" : "Resume Drip"}
@@ -296,39 +296,39 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
 
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-400">Fluid Remaining</span>
-                    <span className="text-cyan-400 font-bold">{dripState.remainingPercent}%</span>
+                    <span className="text-muted-foreground dark:text-slate-400">Fluid Remaining</span>
+                    <span className="text-cyan-700 dark:text-cyan-400 font-bold">{dripState.remainingPercent}%</span>
                   </div>
-                  <Progress value={dripState.remainingPercent} className="h-2 bg-slate-800" />
+                  <Progress value={dripState.remainingPercent} className="h-2 bg-slate-200 dark:bg-slate-800" />
                 </div>
               </div>
             </div>
 
             {/* Scheduled Medications */}
-            <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl space-y-4">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                <Pill className="h-4 w-4 text-purple-400" />
+            <div className="bg-card dark:bg-slate-900/90 border border-border dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
+              <h4 className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+                <Pill className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 Scheduled Medications & Doses
               </h4>
 
               <div className="space-y-2.5">
                 {meds.map((med) => (
-                  <div key={med.id} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                  <div key={med.id} className="bg-muted/40 dark:bg-slate-950 p-3 rounded-xl border border-border/80 dark:border-slate-800 flex items-center justify-between">
                     <div>
-                      <h5 className="text-xs font-bold text-white">{med.name} ({med.dosage})</h5>
-                      <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                        <Clock className="h-3 w-3 text-slate-500" /> Scheduled: {med.time}
+                      <h5 className="text-xs font-bold text-foreground dark:text-white">{med.name} ({med.dosage})</h5>
+                      <p className="text-[11px] text-muted-foreground dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                        <Clock className="h-3 w-3 text-muted-foreground" /> Scheduled: {med.time}
                       </p>
                     </div>
                     {med.status === "Given" ? (
-                      <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">
                         <CheckCircle2 className="h-3 w-3 mr-1" /> Given
                       </Badge>
                     ) : (
                       <Button
                         size="sm"
                         onClick={() => handleAdministerMed(med.id)}
-                        className="bg-purple-600 hover:bg-purple-500 text-white text-xs h-7 px-3"
+                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-7 px-3 cursor-pointer"
                       >
                         Administer Dose
                       </Button>
@@ -341,17 +341,17 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
           </div>
 
           {/* BOTTOM SECTION: WARD PHARMACY STOCKS */}
-          <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl space-y-4">
+          <div className="bg-card dark:bg-slate-900/90 border border-border dark:border-slate-800 p-5 rounded-2xl space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                <Package className="h-4 w-4 text-emerald-400" />
+              <h4 className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
+                <Package className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 Ward Medical Supplies & Stock Availability
               </h4>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => toast.success("Stock reorder request submitted to central pharmacy!")}
-                className="bg-slate-900 border-slate-700 text-emerald-400 hover:bg-slate-800 text-xs"
+                className="bg-background dark:bg-slate-900 border-border dark:border-slate-700 text-emerald-700 dark:text-emerald-400 hover:bg-muted dark:hover:bg-slate-800 text-xs cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5 mr-1" /> Request Stock Reorder
               </Button>
@@ -364,18 +364,18 @@ export function PatientICUMonitorModal({ patient, isOpen, onClose }: PatientICUM
                 { id: "s3", name: "Syringes (10ml)", quantity: 45, unit: "Pcs", status: "In Stock" },
                 { id: "s4", name: "Paracetamol IV", quantity: 5, unit: "Vials", status: "Low Stock" },
               ]).map((stock) => (
-                <div key={stock.id} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div key={stock.id} className="bg-muted/40 dark:bg-slate-950 p-3 rounded-xl border border-border/80 dark:border-slate-800 flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-white">{stock.name}</p>
-                    <p className="text-base font-extrabold text-emerald-400 mt-0.5">
-                      {stock.quantity} <span className="text-[10px] text-slate-500 font-normal">{stock.unit}</span>
+                    <p className="text-xs font-bold text-foreground dark:text-white">{stock.name}</p>
+                    <p className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      {stock.quantity} <span className="text-[10px] text-muted-foreground font-normal">{stock.unit}</span>
                     </p>
                   </div>
                   <Badge
                     className={
                       stock.status === "In Stock"
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]"
+                        ? "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30 text-[10px]"
+                        : "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30 text-[10px]"
                     }
                   >
                     {stock.status}
