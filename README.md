@@ -1,7 +1,5 @@
 ﻿<div align="center">
 
-<img src="photo/Screenshot 2026-07-03 094847.png" alt="MediCore Splash Screen" width="600"/>
-
 # 🏥 MediCore HMS
 ### Pakistan''s Most Advanced Hospital Management System
 
@@ -476,30 +474,15 @@ After running seeds, the following accounts are available:
 
 | Role | Email | Password |
 |---|---|---|
-| Super Admin | admin@medicore.app | Admin@1234 |
-| Doctor | doctor@medicore.app | Doctor@1234 |
-| Nurse | nurse@medicore.app | Nurse@1234 |
-| Receptionist | reception@medicore.app | Reception@1234 |
-| Patient | patient@medicore.app | Patient@1234 |
-
-> ⚠️ **Change all demo passwords before deploying to production.**
+| Super Admin | admin@example.com | Admin@1234 |
+| Doctor | doctor@example.com | Doctor@1234 |
+| Nurse | nurse@example.com | Nurse@1234 |
+| Receptionist | reception@example.com | Reception@1234 |
+| Patient | patient@example.com | Patient@1234 |
 
 ---
 
 ## 🚀 Deployment
-
-### Production Environment Variables
-
-```env
-NODE_ENV=production
-PORT=5000
-JWT_SECRET=<strong-random-64-char-minimum-secret>
-DB_SERVER=<production-sql-server-host>
-DB_DATABASE=MediCoreDB
-DB_USER=<production-db-user>
-DB_PASSWORD=<production-db-password>
-DB_ENCRYPT=true
-```
 
 ### Build Frontend
 
@@ -522,18 +505,37 @@ npm run build
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.
+```
+MIT License
+
+Copyright (c) Medicore --- 2026 AnasQ2003🏃‍♂️
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+```
+
+---
+
+## 👨‍💻 Author
+
+**Anas Ahmed Qureshi.** — [@AnasQ2003](https://github.com/AnasQ2003)
 
 ---
 
 <div align="center">
+  <p>Built with ❤️ by <strong>Anas</strong></p>
+  
+ <div align="center">
 
-**Built with ❤️ by [Anas Qureshi](https://github.com/AnasQ2003)**
-
-[![GitHub](https://img.shields.io/badge/GitHub-AnasQ2003-181717?style=for-the-badge&logo=github)](https://github.com/AnasQ2003)
-
-*MediCore HMS — Powering smarter, safer, and faster healthcare delivery.*
-
-<sub>MediCore v2.6.0 © 2026 MediCore Health Systems Pvt. Ltd. All rights reserved.</sub>
-
-</div>
+Made with 🔥 and a lot of ☕
