@@ -32,13 +32,13 @@ Built on a modern monorepo architecture with a **React 19 + TypeScript** fronten
 ## 🚀 Features
 
 ### 🌐 Multi-Role Access Control
-| Role | Portal | Capabilities |
+| Role | email + pass | Capabilities |
 |---|---|---|
-| 🔴 Super Admin | `/super-admin` | Hospital network oversight, staff management, analytics, global settings |
-| 🩺 Doctor | `/doctor` | Patient EMR, appointments, prescriptions, schedules, leave, charges |
-| 💉 Nurse | `/nurse` | Vitals, bed management, medications, injections, tasks, shift schedules |
-| 🏨 Receptionist | `/receptionist` | Patient registration, queue management, billing, doctor scheduling |
-| 🧑‍⚕️ Patient | `/patient` | Appointments, prescriptions, reports, bills, facility info |
+| 🔴 Super Admin | `admin@medicore.app` + `Admin@1234` | Hospital network oversight, staff management, analytics, global settings |
+| 🩺 Doctor | `doctor@medicore.app` + `Doctor@1234` | Patient EMR, appointments, prescriptions, schedules, leave, charges |
+| 💉 Nurse | `nurse@medicore.app` + `Nurse@1234` | Vitals, bed management, medications, injections, tasks, shift schedules |
+| 🏨 Receptionist | `receptionist@medicore.app` + `Reception@1234` | Patient registration, queue management, billing, doctor scheduling |
+| 🧑‍⚕️ Patient | `patient@medicore.app` + `Patient@1234` | Appointments, prescriptions, reports, bills, facility info |
 
 ### 🏥 Clinical Features
 - **📋 Electronic Medical Records (EMR)** — Full patient history, vitals tracking, and ICU monitor modal
