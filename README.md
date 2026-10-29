@@ -13,7 +13,7 @@
 
 **A full-stack, role-based Hospital Management System powering smarter, safer, and faster healthcare delivery across multiple hospital branches.**
 
-### 🌐 [**Live Demo → quickcalligraphy.vercel.app**](https://kaleidoscopic-crumble-f508cf.netlify.app/)
+### 🌐 [**Live Demo → Medicore**](https://gorgeous-crisp-be4179.netlify.app/)
 
 [🚀 Features](#-features) · [📸 Screenshots](#-screenshots) · [🛠 Tech Stack](#-tech-stack) · [⚡ Quick Start](#-quick-start) · [🗃 Database](#-database-schema) · [🔐 Security](#-security)
 
